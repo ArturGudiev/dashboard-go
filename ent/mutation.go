@@ -34,19 +34,23 @@ const (
 // ContainerChildMutation represents an operation that mutates the ContainerChild nodes in the graph.
 type ContainerChildMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	parent_type   *containerchild.ParentType
-	child_type    *containerchild.ChildType
-	clearedFields map[string]struct{}
-	parent        *int
-	clearedparent bool
-	child         *int
-	clearedchild  bool
-	done          bool
-	oldValue      func(context.Context) (*ContainerChild, error)
-	predicates    []predicate.ContainerChild
+	op              Op
+	typ             string
+	id              *int
+	parent_type     *containerchild.ParentType
+	child_type      *containerchild.ChildType
+	child_order     *int
+	addchild_order  *int
+	parent_order    *int
+	addparent_order *int
+	clearedFields   map[string]struct{}
+	parent          *int
+	clearedparent   bool
+	child           *int
+	clearedchild    bool
+	done            bool
+	oldValue        func(context.Context) (*ContainerChild, error)
+	predicates      []predicate.ContainerChild
 }
 
 var _ ent.Mutation = (*ContainerChildMutation)(nil)
@@ -297,6 +301,118 @@ func (m *ContainerChildMutation) ResetChildID() {
 	m.child = nil
 }
 
+// SetChildOrder sets the "child_order" field.
+func (m *ContainerChildMutation) SetChildOrder(i int) {
+	m.child_order = &i
+	m.addchild_order = nil
+}
+
+// ChildOrder returns the value of the "child_order" field in the mutation.
+func (m *ContainerChildMutation) ChildOrder() (r int, exists bool) {
+	v := m.child_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChildOrder returns the old "child_order" field's value of the ContainerChild entity.
+// If the ContainerChild object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContainerChildMutation) OldChildOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChildOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChildOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChildOrder: %w", err)
+	}
+	return oldValue.ChildOrder, nil
+}
+
+// AddChildOrder adds i to the "child_order" field.
+func (m *ContainerChildMutation) AddChildOrder(i int) {
+	if m.addchild_order != nil {
+		*m.addchild_order += i
+	} else {
+		m.addchild_order = &i
+	}
+}
+
+// AddedChildOrder returns the value that was added to the "child_order" field in this mutation.
+func (m *ContainerChildMutation) AddedChildOrder() (r int, exists bool) {
+	v := m.addchild_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetChildOrder resets all changes to the "child_order" field.
+func (m *ContainerChildMutation) ResetChildOrder() {
+	m.child_order = nil
+	m.addchild_order = nil
+}
+
+// SetParentOrder sets the "parent_order" field.
+func (m *ContainerChildMutation) SetParentOrder(i int) {
+	m.parent_order = &i
+	m.addparent_order = nil
+}
+
+// ParentOrder returns the value of the "parent_order" field in the mutation.
+func (m *ContainerChildMutation) ParentOrder() (r int, exists bool) {
+	v := m.parent_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentOrder returns the old "parent_order" field's value of the ContainerChild entity.
+// If the ContainerChild object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContainerChildMutation) OldParentOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentOrder: %w", err)
+	}
+	return oldValue.ParentOrder, nil
+}
+
+// AddParentOrder adds i to the "parent_order" field.
+func (m *ContainerChildMutation) AddParentOrder(i int) {
+	if m.addparent_order != nil {
+		*m.addparent_order += i
+	} else {
+		m.addparent_order = &i
+	}
+}
+
+// AddedParentOrder returns the value that was added to the "parent_order" field in this mutation.
+func (m *ContainerChildMutation) AddedParentOrder() (r int, exists bool) {
+	v := m.addparent_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetParentOrder resets all changes to the "parent_order" field.
+func (m *ContainerChildMutation) ResetParentOrder() {
+	m.parent_order = nil
+	m.addparent_order = nil
+}
+
 // ClearParent clears the "parent" edge to the Task entity.
 func (m *ContainerChildMutation) ClearParent() {
 	m.clearedparent = true
@@ -385,7 +501,7 @@ func (m *ContainerChildMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ContainerChildMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.parent_type != nil {
 		fields = append(fields, containerchild.FieldParentType)
 	}
@@ -397,6 +513,12 @@ func (m *ContainerChildMutation) Fields() []string {
 	}
 	if m.child != nil {
 		fields = append(fields, containerchild.FieldChildID)
+	}
+	if m.child_order != nil {
+		fields = append(fields, containerchild.FieldChildOrder)
+	}
+	if m.parent_order != nil {
+		fields = append(fields, containerchild.FieldParentOrder)
 	}
 	return fields
 }
@@ -414,6 +536,10 @@ func (m *ContainerChildMutation) Field(name string) (ent.Value, bool) {
 		return m.ChildType()
 	case containerchild.FieldChildID:
 		return m.ChildID()
+	case containerchild.FieldChildOrder:
+		return m.ChildOrder()
+	case containerchild.FieldParentOrder:
+		return m.ParentOrder()
 	}
 	return nil, false
 }
@@ -431,6 +557,10 @@ func (m *ContainerChildMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldChildType(ctx)
 	case containerchild.FieldChildID:
 		return m.OldChildID(ctx)
+	case containerchild.FieldChildOrder:
+		return m.OldChildOrder(ctx)
+	case containerchild.FieldParentOrder:
+		return m.OldParentOrder(ctx)
 	}
 	return nil, fmt.Errorf("unknown ContainerChild field %s", name)
 }
@@ -468,6 +598,20 @@ func (m *ContainerChildMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetChildID(v)
 		return nil
+	case containerchild.FieldChildOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChildOrder(v)
+		return nil
+	case containerchild.FieldParentOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentOrder(v)
+		return nil
 	}
 	return fmt.Errorf("unknown ContainerChild field %s", name)
 }
@@ -476,6 +620,12 @@ func (m *ContainerChildMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *ContainerChildMutation) AddedFields() []string {
 	var fields []string
+	if m.addchild_order != nil {
+		fields = append(fields, containerchild.FieldChildOrder)
+	}
+	if m.addparent_order != nil {
+		fields = append(fields, containerchild.FieldParentOrder)
+	}
 	return fields
 }
 
@@ -484,6 +634,10 @@ func (m *ContainerChildMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *ContainerChildMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case containerchild.FieldChildOrder:
+		return m.AddedChildOrder()
+	case containerchild.FieldParentOrder:
+		return m.AddedParentOrder()
 	}
 	return nil, false
 }
@@ -493,6 +647,20 @@ func (m *ContainerChildMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ContainerChildMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case containerchild.FieldChildOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChildOrder(v)
+		return nil
+	case containerchild.FieldParentOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParentOrder(v)
+		return nil
 	}
 	return fmt.Errorf("unknown ContainerChild numeric field %s", name)
 }
@@ -531,6 +699,12 @@ func (m *ContainerChildMutation) ResetField(name string) error {
 		return nil
 	case containerchild.FieldChildID:
 		m.ResetChildID()
+		return nil
+	case containerchild.FieldChildOrder:
+		m.ResetChildOrder()
+		return nil
+	case containerchild.FieldParentOrder:
+		m.ResetParentOrder()
 		return nil
 	}
 	return fmt.Errorf("unknown ContainerChild field %s", name)

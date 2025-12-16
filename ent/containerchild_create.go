@@ -44,6 +44,34 @@ func (_c *ContainerChildCreate) SetChildID(v int) *ContainerChildCreate {
 	return _c
 }
 
+// SetChildOrder sets the "child_order" field.
+func (_c *ContainerChildCreate) SetChildOrder(v int) *ContainerChildCreate {
+	_c.mutation.SetChildOrder(v)
+	return _c
+}
+
+// SetNillableChildOrder sets the "child_order" field if the given value is not nil.
+func (_c *ContainerChildCreate) SetNillableChildOrder(v *int) *ContainerChildCreate {
+	if v != nil {
+		_c.SetChildOrder(*v)
+	}
+	return _c
+}
+
+// SetParentOrder sets the "parent_order" field.
+func (_c *ContainerChildCreate) SetParentOrder(v int) *ContainerChildCreate {
+	_c.mutation.SetParentOrder(v)
+	return _c
+}
+
+// SetNillableParentOrder sets the "parent_order" field if the given value is not nil.
+func (_c *ContainerChildCreate) SetNillableParentOrder(v *int) *ContainerChildCreate {
+	if v != nil {
+		_c.SetParentOrder(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ContainerChildCreate) SetID(v int) *ContainerChildCreate {
 	_c.mutation.SetID(v)
@@ -67,6 +95,7 @@ func (_c *ContainerChildCreate) Mutation() *ContainerChildMutation {
 
 // Save creates the ContainerChild in the database.
 func (_c *ContainerChildCreate) Save(ctx context.Context) (*ContainerChild, error) {
+	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -89,6 +118,18 @@ func (_c *ContainerChildCreate) Exec(ctx context.Context) error {
 func (_c *ContainerChildCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_c *ContainerChildCreate) defaults() {
+	if _, ok := _c.mutation.ChildOrder(); !ok {
+		v := containerchild.DefaultChildOrder
+		_c.mutation.SetChildOrder(v)
+	}
+	if _, ok := _c.mutation.ParentOrder(); !ok {
+		v := containerchild.DefaultParentOrder
+		_c.mutation.SetParentOrder(v)
 	}
 }
 
@@ -124,6 +165,22 @@ func (_c *ContainerChildCreate) check() error {
 	if v, ok := _c.mutation.ChildID(); ok {
 		if err := containerchild.ChildIDValidator(v); err != nil {
 			return &ValidationError{Name: "child_id", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.child_id": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ChildOrder(); !ok {
+		return &ValidationError{Name: "child_order", err: errors.New(`ent: missing required field "ContainerChild.child_order"`)}
+	}
+	if v, ok := _c.mutation.ChildOrder(); ok {
+		if err := containerchild.ChildOrderValidator(v); err != nil {
+			return &ValidationError{Name: "child_order", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.child_order": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ParentOrder(); !ok {
+		return &ValidationError{Name: "parent_order", err: errors.New(`ent: missing required field "ContainerChild.parent_order"`)}
+	}
+	if v, ok := _c.mutation.ParentOrder(); ok {
+		if err := containerchild.ParentOrderValidator(v); err != nil {
+			return &ValidationError{Name: "parent_order", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.parent_order": %w`, err)}
 		}
 	}
 	if v, ok := _c.mutation.ID(); ok {
@@ -176,6 +233,14 @@ func (_c *ContainerChildCreate) createSpec() (*ContainerChild, *sqlgraph.CreateS
 	if value, ok := _c.mutation.ChildType(); ok {
 		_spec.SetField(containerchild.FieldChildType, field.TypeEnum, value)
 		_node.ChildType = value
+	}
+	if value, ok := _c.mutation.ChildOrder(); ok {
+		_spec.SetField(containerchild.FieldChildOrder, field.TypeInt, value)
+		_node.ChildOrder = value
+	}
+	if value, ok := _c.mutation.ParentOrder(); ok {
+		_spec.SetField(containerchild.FieldParentOrder, field.TypeInt, value)
+		_node.ParentOrder = value
 	}
 	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -232,6 +297,7 @@ func (_c *ContainerChildCreateBulk) Save(ctx context.Context) ([]*ContainerChild
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ContainerChildMutation)
 				if !ok {

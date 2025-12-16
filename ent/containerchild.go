@@ -25,6 +25,10 @@ type ContainerChild struct {
 	ChildType containerchild.ChildType `json:"child_type,omitempty"`
 	// ChildID holds the value of the "child_id" field.
 	ChildID int `json:"child_id,omitempty"`
+	// ChildOrder holds the value of the "child_order" field.
+	ChildOrder int `json:"child_order,omitempty"`
+	// ParentOrder holds the value of the "parent_order" field.
+	ParentOrder int `json:"parent_order,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ContainerChildQuery when eager-loading is set.
 	Edges        ContainerChildEdges `json:"edges"`
@@ -69,7 +73,7 @@ func (*ContainerChild) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case containerchild.FieldID, containerchild.FieldParentID, containerchild.FieldChildID:
+		case containerchild.FieldID, containerchild.FieldParentID, containerchild.FieldChildID, containerchild.FieldChildOrder, containerchild.FieldParentOrder:
 			values[i] = new(sql.NullInt64)
 		case containerchild.FieldParentType, containerchild.FieldChildType:
 			values[i] = new(sql.NullString)
@@ -117,6 +121,18 @@ func (_m *ContainerChild) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field child_id", values[i])
 			} else if value.Valid {
 				_m.ChildID = int(value.Int64)
+			}
+		case containerchild.FieldChildOrder:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field child_order", values[i])
+			} else if value.Valid {
+				_m.ChildOrder = int(value.Int64)
+			}
+		case containerchild.FieldParentOrder:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_order", values[i])
+			} else if value.Valid {
+				_m.ParentOrder = int(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -175,6 +191,12 @@ func (_m *ContainerChild) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("child_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ChildID))
+	builder.WriteString(", ")
+	builder.WriteString("child_order=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChildOrder))
+	builder.WriteString(", ")
+	builder.WriteString("parent_order=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ParentOrder))
 	builder.WriteByte(')')
 	return builder.String()
 }

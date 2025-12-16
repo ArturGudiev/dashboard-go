@@ -22,6 +22,10 @@ const (
 	FieldChildType = "child_type"
 	// FieldChildID holds the string denoting the child_id field in the database.
 	FieldChildID = "child_id"
+	// FieldChildOrder holds the string denoting the child_order field in the database.
+	FieldChildOrder = "child_order"
+	// FieldParentOrder holds the string denoting the parent_order field in the database.
+	FieldParentOrder = "parent_order"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
 	EdgeParent = "parent"
 	// EdgeChild holds the string denoting the child edge name in mutations.
@@ -51,6 +55,8 @@ var Columns = []string{
 	FieldParentID,
 	FieldChildType,
 	FieldChildID,
+	FieldChildOrder,
+	FieldParentOrder,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -68,6 +74,14 @@ var (
 	ParentIDValidator func(int) error
 	// ChildIDValidator is a validator for the "child_id" field. It is called by the builders before save.
 	ChildIDValidator func(int) error
+	// DefaultChildOrder holds the default value on creation for the "child_order" field.
+	DefaultChildOrder int
+	// ChildOrderValidator is a validator for the "child_order" field. It is called by the builders before save.
+	ChildOrderValidator func(int) error
+	// DefaultParentOrder holds the default value on creation for the "parent_order" field.
+	DefaultParentOrder int
+	// ParentOrderValidator is a validator for the "parent_order" field. It is called by the builders before save.
+	ParentOrderValidator func(int) error
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.
 	IDValidator func(int) error
 )
@@ -162,6 +176,16 @@ func ByChildType(opts ...sql.OrderTermOption) OrderOption {
 // ByChildID orders the results by the child_id field.
 func ByChildID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChildID, opts...).ToFunc()
+}
+
+// ByChildOrder orders the results by the child_order field.
+func ByChildOrder(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChildOrder, opts...).ToFunc()
+}
+
+// ByParentOrder orders the results by the parent_order field.
+func ByParentOrder(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParentOrder, opts...).ToFunc()
 }
 
 // ByParentField orders the results by parent field.

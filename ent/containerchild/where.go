@@ -64,6 +64,16 @@ func ChildID(v int) predicate.ContainerChild {
 	return predicate.ContainerChild(sql.FieldEQ(FieldChildID, v))
 }
 
+// ChildOrder applies equality check predicate on the "child_order" field. It's identical to ChildOrderEQ.
+func ChildOrder(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldEQ(FieldChildOrder, v))
+}
+
+// ParentOrder applies equality check predicate on the "parent_order" field. It's identical to ParentOrderEQ.
+func ParentOrder(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldEQ(FieldParentOrder, v))
+}
+
 // ParentTypeEQ applies the EQ predicate on the "parent_type" field.
 func ParentTypeEQ(v ParentType) predicate.ContainerChild {
 	return predicate.ContainerChild(sql.FieldEQ(FieldParentType, v))
@@ -142,6 +152,86 @@ func ChildIDIn(vs ...int) predicate.ContainerChild {
 // ChildIDNotIn applies the NotIn predicate on the "child_id" field.
 func ChildIDNotIn(vs ...int) predicate.ContainerChild {
 	return predicate.ContainerChild(sql.FieldNotIn(FieldChildID, vs...))
+}
+
+// ChildOrderEQ applies the EQ predicate on the "child_order" field.
+func ChildOrderEQ(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldEQ(FieldChildOrder, v))
+}
+
+// ChildOrderNEQ applies the NEQ predicate on the "child_order" field.
+func ChildOrderNEQ(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldNEQ(FieldChildOrder, v))
+}
+
+// ChildOrderIn applies the In predicate on the "child_order" field.
+func ChildOrderIn(vs ...int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldIn(FieldChildOrder, vs...))
+}
+
+// ChildOrderNotIn applies the NotIn predicate on the "child_order" field.
+func ChildOrderNotIn(vs ...int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldNotIn(FieldChildOrder, vs...))
+}
+
+// ChildOrderGT applies the GT predicate on the "child_order" field.
+func ChildOrderGT(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldGT(FieldChildOrder, v))
+}
+
+// ChildOrderGTE applies the GTE predicate on the "child_order" field.
+func ChildOrderGTE(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldGTE(FieldChildOrder, v))
+}
+
+// ChildOrderLT applies the LT predicate on the "child_order" field.
+func ChildOrderLT(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldLT(FieldChildOrder, v))
+}
+
+// ChildOrderLTE applies the LTE predicate on the "child_order" field.
+func ChildOrderLTE(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldLTE(FieldChildOrder, v))
+}
+
+// ParentOrderEQ applies the EQ predicate on the "parent_order" field.
+func ParentOrderEQ(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldEQ(FieldParentOrder, v))
+}
+
+// ParentOrderNEQ applies the NEQ predicate on the "parent_order" field.
+func ParentOrderNEQ(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldNEQ(FieldParentOrder, v))
+}
+
+// ParentOrderIn applies the In predicate on the "parent_order" field.
+func ParentOrderIn(vs ...int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldIn(FieldParentOrder, vs...))
+}
+
+// ParentOrderNotIn applies the NotIn predicate on the "parent_order" field.
+func ParentOrderNotIn(vs ...int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldNotIn(FieldParentOrder, vs...))
+}
+
+// ParentOrderGT applies the GT predicate on the "parent_order" field.
+func ParentOrderGT(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldGT(FieldParentOrder, v))
+}
+
+// ParentOrderGTE applies the GTE predicate on the "parent_order" field.
+func ParentOrderGTE(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldGTE(FieldParentOrder, v))
+}
+
+// ParentOrderLT applies the LT predicate on the "parent_order" field.
+func ParentOrderLT(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldLT(FieldParentOrder, v))
+}
+
+// ParentOrderLTE applies the LTE predicate on the "parent_order" field.
+func ParentOrderLTE(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldLTE(FieldParentOrder, v))
 }
 
 // HasParent applies the HasEdge predicate on the "parent" edge.

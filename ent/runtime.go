@@ -23,6 +23,18 @@ func init() {
 	containerchildDescChildID := containerchildFields[4].Descriptor()
 	// containerchild.ChildIDValidator is a validator for the "child_id" field. It is called by the builders before save.
 	containerchild.ChildIDValidator = containerchildDescChildID.Validators[0].(func(int) error)
+	// containerchildDescChildOrder is the schema descriptor for child_order field.
+	containerchildDescChildOrder := containerchildFields[5].Descriptor()
+	// containerchild.DefaultChildOrder holds the default value on creation for the child_order field.
+	containerchild.DefaultChildOrder = containerchildDescChildOrder.Default.(int)
+	// containerchild.ChildOrderValidator is a validator for the "child_order" field. It is called by the builders before save.
+	containerchild.ChildOrderValidator = containerchildDescChildOrder.Validators[0].(func(int) error)
+	// containerchildDescParentOrder is the schema descriptor for parent_order field.
+	containerchildDescParentOrder := containerchildFields[6].Descriptor()
+	// containerchild.DefaultParentOrder holds the default value on creation for the parent_order field.
+	containerchild.DefaultParentOrder = containerchildDescParentOrder.Default.(int)
+	// containerchild.ParentOrderValidator is a validator for the "parent_order" field. It is called by the builders before save.
+	containerchild.ParentOrderValidator = containerchildDescParentOrder.Validators[0].(func(int) error)
 	// containerchildDescID is the schema descriptor for id field.
 	containerchildDescID := containerchildFields[0].Descriptor()
 	// containerchild.IDValidator is a validator for the "id" field. It is called by the builders before save.

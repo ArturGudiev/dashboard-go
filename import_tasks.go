@@ -33,7 +33,8 @@ type TaskJSON struct {
 	DoneDateTime *string   `json:"doneDateTime"`
 }
 
-func main() {
+// importTasks imports tasks from a JSON file
+func importTasks(jsonPath string) error {
 	// Database connection
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
@@ -43,25 +44,27 @@ func main() {
 	// Create Ent client
 	client, err := ent.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatalf("failed opening connection to postgres: %v", err)
+		return fmt.Errorf("failed opening connection to postgres: %v", err)
 	}
 	defer client.Close()
 
 	ctx := context.Background()
 
-	// Read JSON file
-	jsonPath := `C:\Programming\NodeJS\dashboard\data\tasks.json`
+	// Use provided path or default
+	if jsonPath == "" {
+		jsonPath = `C:\Programming\NodeJS\dashboard\data\tasks.json`
+	}
 	log.Printf("Reading tasks from: %s", jsonPath)
 	
 	jsonData, err := os.ReadFile(jsonPath)
 	if err != nil {
-		log.Fatalf("failed to read JSON file: %v", err)
+		return fmt.Errorf("failed to read JSON file: %v", err)
 	}
 
 	// Parse JSON
 	var tasks []TaskJSON
 	if err := json.Unmarshal(jsonData, &tasks); err != nil {
-		log.Fatalf("failed to parse JSON: %v", err)
+		return fmt.Errorf("failed to parse JSON: %v", err)
 	}
 
 	log.Printf("Found %d tasks to import", len(tasks))
@@ -144,6 +147,12 @@ func main() {
 
 	log.Printf("Step 1 complete: Inserted %d tasks, skipped %d existing tasks", inserted, skipped)
 
+	// Create a map of tasks by ID for quick lookup of parent_order
+	taskByID := make(map[int]*TaskJSON)
+	for i := range tasks {
+		taskByID[tasks[i].ID] = &tasks[i]
+	}
+
 	// Second pass: Create parent-child relationships in container_children
 	log.Println("Step 2: Creating parent-child relationships...")
 	relationshipsCreated := 0
@@ -156,11 +165,40 @@ func main() {
 		}
 
 		// For each child task ID in the tasks array
-		for _, childID := range taskJSON.Tasks {
+		// The index in the array is the child_order
+		for childOrder, childID := range taskJSON.Tasks {
 			// Check if child task exists
 			if !taskMap[childID] {
 				log.Printf("Warning: Child task %d does not exist, skipping relationship", childID)
 				continue
+			}
+
+			// Find parent_order: look for this parent in the child's parents array
+			parentOrder := -1
+			if childTask, exists := taskByID[childID]; exists {
+				for idx, parentDesc := range childTask.ParentContainers {
+					// parentDesc is [type, id] array
+					if len(parentDesc) >= 2 {
+						// Check if the ID matches (handle both string and float64 from JSON)
+						var parentIDFromDesc int
+						switch v := parentDesc[1].(type) {
+						case float64:
+							parentIDFromDesc = int(v)
+						case int:
+							parentIDFromDesc = v
+						}
+						
+						if parentIDFromDesc == taskJSON.ID {
+							parentOrder = idx
+							break
+						}
+					}
+				}
+			}
+			
+			// If parent not found in child's parents array, default to 0
+			if parentOrder == -1 {
+				parentOrder = 0
 			}
 
 			// Check if relationship already exists
@@ -182,12 +220,14 @@ func main() {
 				continue
 			}
 
-			// Create relationship
+			// Create relationship with both order fields
 			_, err = client.ContainerChild.Create().
 				SetParentType(containerchild.ParentTypeTask).
 				SetParentID(taskJSON.ID).
 				SetChildType(containerchild.ChildTypeTask).
 				SetChildID(childID).
+				SetChildOrder(childOrder).    // Position in parent's children array
+				SetParentOrder(parentOrder).  // Position in child's parents array
 				Save(ctx)
 			if err != nil {
 				log.Printf("Error creating relationship %d -> %d: %v", taskJSON.ID, childID, err)
@@ -211,5 +251,7 @@ func main() {
 	fmt.Printf("  Tasks skipped (already exist): %d\n", skipped)
 	fmt.Printf("  Relationships created: %d\n", relationshipsCreated)
 	fmt.Printf("  Relationships skipped (already exist): %d\n", relationshipsSkipped)
+	
+	return nil
 }
 

@@ -84,6 +84,48 @@ func (_u *ContainerChildUpdate) SetNillableChildID(v *int) *ContainerChildUpdate
 	return _u
 }
 
+// SetChildOrder sets the "child_order" field.
+func (_u *ContainerChildUpdate) SetChildOrder(v int) *ContainerChildUpdate {
+	_u.mutation.ResetChildOrder()
+	_u.mutation.SetChildOrder(v)
+	return _u
+}
+
+// SetNillableChildOrder sets the "child_order" field if the given value is not nil.
+func (_u *ContainerChildUpdate) SetNillableChildOrder(v *int) *ContainerChildUpdate {
+	if v != nil {
+		_u.SetChildOrder(*v)
+	}
+	return _u
+}
+
+// AddChildOrder adds value to the "child_order" field.
+func (_u *ContainerChildUpdate) AddChildOrder(v int) *ContainerChildUpdate {
+	_u.mutation.AddChildOrder(v)
+	return _u
+}
+
+// SetParentOrder sets the "parent_order" field.
+func (_u *ContainerChildUpdate) SetParentOrder(v int) *ContainerChildUpdate {
+	_u.mutation.ResetParentOrder()
+	_u.mutation.SetParentOrder(v)
+	return _u
+}
+
+// SetNillableParentOrder sets the "parent_order" field if the given value is not nil.
+func (_u *ContainerChildUpdate) SetNillableParentOrder(v *int) *ContainerChildUpdate {
+	if v != nil {
+		_u.SetParentOrder(*v)
+	}
+	return _u
+}
+
+// AddParentOrder adds value to the "parent_order" field.
+func (_u *ContainerChildUpdate) AddParentOrder(v int) *ContainerChildUpdate {
+	_u.mutation.AddParentOrder(v)
+	return _u
+}
+
 // SetParent sets the "parent" edge to the Task entity.
 func (_u *ContainerChildUpdate) SetParent(v *Task) *ContainerChildUpdate {
 	return _u.SetParentID(v.ID)
@@ -160,6 +202,16 @@ func (_u *ContainerChildUpdate) check() error {
 			return &ValidationError{Name: "child_id", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.child_id": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ChildOrder(); ok {
+		if err := containerchild.ChildOrderValidator(v); err != nil {
+			return &ValidationError{Name: "child_order", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.child_order": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ParentOrder(); ok {
+		if err := containerchild.ParentOrderValidator(v); err != nil {
+			return &ValidationError{Name: "parent_order", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.parent_order": %w`, err)}
+		}
+	}
 	if _u.mutation.ParentCleared() && len(_u.mutation.ParentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ContainerChild.parent"`)
 	}
@@ -186,6 +238,18 @@ func (_u *ContainerChildUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.ChildType(); ok {
 		_spec.SetField(containerchild.FieldChildType, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ChildOrder(); ok {
+		_spec.SetField(containerchild.FieldChildOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChildOrder(); ok {
+		_spec.AddField(containerchild.FieldChildOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ParentOrder(); ok {
+		_spec.SetField(containerchild.FieldParentOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedParentOrder(); ok {
+		_spec.AddField(containerchild.FieldParentOrder, field.TypeInt, value)
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -321,6 +385,48 @@ func (_u *ContainerChildUpdateOne) SetNillableChildID(v *int) *ContainerChildUpd
 	return _u
 }
 
+// SetChildOrder sets the "child_order" field.
+func (_u *ContainerChildUpdateOne) SetChildOrder(v int) *ContainerChildUpdateOne {
+	_u.mutation.ResetChildOrder()
+	_u.mutation.SetChildOrder(v)
+	return _u
+}
+
+// SetNillableChildOrder sets the "child_order" field if the given value is not nil.
+func (_u *ContainerChildUpdateOne) SetNillableChildOrder(v *int) *ContainerChildUpdateOne {
+	if v != nil {
+		_u.SetChildOrder(*v)
+	}
+	return _u
+}
+
+// AddChildOrder adds value to the "child_order" field.
+func (_u *ContainerChildUpdateOne) AddChildOrder(v int) *ContainerChildUpdateOne {
+	_u.mutation.AddChildOrder(v)
+	return _u
+}
+
+// SetParentOrder sets the "parent_order" field.
+func (_u *ContainerChildUpdateOne) SetParentOrder(v int) *ContainerChildUpdateOne {
+	_u.mutation.ResetParentOrder()
+	_u.mutation.SetParentOrder(v)
+	return _u
+}
+
+// SetNillableParentOrder sets the "parent_order" field if the given value is not nil.
+func (_u *ContainerChildUpdateOne) SetNillableParentOrder(v *int) *ContainerChildUpdateOne {
+	if v != nil {
+		_u.SetParentOrder(*v)
+	}
+	return _u
+}
+
+// AddParentOrder adds value to the "parent_order" field.
+func (_u *ContainerChildUpdateOne) AddParentOrder(v int) *ContainerChildUpdateOne {
+	_u.mutation.AddParentOrder(v)
+	return _u
+}
+
 // SetParent sets the "parent" edge to the Task entity.
 func (_u *ContainerChildUpdateOne) SetParent(v *Task) *ContainerChildUpdateOne {
 	return _u.SetParentID(v.ID)
@@ -410,6 +516,16 @@ func (_u *ContainerChildUpdateOne) check() error {
 			return &ValidationError{Name: "child_id", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.child_id": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ChildOrder(); ok {
+		if err := containerchild.ChildOrderValidator(v); err != nil {
+			return &ValidationError{Name: "child_order", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.child_order": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ParentOrder(); ok {
+		if err := containerchild.ParentOrderValidator(v); err != nil {
+			return &ValidationError{Name: "parent_order", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.parent_order": %w`, err)}
+		}
+	}
 	if _u.mutation.ParentCleared() && len(_u.mutation.ParentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ContainerChild.parent"`)
 	}
@@ -453,6 +569,18 @@ func (_u *ContainerChildUpdateOne) sqlSave(ctx context.Context) (_node *Containe
 	}
 	if value, ok := _u.mutation.ChildType(); ok {
 		_spec.SetField(containerchild.FieldChildType, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ChildOrder(); ok {
+		_spec.SetField(containerchild.FieldChildOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChildOrder(); ok {
+		_spec.AddField(containerchild.FieldChildOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ParentOrder(); ok {
+		_spec.SetField(containerchild.FieldParentOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedParentOrder(); ok {
+		_spec.AddField(containerchild.FieldParentOrder, field.TypeInt, value)
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
