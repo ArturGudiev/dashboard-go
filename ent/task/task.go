@@ -36,26 +36,26 @@ const (
 	FieldKnowledgeNodes = "knowledge_nodes"
 	// FieldDoneDateTime holds the string denoting the done_date_time field in the database.
 	FieldDoneDateTime = "done_date_time"
-	// EdgeChildrenRelations holds the string denoting the children_relations edge name in mutations.
-	EdgeChildrenRelations = "children_relations"
-	// EdgeParentsRelations holds the string denoting the parents_relations edge name in mutations.
-	EdgeParentsRelations = "parents_relations"
+	// EdgeChildren holds the string denoting the children edge name in mutations.
+	EdgeChildren = "children"
+	// EdgeParents holds the string denoting the parents edge name in mutations.
+	EdgeParents = "parents"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
-	// ChildrenRelationsTable is the table that holds the children_relations relation/edge.
-	ChildrenRelationsTable = "container_children"
-	// ChildrenRelationsInverseTable is the table name for the ContainerChild entity.
+	// ChildrenTable is the table that holds the children relation/edge.
+	ChildrenTable = "container_children"
+	// ChildrenInverseTable is the table name for the ContainerChild entity.
 	// It exists in this package in order to avoid circular dependency with the "containerchild" package.
-	ChildrenRelationsInverseTable = "container_children"
-	// ChildrenRelationsColumn is the table column denoting the children_relations relation/edge.
-	ChildrenRelationsColumn = "parent_id"
-	// ParentsRelationsTable is the table that holds the parents_relations relation/edge.
-	ParentsRelationsTable = "container_children"
-	// ParentsRelationsInverseTable is the table name for the ContainerChild entity.
+	ChildrenInverseTable = "container_children"
+	// ChildrenColumn is the table column denoting the children relation/edge.
+	ChildrenColumn = "parent_id"
+	// ParentsTable is the table that holds the parents relation/edge.
+	ParentsTable = "container_children"
+	// ParentsInverseTable is the table name for the ContainerChild entity.
 	// It exists in this package in order to avoid circular dependency with the "containerchild" package.
-	ParentsRelationsInverseTable = "container_children"
-	// ParentsRelationsColumn is the table column denoting the parents_relations relation/edge.
-	ParentsRelationsColumn = "child_id"
+	ParentsInverseTable = "container_children"
+	// ParentsColumn is the table column denoting the parents relation/edge.
+	ParentsColumn = "child_id"
 )
 
 // Columns holds all SQL columns for task fields.
@@ -140,44 +140,44 @@ func ByDoneDateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDoneDateTime, opts...).ToFunc()
 }
 
-// ByChildrenRelationsCount orders the results by children_relations count.
-func ByChildrenRelationsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByChildrenCount orders the results by children count.
+func ByChildrenCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newChildrenRelationsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newChildrenStep(), opts...)
 	}
 }
 
-// ByChildrenRelations orders the results by children_relations terms.
-func ByChildrenRelations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByChildren orders the results by children terms.
+func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newChildrenRelationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newChildrenStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
-// ByParentsRelationsCount orders the results by parents_relations count.
-func ByParentsRelationsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByParentsCount orders the results by parents count.
+func ByParentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newParentsRelationsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newParentsStep(), opts...)
 	}
 }
 
-// ByParentsRelations orders the results by parents_relations terms.
-func ByParentsRelations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByParents orders the results by parents terms.
+func ByParents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newParentsRelationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newParentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newChildrenRelationsStep() *sqlgraph.Step {
+func newChildrenStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ChildrenRelationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ChildrenRelationsTable, ChildrenRelationsColumn),
+		sqlgraph.To(ChildrenInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ChildrenTable, ChildrenColumn),
 	)
 }
-func newParentsRelationsStep() *sqlgraph.Step {
+func newParentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ParentsRelationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ParentsRelationsTable, ParentsRelationsColumn),
+		sqlgraph.To(ParentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ParentsTable, ParentsColumn),
 	)
 }

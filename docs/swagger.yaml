@@ -1,0 +1,673 @@
+basePath: /
+definitions:
+  containerchild.ChildType:
+    enum:
+    - epic
+    - story
+    - task
+    - question
+    - problem
+    - knowledge-node
+    - knowledge-bit
+    - definition
+    - action
+    - scheduled-task
+    - state
+    type: string
+    x-enum-varnames:
+    - ChildTypeEpic
+    - ChildTypeStory
+    - ChildTypeTask
+    - ChildTypeQuestion
+    - ChildTypeProblem
+    - ChildTypeKnowledgeNode
+    - ChildTypeKnowledgeBit
+    - ChildTypeDefinition
+    - ChildTypeAction
+    - ChildTypeScheduledTask
+    - ChildTypeState
+  containerchild.ParentType:
+    enum:
+    - epic
+    - story
+    - task
+    - question
+    - problem
+    - knowledge-node
+    - knowledge-bit
+    - definition
+    - action
+    - scheduled-task
+    - state
+    type: string
+    x-enum-varnames:
+    - ParentTypeEpic
+    - ParentTypeStory
+    - ParentTypeTask
+    - ParentTypeQuestion
+    - ParentTypeProblem
+    - ParentTypeKnowledgeNode
+    - ParentTypeKnowledgeBit
+    - ParentTypeDefinition
+    - ParentTypeAction
+    - ParentTypeScheduledTask
+    - ParentTypeState
+  ent.ContainerChild:
+    properties:
+      child_id:
+        description: ChildID holds the value of the "child_id" field.
+        type: integer
+      child_order:
+        description: ChildOrder holds the value of the "child_order" field.
+        type: integer
+      child_type:
+        allOf:
+        - $ref: '#/definitions/containerchild.ChildType'
+        description: ChildType holds the value of the "child_type" field.
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.ContainerChildEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the ContainerChildQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      parent_id:
+        description: ParentID holds the value of the "parent_id" field.
+        type: integer
+      parent_order:
+        description: ParentOrder holds the value of the "parent_order" field.
+        type: integer
+      parent_type:
+        allOf:
+        - $ref: '#/definitions/containerchild.ParentType'
+        description: ParentType holds the value of the "parent_type" field.
+    type: object
+  ent.ContainerChildEdges:
+    properties:
+      child:
+        allOf:
+        - $ref: '#/definitions/ent.Task'
+        description: Child holds the value of the child edge.
+      parent:
+        allOf:
+        - $ref: '#/definitions/ent.Task'
+        description: Parent holds the value of the parent edge.
+    type: object
+  ent.Task:
+    properties:
+      actions:
+        description: Actions holds the value of the "actions" field.
+        items:
+          type: integer
+        type: array
+      definitions:
+        description: Definitions holds the value of the "definitions" field.
+        items:
+          type: integer
+        type: array
+      description:
+        description: Description holds the value of the "description" field.
+        type: string
+      done:
+        description: Done holds the value of the "done" field.
+        type: boolean
+      done_date_time:
+        description: DoneDateTime holds the value of the "done_date_time" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.TaskEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the TaskQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      knowledge_bits:
+        description: KnowledgeBits holds the value of the "knowledge_bits" field.
+        items:
+          type: integer
+        type: array
+      knowledge_nodes:
+        description: KnowledgeNodes holds the value of the "knowledge_nodes" field.
+        items:
+          type: integer
+        type: array
+      notes:
+        description: Notes holds the value of the "notes" field.
+        type: string
+      parent_containers:
+        description: ParentContainers holds the value of the "parent_containers" field.
+        items:
+          items: {}
+          type: array
+        type: array
+      problems:
+        description: Problems holds the value of the "problems" field.
+        items:
+          type: integer
+        type: array
+      questions:
+        description: Questions holds the value of the "questions" field.
+        items:
+          type: integer
+        type: array
+      tags:
+        description: Tags holds the value of the "tags" field.
+        items:
+          type: string
+        type: array
+    type: object
+  ent.TaskEdges:
+    properties:
+      children:
+        description: Children holds the value of the children edge.
+        items:
+          $ref: '#/definitions/ent.ContainerChild'
+        type: array
+      parents:
+        description: Parents holds the value of the parents edge.
+        items:
+          $ref: '#/definitions/ent.ContainerChild'
+        type: array
+    type: object
+  handlers.IDsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - ids
+    type: object
+  handlers.NewTaskRequest:
+    properties:
+      parent:
+        $ref: '#/definitions/handlers.ParentRequest'
+      task:
+        $ref: '#/definitions/handlers.TaskRequest'
+    type: object
+  handlers.ParentObj:
+    properties:
+      _id:
+        type: integer
+    type: object
+  handlers.ParentRequest:
+    properties:
+      obj:
+        $ref: '#/definitions/handlers.ParentObj'
+      type:
+        type: string
+    type: object
+  handlers.TaskIDRequest:
+    properties:
+      _id:
+        type: integer
+    type: object
+  handlers.TaskRequest:
+    properties:
+      actions:
+        items:
+          type: integer
+        type: array
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      done:
+        type: boolean
+      doneDateTime:
+        type: string
+      knowledgeBits:
+        items:
+          type: integer
+        type: array
+      knowledgeNodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parents:
+        items:
+          items: {}
+          type: array
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  handlers.TestResponse:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  handlers.UpdateTaskRequest:
+    properties:
+      _id:
+        type: integer
+      actions:
+        items:
+          type: integer
+        type: array
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      done:
+        type: boolean
+      doneDateTime:
+        type: string
+      knowledgeBits:
+        items:
+          type: integer
+        type: array
+      knowledgeNodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parents:
+        items:
+          items: {}
+          type: array
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Task management dashboard API server
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Dashboard API
+  version: "1.0"
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: Returns a welcome message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Root endpoint
+      tags:
+      - general
+  /add-anonymous-task:
+    put:
+      consumes:
+      - application/json
+      description: Creates a simple anonymous task with default values
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Task'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create anonymous task
+      tags:
+      - tasks
+  /done-tasks:
+    get:
+      consumes:
+      - application/json
+      description: Returns the count of done tasks (placeholder endpoint)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Get done tasks count
+      tags:
+      - tasks
+  /finish-task/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Marks a task and all its descendants as done
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Finish task recursively
+      tags:
+      - tasks
+  /finish-tasks-by-ids/:
+    put:
+      consumes:
+      - application/json
+      description: Marks tasks by their IDs and all their descendants as done
+      parameters:
+      - description: List of task IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Finish tasks by IDs recursively
+      tags:
+      - tasks
+  /finish-tasks/:
+    put:
+      consumes:
+      - application/json
+      description: Marks multiple tasks and all their descendants as done
+      parameters:
+      - description: List of task IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/handlers.TaskIDRequest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Finish multiple tasks recursively
+      tags:
+      - tasks
+  /get-tasks:
+    post:
+      consumes:
+      - application/json
+      description: Returns multiple tasks by their IDs
+      parameters:
+      - description: List of task IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.IDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.Task'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get tasks by IDs
+      tags:
+      - tasks
+  /new-task:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new task with optional parent relationship
+      parameters:
+      - description: Task creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.NewTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new task
+      tags:
+      - tasks
+  /task/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a task by its ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get task by ID
+      tags:
+      - tasks
+  /tests:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all tests
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.TestResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all tests
+      tags:
+      - tests
+  /update-task:
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing task by ID
+      parameters:
+      - description: Task update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update task
+      tags:
+      - tasks
+schemes:
+- http
+- https
+swagger: "2.0"

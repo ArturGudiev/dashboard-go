@@ -491,15 +491,15 @@ func (c *TaskClient) GetX(ctx context.Context, id int) *Task {
 	return obj
 }
 
-// QueryChildrenRelations queries the children_relations edge of a Task.
-func (c *TaskClient) QueryChildrenRelations(_m *Task) *ContainerChildQuery {
+// QueryChildren queries the children edge of a Task.
+func (c *TaskClient) QueryChildren(_m *Task) *ContainerChildQuery {
 	query := (&ContainerChildClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, id),
 			sqlgraph.To(containerchild.Table, containerchild.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, task.ChildrenRelationsTable, task.ChildrenRelationsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, task.ChildrenTable, task.ChildrenColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -507,15 +507,15 @@ func (c *TaskClient) QueryChildrenRelations(_m *Task) *ContainerChildQuery {
 	return query
 }
 
-// QueryParentsRelations queries the parents_relations edge of a Task.
-func (c *TaskClient) QueryParentsRelations(_m *Task) *ContainerChildQuery {
+// QueryParents queries the parents edge of a Task.
+func (c *TaskClient) QueryParents(_m *Task) *ContainerChildQuery {
 	query := (&ContainerChildClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, id),
 			sqlgraph.To(containerchild.Table, containerchild.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, task.ParentsRelationsTable, task.ParentsRelationsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, task.ParentsTable, task.ParentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

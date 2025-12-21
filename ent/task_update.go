@@ -242,34 +242,34 @@ func (_u *TaskUpdate) ClearDoneDateTime() *TaskUpdate {
 	return _u
 }
 
-// AddChildrenRelationIDs adds the "children_relations" edge to the ContainerChild entity by IDs.
-func (_u *TaskUpdate) AddChildrenRelationIDs(ids ...int) *TaskUpdate {
-	_u.mutation.AddChildrenRelationIDs(ids...)
+// AddChildIDs adds the "children" edge to the ContainerChild entity by IDs.
+func (_u *TaskUpdate) AddChildIDs(ids ...int) *TaskUpdate {
+	_u.mutation.AddChildIDs(ids...)
 	return _u
 }
 
-// AddChildrenRelations adds the "children_relations" edges to the ContainerChild entity.
-func (_u *TaskUpdate) AddChildrenRelations(v ...*ContainerChild) *TaskUpdate {
+// AddChildren adds the "children" edges to the ContainerChild entity.
+func (_u *TaskUpdate) AddChildren(v ...*ContainerChild) *TaskUpdate {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddChildrenRelationIDs(ids...)
+	return _u.AddChildIDs(ids...)
 }
 
-// AddParentsRelationIDs adds the "parents_relations" edge to the ContainerChild entity by IDs.
-func (_u *TaskUpdate) AddParentsRelationIDs(ids ...int) *TaskUpdate {
-	_u.mutation.AddParentsRelationIDs(ids...)
+// AddParentIDs adds the "parents" edge to the ContainerChild entity by IDs.
+func (_u *TaskUpdate) AddParentIDs(ids ...int) *TaskUpdate {
+	_u.mutation.AddParentIDs(ids...)
 	return _u
 }
 
-// AddParentsRelations adds the "parents_relations" edges to the ContainerChild entity.
-func (_u *TaskUpdate) AddParentsRelations(v ...*ContainerChild) *TaskUpdate {
+// AddParents adds the "parents" edges to the ContainerChild entity.
+func (_u *TaskUpdate) AddParents(v ...*ContainerChild) *TaskUpdate {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddParentsRelationIDs(ids...)
+	return _u.AddParentIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -277,46 +277,46 @@ func (_u *TaskUpdate) Mutation() *TaskMutation {
 	return _u.mutation
 }
 
-// ClearChildrenRelations clears all "children_relations" edges to the ContainerChild entity.
-func (_u *TaskUpdate) ClearChildrenRelations() *TaskUpdate {
-	_u.mutation.ClearChildrenRelations()
+// ClearChildren clears all "children" edges to the ContainerChild entity.
+func (_u *TaskUpdate) ClearChildren() *TaskUpdate {
+	_u.mutation.ClearChildren()
 	return _u
 }
 
-// RemoveChildrenRelationIDs removes the "children_relations" edge to ContainerChild entities by IDs.
-func (_u *TaskUpdate) RemoveChildrenRelationIDs(ids ...int) *TaskUpdate {
-	_u.mutation.RemoveChildrenRelationIDs(ids...)
+// RemoveChildIDs removes the "children" edge to ContainerChild entities by IDs.
+func (_u *TaskUpdate) RemoveChildIDs(ids ...int) *TaskUpdate {
+	_u.mutation.RemoveChildIDs(ids...)
 	return _u
 }
 
-// RemoveChildrenRelations removes "children_relations" edges to ContainerChild entities.
-func (_u *TaskUpdate) RemoveChildrenRelations(v ...*ContainerChild) *TaskUpdate {
+// RemoveChildren removes "children" edges to ContainerChild entities.
+func (_u *TaskUpdate) RemoveChildren(v ...*ContainerChild) *TaskUpdate {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveChildrenRelationIDs(ids...)
+	return _u.RemoveChildIDs(ids...)
 }
 
-// ClearParentsRelations clears all "parents_relations" edges to the ContainerChild entity.
-func (_u *TaskUpdate) ClearParentsRelations() *TaskUpdate {
-	_u.mutation.ClearParentsRelations()
+// ClearParents clears all "parents" edges to the ContainerChild entity.
+func (_u *TaskUpdate) ClearParents() *TaskUpdate {
+	_u.mutation.ClearParents()
 	return _u
 }
 
-// RemoveParentsRelationIDs removes the "parents_relations" edge to ContainerChild entities by IDs.
-func (_u *TaskUpdate) RemoveParentsRelationIDs(ids ...int) *TaskUpdate {
-	_u.mutation.RemoveParentsRelationIDs(ids...)
+// RemoveParentIDs removes the "parents" edge to ContainerChild entities by IDs.
+func (_u *TaskUpdate) RemoveParentIDs(ids ...int) *TaskUpdate {
+	_u.mutation.RemoveParentIDs(ids...)
 	return _u
 }
 
-// RemoveParentsRelations removes "parents_relations" edges to ContainerChild entities.
-func (_u *TaskUpdate) RemoveParentsRelations(v ...*ContainerChild) *TaskUpdate {
+// RemoveParents removes "parents" edges to ContainerChild entities.
+func (_u *TaskUpdate) RemoveParents(v ...*ContainerChild) *TaskUpdate {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveParentsRelationIDs(ids...)
+	return _u.RemoveParentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -474,12 +474,12 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.DoneDateTimeCleared() {
 		_spec.ClearField(task.FieldDoneDateTime, field.TypeTime)
 	}
-	if _u.mutation.ChildrenRelationsCleared() {
+	if _u.mutation.ChildrenCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ChildrenRelationsTable,
-			Columns: []string{task.ChildrenRelationsColumn},
+			Table:   task.ChildrenTable,
+			Columns: []string{task.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -487,12 +487,12 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedChildrenRelationsIDs(); len(nodes) > 0 && !_u.mutation.ChildrenRelationsCleared() {
+	if nodes := _u.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !_u.mutation.ChildrenCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ChildrenRelationsTable,
-			Columns: []string{task.ChildrenRelationsColumn},
+			Table:   task.ChildrenTable,
+			Columns: []string{task.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -503,12 +503,12 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ChildrenRelationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ChildrenIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ChildrenRelationsTable,
-			Columns: []string{task.ChildrenRelationsColumn},
+			Table:   task.ChildrenTable,
+			Columns: []string{task.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -519,12 +519,12 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ParentsRelationsCleared() {
+	if _u.mutation.ParentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ParentsRelationsTable,
-			Columns: []string{task.ParentsRelationsColumn},
+			Table:   task.ParentsTable,
+			Columns: []string{task.ParentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -532,12 +532,12 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedParentsRelationsIDs(); len(nodes) > 0 && !_u.mutation.ParentsRelationsCleared() {
+	if nodes := _u.mutation.RemovedParentsIDs(); len(nodes) > 0 && !_u.mutation.ParentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ParentsRelationsTable,
-			Columns: []string{task.ParentsRelationsColumn},
+			Table:   task.ParentsTable,
+			Columns: []string{task.ParentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -548,12 +548,12 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ParentsRelationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ParentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ParentsRelationsTable,
-			Columns: []string{task.ParentsRelationsColumn},
+			Table:   task.ParentsTable,
+			Columns: []string{task.ParentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -796,34 +796,34 @@ func (_u *TaskUpdateOne) ClearDoneDateTime() *TaskUpdateOne {
 	return _u
 }
 
-// AddChildrenRelationIDs adds the "children_relations" edge to the ContainerChild entity by IDs.
-func (_u *TaskUpdateOne) AddChildrenRelationIDs(ids ...int) *TaskUpdateOne {
-	_u.mutation.AddChildrenRelationIDs(ids...)
+// AddChildIDs adds the "children" edge to the ContainerChild entity by IDs.
+func (_u *TaskUpdateOne) AddChildIDs(ids ...int) *TaskUpdateOne {
+	_u.mutation.AddChildIDs(ids...)
 	return _u
 }
 
-// AddChildrenRelations adds the "children_relations" edges to the ContainerChild entity.
-func (_u *TaskUpdateOne) AddChildrenRelations(v ...*ContainerChild) *TaskUpdateOne {
+// AddChildren adds the "children" edges to the ContainerChild entity.
+func (_u *TaskUpdateOne) AddChildren(v ...*ContainerChild) *TaskUpdateOne {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddChildrenRelationIDs(ids...)
+	return _u.AddChildIDs(ids...)
 }
 
-// AddParentsRelationIDs adds the "parents_relations" edge to the ContainerChild entity by IDs.
-func (_u *TaskUpdateOne) AddParentsRelationIDs(ids ...int) *TaskUpdateOne {
-	_u.mutation.AddParentsRelationIDs(ids...)
+// AddParentIDs adds the "parents" edge to the ContainerChild entity by IDs.
+func (_u *TaskUpdateOne) AddParentIDs(ids ...int) *TaskUpdateOne {
+	_u.mutation.AddParentIDs(ids...)
 	return _u
 }
 
-// AddParentsRelations adds the "parents_relations" edges to the ContainerChild entity.
-func (_u *TaskUpdateOne) AddParentsRelations(v ...*ContainerChild) *TaskUpdateOne {
+// AddParents adds the "parents" edges to the ContainerChild entity.
+func (_u *TaskUpdateOne) AddParents(v ...*ContainerChild) *TaskUpdateOne {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddParentsRelationIDs(ids...)
+	return _u.AddParentIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -831,46 +831,46 @@ func (_u *TaskUpdateOne) Mutation() *TaskMutation {
 	return _u.mutation
 }
 
-// ClearChildrenRelations clears all "children_relations" edges to the ContainerChild entity.
-func (_u *TaskUpdateOne) ClearChildrenRelations() *TaskUpdateOne {
-	_u.mutation.ClearChildrenRelations()
+// ClearChildren clears all "children" edges to the ContainerChild entity.
+func (_u *TaskUpdateOne) ClearChildren() *TaskUpdateOne {
+	_u.mutation.ClearChildren()
 	return _u
 }
 
-// RemoveChildrenRelationIDs removes the "children_relations" edge to ContainerChild entities by IDs.
-func (_u *TaskUpdateOne) RemoveChildrenRelationIDs(ids ...int) *TaskUpdateOne {
-	_u.mutation.RemoveChildrenRelationIDs(ids...)
+// RemoveChildIDs removes the "children" edge to ContainerChild entities by IDs.
+func (_u *TaskUpdateOne) RemoveChildIDs(ids ...int) *TaskUpdateOne {
+	_u.mutation.RemoveChildIDs(ids...)
 	return _u
 }
 
-// RemoveChildrenRelations removes "children_relations" edges to ContainerChild entities.
-func (_u *TaskUpdateOne) RemoveChildrenRelations(v ...*ContainerChild) *TaskUpdateOne {
+// RemoveChildren removes "children" edges to ContainerChild entities.
+func (_u *TaskUpdateOne) RemoveChildren(v ...*ContainerChild) *TaskUpdateOne {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveChildrenRelationIDs(ids...)
+	return _u.RemoveChildIDs(ids...)
 }
 
-// ClearParentsRelations clears all "parents_relations" edges to the ContainerChild entity.
-func (_u *TaskUpdateOne) ClearParentsRelations() *TaskUpdateOne {
-	_u.mutation.ClearParentsRelations()
+// ClearParents clears all "parents" edges to the ContainerChild entity.
+func (_u *TaskUpdateOne) ClearParents() *TaskUpdateOne {
+	_u.mutation.ClearParents()
 	return _u
 }
 
-// RemoveParentsRelationIDs removes the "parents_relations" edge to ContainerChild entities by IDs.
-func (_u *TaskUpdateOne) RemoveParentsRelationIDs(ids ...int) *TaskUpdateOne {
-	_u.mutation.RemoveParentsRelationIDs(ids...)
+// RemoveParentIDs removes the "parents" edge to ContainerChild entities by IDs.
+func (_u *TaskUpdateOne) RemoveParentIDs(ids ...int) *TaskUpdateOne {
+	_u.mutation.RemoveParentIDs(ids...)
 	return _u
 }
 
-// RemoveParentsRelations removes "parents_relations" edges to ContainerChild entities.
-func (_u *TaskUpdateOne) RemoveParentsRelations(v ...*ContainerChild) *TaskUpdateOne {
+// RemoveParents removes "parents" edges to ContainerChild entities.
+func (_u *TaskUpdateOne) RemoveParents(v ...*ContainerChild) *TaskUpdateOne {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveParentsRelationIDs(ids...)
+	return _u.RemoveParentIDs(ids...)
 }
 
 // Where appends a list predicates to the TaskUpdate builder.
@@ -1058,12 +1058,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 	if _u.mutation.DoneDateTimeCleared() {
 		_spec.ClearField(task.FieldDoneDateTime, field.TypeTime)
 	}
-	if _u.mutation.ChildrenRelationsCleared() {
+	if _u.mutation.ChildrenCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ChildrenRelationsTable,
-			Columns: []string{task.ChildrenRelationsColumn},
+			Table:   task.ChildrenTable,
+			Columns: []string{task.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -1071,12 +1071,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedChildrenRelationsIDs(); len(nodes) > 0 && !_u.mutation.ChildrenRelationsCleared() {
+	if nodes := _u.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !_u.mutation.ChildrenCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ChildrenRelationsTable,
-			Columns: []string{task.ChildrenRelationsColumn},
+			Table:   task.ChildrenTable,
+			Columns: []string{task.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -1087,12 +1087,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ChildrenRelationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ChildrenIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ChildrenRelationsTable,
-			Columns: []string{task.ChildrenRelationsColumn},
+			Table:   task.ChildrenTable,
+			Columns: []string{task.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -1103,12 +1103,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ParentsRelationsCleared() {
+	if _u.mutation.ParentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ParentsRelationsTable,
-			Columns: []string{task.ParentsRelationsColumn},
+			Table:   task.ParentsTable,
+			Columns: []string{task.ParentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -1116,12 +1116,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedParentsRelationsIDs(); len(nodes) > 0 && !_u.mutation.ParentsRelationsCleared() {
+	if nodes := _u.mutation.RemovedParentsIDs(); len(nodes) > 0 && !_u.mutation.ParentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ParentsRelationsTable,
-			Columns: []string{task.ParentsRelationsColumn},
+			Table:   task.ParentsTable,
+			Columns: []string{task.ParentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -1132,12 +1132,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ParentsRelationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ParentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ParentsRelationsTable,
-			Columns: []string{task.ParentsRelationsColumn},
+			Table:   task.ParentsTable,
+			Columns: []string{task.ParentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),

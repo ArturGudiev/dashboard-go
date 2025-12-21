@@ -50,31 +50,31 @@ type Task struct {
 
 // TaskEdges holds the relations/edges for other nodes in the graph.
 type TaskEdges struct {
-	// ChildrenRelations holds the value of the children_relations edge.
-	ChildrenRelations []*ContainerChild `json:"children_relations,omitempty"`
-	// ParentsRelations holds the value of the parents_relations edge.
-	ParentsRelations []*ContainerChild `json:"parents_relations,omitempty"`
+	// Children holds the value of the children edge.
+	Children []*ContainerChild `json:"children,omitempty"`
+	// Parents holds the value of the parents edge.
+	Parents []*ContainerChild `json:"parents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 }
 
-// ChildrenRelationsOrErr returns the ChildrenRelations value or an error if the edge
+// ChildrenOrErr returns the Children value or an error if the edge
 // was not loaded in eager-loading.
-func (e TaskEdges) ChildrenRelationsOrErr() ([]*ContainerChild, error) {
+func (e TaskEdges) ChildrenOrErr() ([]*ContainerChild, error) {
 	if e.loadedTypes[0] {
-		return e.ChildrenRelations, nil
+		return e.Children, nil
 	}
-	return nil, &NotLoadedError{edge: "children_relations"}
+	return nil, &NotLoadedError{edge: "children"}
 }
 
-// ParentsRelationsOrErr returns the ParentsRelations value or an error if the edge
+// ParentsOrErr returns the Parents value or an error if the edge
 // was not loaded in eager-loading.
-func (e TaskEdges) ParentsRelationsOrErr() ([]*ContainerChild, error) {
+func (e TaskEdges) ParentsOrErr() ([]*ContainerChild, error) {
 	if e.loadedTypes[1] {
-		return e.ParentsRelations, nil
+		return e.Parents, nil
 	}
-	return nil, &NotLoadedError{edge: "parents_relations"}
+	return nil, &NotLoadedError{edge: "parents"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -215,14 +215,14 @@ func (_m *Task) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryChildrenRelations queries the "children_relations" edge of the Task entity.
-func (_m *Task) QueryChildrenRelations() *ContainerChildQuery {
-	return NewTaskClient(_m.config).QueryChildrenRelations(_m)
+// QueryChildren queries the "children" edge of the Task entity.
+func (_m *Task) QueryChildren() *ContainerChildQuery {
+	return NewTaskClient(_m.config).QueryChildren(_m)
 }
 
-// QueryParentsRelations queries the "parents_relations" edge of the Task entity.
-func (_m *Task) QueryParentsRelations() *ContainerChildQuery {
-	return NewTaskClient(_m.config).QueryParentsRelations(_m)
+// QueryParents queries the "parents" edge of the Task entity.
+func (_m *Task) QueryParents() *ContainerChildQuery {
+	return NewTaskClient(_m.config).QueryParents(_m)
 }
 
 // Update returns a builder for updating this Task.

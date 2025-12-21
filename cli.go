@@ -1,6 +1,11 @@
 package main
 
 import (
+	"arturgudiev/dashboard/app"
+	"arturgudiev/dashboard/ent"
+	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/task"
+	"arturgudiev/dashboard/utils"
 	"bufio"
 	"context"
 	"flag"
@@ -10,24 +15,23 @@ import (
 	"strconv"
 	"strings"
 
-	"arturgudiev/dashboard/ent"
-	"arturgudiev/dashboard/ent/containerchild"
-	"arturgudiev/dashboard/ent/task"
+	"github.com/ddddddO/gtree"
+	"github.com/fatih/color"
 )
 
 // runCLI starts the interactive CLI interface
-func runCLI() {
+func runCLI(application *app.App) {
 	// Parse flags - create a new flag set to handle arguments after "cli"
 	// This handles: "program cli --task 123"
 	fs := flag.NewFlagSet("cli", flag.ContinueOnError)
 	taskID := fs.Int("task", 0, "View task by ID interactively")
-	
+
 	// Parse arguments, skipping "cli" if it's the first arg
 	args := os.Args[1:]
 	if len(args) > 0 && (args[0] == "cli" || args[0] == "interactive") {
 		args = args[1:]
 	}
-	
+
 	if err := fs.Parse(args); err != nil {
 		if err == flag.ErrHelp {
 			return
@@ -35,24 +39,11 @@ func runCLI() {
 		log.Fatalf("Error parsing flags: %v", err)
 	}
 
-	// Database connection string
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		dbURL = "postgres://postgres:postgres@localhost/dashboard?sslmode=disable"
-	}
-
-	// Create Ent client
-	client, err := ent.Open("postgres", dbURL)
-	if err != nil {
-		log.Fatalf("failed opening connection to postgres: %v", err)
-	}
-	defer client.Close()
-
 	ctx := context.Background()
 
 	// If --task flag is provided, enter interactive task view
 	if *taskID > 0 {
-		viewTaskInteractive(ctx, client, *taskID)
+		viewTaskInteractive(ctx, application, *taskID)
 		return
 	}
 
@@ -84,17 +75,17 @@ func runCLI() {
 		case "help", "h":
 			printHelp()
 		case "list", "ls":
-			listTasks(ctx, client, args)
+			listTasks(ctx, application, args)
 		case "get":
-			getTask(ctx, client, args)
+			getTask(ctx, application, args)
 		case "create", "new":
-			createTask(ctx, client, args)
+			createTask(ctx, application, args)
 		case "update":
-			updateTask(ctx, client, args)
+			updateTask(ctx, application, args)
 		case "finish":
-			finishTask(ctx, client, args)
+			finishTask(ctx, application, args)
 		case "delete", "rm":
-			deleteTask(ctx, client, args)
+			deleteTask(ctx, application, args)
 		case "quit", "exit", "q":
 			fmt.Println("Goodbye!")
 			return
@@ -119,7 +110,7 @@ func printHelp() {
 	fmt.Println()
 }
 
-func listTasks(ctx context.Context, client *ent.Client, args []string) {
+func listTasks(ctx context.Context, application *app.App, args []string) {
 	var tasks []*ent.Task
 	var err error
 
@@ -127,15 +118,15 @@ func listTasks(ctx context.Context, client *ent.Client, args []string) {
 		filter := args[0]
 		switch filter {
 		case "done":
-			tasks, err = client.Task.Query().Where(task.DoneEQ(true)).All(ctx)
+			tasks, err = application.Client.Task.Query().Where(task.DoneEQ(true)).All(ctx)
 		case "open":
-			tasks, err = client.Task.Query().Where(task.DoneEQ(false)).All(ctx)
+			tasks, err = application.Client.Task.Query().Where(task.DoneEQ(false)).All(ctx)
 		default:
 			fmt.Printf("Unknown filter: %s. Use 'done' or 'open'.\n", filter)
 			return
 		}
 	} else {
-		tasks, err = client.Task.Query().All(ctx)
+		tasks, err = application.Client.Task.Query().All(ctx)
 	}
 
 	if err != nil {
@@ -168,8 +159,8 @@ func listTasks(ctx context.Context, client *ent.Client, args []string) {
 }
 
 // printTask prints task details (used by both flag and interactive command)
-func printTask(ctx context.Context, client *ent.Client, id int) {
-	t, err := client.Task.Get(ctx, id)
+func printTask(ctx context.Context, application *app.App, id int) {
+	t, err := application.Client.Task.Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			fmt.Printf("Task %d not found.\n", id)
@@ -180,7 +171,7 @@ func printTask(ctx context.Context, client *ent.Client, id int) {
 	}
 
 	fmt.Println(strings.Repeat("=", 80))
-	fmt.Printf("Task ID: %d\n", t.ID)
+	fmt.Println("Task-%d %s\n", t.ID, t.Description)
 	fmt.Printf("Description: %s\n", t.Description)
 	fmt.Printf("Status: %s\n", map[bool]string{true: "Done", false: "Open"}[t.Done])
 	if t.Notes != "" {
@@ -202,11 +193,39 @@ func clearScreen() {
 }
 
 // printTaskInfo prints task information in a formatted way
-func printTaskInfo(ctx context.Context, client *ent.Client, t *ent.Task) {
+func printTaskInfo(ctx context.Context, application *app.App, t *ent.Task) {
+
+	// Build and print parents path as a tree
+	parentsPath := application.TaskService.GetParentsPath(ctx, t)
+	if len(parentsPath) > 0 {
+		// Reverse the path to go from root to immediate parent
+		for i, j := 0, len(parentsPath)-1; i < j; i, j = i+1, j-1 {
+			parentsPath[i], parentsPath[j] = parentsPath[j], parentsPath[i]
+		}
+
+		// Build tree structure
+		root := gtree.NewRoot(parentsPath[0].Description)
+		currentNode := root
+
+		// Add intermediate parents
+		for i := 1; i < len(parentsPath); i++ {
+			currentNode = currentNode.Add(parentsPath[i].Description)
+		}
+
+		// Add current task as the final child
+		currentNode.Add(t.Description)
+
+		// Print the tree
+		if err := gtree.OutputFromRoot(os.Stdout, root); err != nil {
+			fmt.Printf("Error printing tree: %v\n", err)
+		}
+		fmt.Println()
+	}
+
 	fmt.Println(strings.Repeat("=", 80))
-	fmt.Printf("Task ID: %d\n", t.ID)
-	fmt.Printf("Description: %s\n", t.Description)
-	fmt.Printf("Status: %s\n", map[bool]string{true: "Done", false: "Open"}[t.Done])
+	color.Cyan("\tTask ID: %d\n", t.ID)
+	fmt.Printf("\tDescription: %s\n", t.Description)
+	fmt.Printf("\tStatus: %s\n", map[bool]string{true: "Done", false: "Open"}[t.Done])
 	if t.Notes != "" {
 		fmt.Printf("Notes: %s\n", t.Notes)
 	}
@@ -219,7 +238,7 @@ func printTaskInfo(ctx context.Context, client *ent.Client, t *ent.Task) {
 	fmt.Println(strings.Repeat("=", 80))
 
 	// Get and display child tasks
-	childRelations, err := client.ContainerChild.Query().
+	childRelations, err := application.Client.ContainerChild.Query().
 		Where(
 			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
 			containerchild.ParentID(t.ID),
@@ -247,18 +266,19 @@ func printTaskInfo(ctx context.Context, client *ent.Client, t *ent.Task) {
 }
 
 // viewTaskInteractive shows task details and allows interactive commands
-func viewTaskInteractive(ctx context.Context, client *ent.Client, id int) {
+func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 	scanner := bufio.NewScanner(os.Stdin)
+	currentID := id // Track current task ID
 
 	for {
 		// Clear screen before printing
 		clearScreen()
 
 		// Get task
-		t, err := client.Task.Get(ctx, id)
+		t, err := application.Client.Task.Get(ctx, currentID)
 		if err != nil {
 			if ent.IsNotFound(err) {
-				fmt.Printf("Task %d not found.\n", id)
+				fmt.Printf("Task %d not found.\n", currentID)
 			} else {
 				fmt.Printf("Error getting task: %v\n", err)
 			}
@@ -266,7 +286,7 @@ func viewTaskInteractive(ctx context.Context, client *ent.Client, id int) {
 		}
 
 		// Print task information
-		printTaskInfo(ctx, client, t)
+		printTaskInfo(ctx, application, t)
 
 		// Wait for user input
 		fmt.Print("> ")
@@ -275,26 +295,84 @@ func viewTaskInteractive(ctx context.Context, client *ent.Client, id int) {
 		}
 
 		line := strings.TrimSpace(scanner.Text())
-		
+
 		// Check for t+ command (case-sensitive for the +)
 		if strings.HasPrefix(line, "t+ ") {
 			description := strings.TrimSpace(line[3:])
 			if description == "" {
 				fmt.Println("Error: Description required. Usage: t+ <description>")
-				fmt.Println("Press Enter to continue...")
-				scanner.Scan()
+				utils.WaitForUserInput()
 				continue
 			}
-			if err := addSubtask(ctx, client, id, description); err != nil {
+			if err := addSubtask(ctx, application, currentID, description); err != nil {
 				fmt.Printf("Error adding subtask: %v\n", err)
-				fmt.Println("Press Enter to continue...")
-				scanner.Scan()
+				utils.WaitForUserInput()
 				continue
 			}
 			// Continue loop to refresh and show the new subtask
 			continue
 		}
-		
+
+		if utils.IsInteger(line) {
+			index, err := strconv.Atoi(line)
+			if err != nil {
+				continue
+			}
+
+			// Get all child subtasks from current task
+			childTasks, err := application.GetChildSubtasks(currentID)
+			if err != nil {
+				fmt.Printf("Error getting child tasks: %v\n", err)
+				utils.WaitForUserInput()
+				continue
+			}
+
+			// Validate index
+			if index < 1 || index > len(childTasks) {
+				fmt.Printf("Invalid index. Please enter a number between 1 and %d.\n", len(childTasks))
+				utils.WaitForUserInput()
+				continue
+			}
+
+			// Navigate to child task by updating currentID and continuing loop
+			currentID = childTasks[index-1].ID
+			continue // Loop will restart with new currentID
+		}
+
+		if line == "u" {
+			parent := application.TaskService.GetParent(ctx, t)
+			if parent == nil {
+				fmt.Println("This task has no parent.")
+				utils.WaitForUserInput()
+				continue
+			}
+			// Navigate to parent task by updating currentID and continuing loop
+			currentID = parent.ID
+			continue // Loop will restart with new currentID
+		}
+
+		if strings.HasPrefix(line, "ft ") {
+			indexStr := strings.TrimSpace(line[3:])
+			if indexStr == "" {
+				fmt.Println("Error: index required. Usage: ft <id>")
+				utils.WaitForUserInput()
+				continue
+			}
+
+			tasks, _ := application.TaskService.GetChildSubtasks(ctx, id)
+			var taskDescriptions []string
+			mapper := func(el *ent.Task) string { return el.Description }
+			for _, el := range tasks {
+				taskDescriptions = append(taskDescriptions, mapper(el))
+			}
+
+			fmt.Println(strings.Join(taskDescriptions, ", "))
+
+			utils.WaitForUserInput()
+			// Continue loop to refresh and show the new subtask
+			continue
+		}
+
 		lineLower := strings.ToLower(line)
 		switch lineLower {
 		case "q", "quit", "exit":
@@ -307,13 +385,12 @@ func viewTaskInteractive(ctx context.Context, client *ent.Client, id int) {
 			continue
 		default:
 			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, or 't+ <description>' to add subtask.\n", line)
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			utils.WaitForUserInput()
 		}
 	}
 }
 
-func getTask(ctx context.Context, client *ent.Client, args []string) {
+func getTask(ctx context.Context, application *app.App, args []string) {
 	if len(args) == 0 {
 		fmt.Println("Usage: get <id>")
 		return
@@ -325,18 +402,18 @@ func getTask(ctx context.Context, client *ent.Client, args []string) {
 		return
 	}
 
-	printTask(ctx, client, id)
+	printTask(ctx, application, id)
 	fmt.Println()
 }
 
-func createTask(ctx context.Context, client *ent.Client, args []string) {
+func createTask(ctx context.Context, application *app.App, args []string) {
 	if len(args) == 0 {
 		fmt.Println("Usage: create <description>")
 		return
 	}
 
 	description := strings.Join(args, " ")
-	newTask, err := client.Task.Create().
+	newTask, err := application.Client.Task.Create().
 		SetDescription(description).
 		SetDone(false).
 		SetTags([]string{}).
@@ -351,7 +428,7 @@ func createTask(ctx context.Context, client *ent.Client, args []string) {
 	fmt.Printf("Task created successfully! ID: %d\n", newTask.ID)
 }
 
-func updateTask(ctx context.Context, client *ent.Client, args []string) {
+func updateTask(ctx context.Context, application *app.App, args []string) {
 	if len(args) == 0 {
 		fmt.Println("Usage: update <id>")
 		return
@@ -364,7 +441,7 @@ func updateTask(ctx context.Context, client *ent.Client, args []string) {
 	}
 
 	// Get existing task
-	t, err := client.Task.Get(ctx, id)
+	t, err := application.Client.Task.Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			fmt.Printf("Task %d not found.\n", id)
@@ -375,7 +452,7 @@ func updateTask(ctx context.Context, client *ent.Client, args []string) {
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
-	updater := client.Task.UpdateOneID(id)
+	updater := application.Client.Task.UpdateOneID(id)
 
 	fmt.Printf("Current description: %s\n", t.Description)
 	fmt.Print("New description (press Enter to keep current): ")
@@ -415,7 +492,7 @@ func updateTask(ctx context.Context, client *ent.Client, args []string) {
 	fmt.Printf("Task %d updated successfully!\n", updatedTask.ID)
 }
 
-func finishTask(ctx context.Context, client *ent.Client, args []string) {
+func finishTask(ctx context.Context, application *app.App, args []string) {
 	if len(args) == 0 {
 		fmt.Println("Usage: finish <id>")
 		return
@@ -427,7 +504,7 @@ func finishTask(ctx context.Context, client *ent.Client, args []string) {
 		return
 	}
 
-	t, err := client.Task.Get(ctx, id)
+	t, err := application.Client.Task.Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			fmt.Printf("Task %d not found.\n", id)
@@ -437,7 +514,7 @@ func finishTask(ctx context.Context, client *ent.Client, args []string) {
 		return
 	}
 
-	if err := finishTaskRecursively(ctx, client, t); err != nil {
+	if err := application.FinishTaskRecursively(t); err != nil {
 		fmt.Printf("Error finishing task: %v\n", err)
 		return
 	}
@@ -445,7 +522,7 @@ func finishTask(ctx context.Context, client *ent.Client, args []string) {
 	fmt.Printf("Task %d and all its descendants have been marked as done.\n", id)
 }
 
-func deleteTask(ctx context.Context, client *ent.Client, args []string) {
+func deleteTask(ctx context.Context, application *app.App, args []string) {
 	if len(args) == 0 {
 		fmt.Println("Usage: delete <id> or rm <id>")
 		return
@@ -458,7 +535,7 @@ func deleteTask(ctx context.Context, client *ent.Client, args []string) {
 	}
 
 	// Check if task exists
-	_, err = client.Task.Get(ctx, id)
+	_, err = application.Client.Task.Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			fmt.Printf("Task %d not found.\n", id)
@@ -481,7 +558,7 @@ func deleteTask(ctx context.Context, client *ent.Client, args []string) {
 		return
 	}
 
-	err = client.Task.DeleteOneID(id).Exec(ctx)
+	err = application.Client.Task.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		fmt.Printf("Error deleting task: %v\n", err)
 		return
@@ -491,56 +568,11 @@ func deleteTask(ctx context.Context, client *ent.Client, args []string) {
 }
 
 // addSubtask creates a new subtask for the given parent task
-func addSubtask(ctx context.Context, client *ent.Client, parentID int, description string) error {
-	// Create the new task
-	newTask, err := client.Task.Create().
-		SetDescription(description).
-		SetDone(false).
-		SetTags([]string{}).
-		SetNotes("").
-		Save(ctx)
+func addSubtask(ctx context.Context, application *app.App, parentID int, description string) error {
+	newTask, err := application.AddSubtask(parentID, description)
 	if err != nil {
-		return fmt.Errorf("failed to create task: %v", err)
+		return err
 	}
-
-	// Get the count of existing children to set child_order
-	childCount, err := client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
-			containerchild.ParentID(parentID),
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
-		).
-		Count(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to count children: %v", err)
-	}
-
-	// Get the count of existing parents to set parent_order
-	parentCount, err := client.ContainerChild.Query().
-		Where(
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
-			containerchild.ChildID(newTask.ID),
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
-		).
-		Count(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to count parents: %v", err)
-	}
-
-	// Create the parent-child relationship
-	_, err = client.ContainerChild.Create().
-		SetParentType(containerchild.ParentTypeTask).
-		SetParentID(parentID).
-		SetChildType(containerchild.ChildTypeTask).
-		SetChildID(newTask.ID).
-		SetChildOrder(childCount).
-		SetParentOrder(parentCount).
-		Save(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to create relationship: %v", err)
-	}
-
 	fmt.Printf("Subtask created successfully! ID: %d\n", newTask.ID)
 	return nil
 }
-

@@ -123,34 +123,34 @@ func (_c *TaskCreate) SetID(v int) *TaskCreate {
 	return _c
 }
 
-// AddChildrenRelationIDs adds the "children_relations" edge to the ContainerChild entity by IDs.
-func (_c *TaskCreate) AddChildrenRelationIDs(ids ...int) *TaskCreate {
-	_c.mutation.AddChildrenRelationIDs(ids...)
+// AddChildIDs adds the "children" edge to the ContainerChild entity by IDs.
+func (_c *TaskCreate) AddChildIDs(ids ...int) *TaskCreate {
+	_c.mutation.AddChildIDs(ids...)
 	return _c
 }
 
-// AddChildrenRelations adds the "children_relations" edges to the ContainerChild entity.
-func (_c *TaskCreate) AddChildrenRelations(v ...*ContainerChild) *TaskCreate {
+// AddChildren adds the "children" edges to the ContainerChild entity.
+func (_c *TaskCreate) AddChildren(v ...*ContainerChild) *TaskCreate {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddChildrenRelationIDs(ids...)
+	return _c.AddChildIDs(ids...)
 }
 
-// AddParentsRelationIDs adds the "parents_relations" edge to the ContainerChild entity by IDs.
-func (_c *TaskCreate) AddParentsRelationIDs(ids ...int) *TaskCreate {
-	_c.mutation.AddParentsRelationIDs(ids...)
+// AddParentIDs adds the "parents" edge to the ContainerChild entity by IDs.
+func (_c *TaskCreate) AddParentIDs(ids ...int) *TaskCreate {
+	_c.mutation.AddParentIDs(ids...)
 	return _c
 }
 
-// AddParentsRelations adds the "parents_relations" edges to the ContainerChild entity.
-func (_c *TaskCreate) AddParentsRelations(v ...*ContainerChild) *TaskCreate {
+// AddParents adds the "parents" edges to the ContainerChild entity.
+func (_c *TaskCreate) AddParents(v ...*ContainerChild) *TaskCreate {
 	ids := make([]int, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddParentsRelationIDs(ids...)
+	return _c.AddParentIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -328,12 +328,12 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_spec.SetField(task.FieldDoneDateTime, field.TypeTime, value)
 		_node.DoneDateTime = &value
 	}
-	if nodes := _c.mutation.ChildrenRelationsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ChildrenIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ChildrenRelationsTable,
-			Columns: []string{task.ChildrenRelationsColumn},
+			Table:   task.ChildrenTable,
+			Columns: []string{task.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),
@@ -344,12 +344,12 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ParentsRelationsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ParentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   task.ParentsRelationsTable,
-			Columns: []string{task.ParentsRelationsColumn},
+			Table:   task.ParentsTable,
+			Columns: []string{task.ParentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt),

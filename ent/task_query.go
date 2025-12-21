@@ -20,12 +20,12 @@ import (
 // TaskQuery is the builder for querying Task entities.
 type TaskQuery struct {
 	config
-	ctx                   *QueryContext
-	order                 []task.OrderOption
-	inters                []Interceptor
-	predicates            []predicate.Task
-	withChildrenRelations *ContainerChildQuery
-	withParentsRelations  *ContainerChildQuery
+	ctx          *QueryContext
+	order        []task.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.Task
+	withChildren *ContainerChildQuery
+	withParents  *ContainerChildQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -62,8 +62,8 @@ func (_q *TaskQuery) Order(o ...task.OrderOption) *TaskQuery {
 	return _q
 }
 
-// QueryChildrenRelations chains the current query on the "children_relations" edge.
-func (_q *TaskQuery) QueryChildrenRelations() *ContainerChildQuery {
+// QueryChildren chains the current query on the "children" edge.
+func (_q *TaskQuery) QueryChildren() *ContainerChildQuery {
 	query := (&ContainerChildClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -76,7 +76,7 @@ func (_q *TaskQuery) QueryChildrenRelations() *ContainerChildQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(containerchild.Table, containerchild.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, task.ChildrenRelationsTable, task.ChildrenRelationsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, task.ChildrenTable, task.ChildrenColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -84,8 +84,8 @@ func (_q *TaskQuery) QueryChildrenRelations() *ContainerChildQuery {
 	return query
 }
 
-// QueryParentsRelations chains the current query on the "parents_relations" edge.
-func (_q *TaskQuery) QueryParentsRelations() *ContainerChildQuery {
+// QueryParents chains the current query on the "parents" edge.
+func (_q *TaskQuery) QueryParents() *ContainerChildQuery {
 	query := (&ContainerChildClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -98,7 +98,7 @@ func (_q *TaskQuery) QueryParentsRelations() *ContainerChildQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(containerchild.Table, containerchild.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, task.ParentsRelationsTable, task.ParentsRelationsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, task.ParentsTable, task.ParentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -293,38 +293,38 @@ func (_q *TaskQuery) Clone() *TaskQuery {
 		return nil
 	}
 	return &TaskQuery{
-		config:                _q.config,
-		ctx:                   _q.ctx.Clone(),
-		order:                 append([]task.OrderOption{}, _q.order...),
-		inters:                append([]Interceptor{}, _q.inters...),
-		predicates:            append([]predicate.Task{}, _q.predicates...),
-		withChildrenRelations: _q.withChildrenRelations.Clone(),
-		withParentsRelations:  _q.withParentsRelations.Clone(),
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]task.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.Task{}, _q.predicates...),
+		withChildren: _q.withChildren.Clone(),
+		withParents:  _q.withParents.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
 }
 
-// WithChildrenRelations tells the query-builder to eager-load the nodes that are connected to
-// the "children_relations" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *TaskQuery) WithChildrenRelations(opts ...func(*ContainerChildQuery)) *TaskQuery {
+// WithChildren tells the query-builder to eager-load the nodes that are connected to
+// the "children" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TaskQuery) WithChildren(opts ...func(*ContainerChildQuery)) *TaskQuery {
 	query := (&ContainerChildClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withChildrenRelations = query
+	_q.withChildren = query
 	return _q
 }
 
-// WithParentsRelations tells the query-builder to eager-load the nodes that are connected to
-// the "parents_relations" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *TaskQuery) WithParentsRelations(opts ...func(*ContainerChildQuery)) *TaskQuery {
+// WithParents tells the query-builder to eager-load the nodes that are connected to
+// the "parents" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TaskQuery) WithParents(opts ...func(*ContainerChildQuery)) *TaskQuery {
 	query := (&ContainerChildClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withParentsRelations = query
+	_q.withParents = query
 	return _q
 }
 
@@ -407,8 +407,8 @@ func (_q *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 		nodes       = []*Task{}
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			_q.withChildrenRelations != nil,
-			_q.withParentsRelations != nil,
+			_q.withChildren != nil,
+			_q.withParents != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -429,24 +429,24 @@ func (_q *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withChildrenRelations; query != nil {
-		if err := _q.loadChildrenRelations(ctx, query, nodes,
-			func(n *Task) { n.Edges.ChildrenRelations = []*ContainerChild{} },
-			func(n *Task, e *ContainerChild) { n.Edges.ChildrenRelations = append(n.Edges.ChildrenRelations, e) }); err != nil {
+	if query := _q.withChildren; query != nil {
+		if err := _q.loadChildren(ctx, query, nodes,
+			func(n *Task) { n.Edges.Children = []*ContainerChild{} },
+			func(n *Task, e *ContainerChild) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withParentsRelations; query != nil {
-		if err := _q.loadParentsRelations(ctx, query, nodes,
-			func(n *Task) { n.Edges.ParentsRelations = []*ContainerChild{} },
-			func(n *Task, e *ContainerChild) { n.Edges.ParentsRelations = append(n.Edges.ParentsRelations, e) }); err != nil {
+	if query := _q.withParents; query != nil {
+		if err := _q.loadParents(ctx, query, nodes,
+			func(n *Task) { n.Edges.Parents = []*ContainerChild{} },
+			func(n *Task, e *ContainerChild) { n.Edges.Parents = append(n.Edges.Parents, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *TaskQuery) loadChildrenRelations(ctx context.Context, query *ContainerChildQuery, nodes []*Task, init func(*Task), assign func(*Task, *ContainerChild)) error {
+func (_q *TaskQuery) loadChildren(ctx context.Context, query *ContainerChildQuery, nodes []*Task, init func(*Task), assign func(*Task, *ContainerChild)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Task)
 	for i := range nodes {
@@ -460,7 +460,7 @@ func (_q *TaskQuery) loadChildrenRelations(ctx context.Context, query *Container
 		query.ctx.AppendFieldOnce(containerchild.FieldParentID)
 	}
 	query.Where(predicate.ContainerChild(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(task.ChildrenRelationsColumn), fks...))
+		s.Where(sql.InValues(s.C(task.ChildrenColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -476,7 +476,7 @@ func (_q *TaskQuery) loadChildrenRelations(ctx context.Context, query *Container
 	}
 	return nil
 }
-func (_q *TaskQuery) loadParentsRelations(ctx context.Context, query *ContainerChildQuery, nodes []*Task, init func(*Task), assign func(*Task, *ContainerChild)) error {
+func (_q *TaskQuery) loadParents(ctx context.Context, query *ContainerChildQuery, nodes []*Task, init func(*Task), assign func(*Task, *ContainerChild)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Task)
 	for i := range nodes {
@@ -490,7 +490,7 @@ func (_q *TaskQuery) loadParentsRelations(ctx context.Context, query *ContainerC
 		query.ctx.AppendFieldOnce(containerchild.FieldChildID)
 	}
 	query.Where(predicate.ContainerChild(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(task.ParentsRelationsColumn), fks...))
+		s.Where(sql.InValues(s.C(task.ParentsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

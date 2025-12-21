@@ -1,0 +1,995 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Task management dashboard API server",
+        "title": "Dashboard API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/": {
+            "get": {
+                "description": "Returns a welcome message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general"
+                ],
+                "summary": "Root endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/add-anonymous-task": {
+            "put": {
+                "description": "Creates a simple anonymous task with default values",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Create anonymous task",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Task"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/done-tasks": {
+            "get": {
+                "description": "Returns the count of done tasks (placeholder endpoint)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Get done tasks count",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/finish-task/{id}": {
+            "put": {
+                "description": "Marks a task and all its descendants as done",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Finish task recursively",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/finish-tasks-by-ids/": {
+            "put": {
+                "description": "Marks tasks by their IDs and all their descendants as done",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Finish tasks by IDs recursively",
+                "parameters": [
+                    {
+                        "description": "List of task IDs",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/finish-tasks/": {
+            "put": {
+                "description": "Marks multiple tasks and all their descendants as done",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Finish multiple tasks recursively",
+                "parameters": [
+                    {
+                        "description": "List of task IDs",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.TaskIDRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/get-tasks": {
+            "post": {
+                "description": "Returns multiple tasks by their IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Get tasks by IDs",
+                "parameters": [
+                    {
+                        "description": "List of task IDs",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.IDsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.Task"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/new-task": {
+            "post": {
+                "description": "Creates a new task with optional parent relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Create new task",
+                "parameters": [
+                    {
+                        "description": "Task creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NewTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/task/{id}": {
+            "get": {
+                "description": "Returns a task by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Get task by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tests": {
+            "get": {
+                "description": "Returns a list of all tests",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tests"
+                ],
+                "summary": "Get all tests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.TestResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/update-task": {
+            "put": {
+                "description": "Updates an existing task by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Update task",
+                "parameters": [
+                    {
+                        "description": "Task update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UpdateTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "containerchild.ChildType": {
+            "type": "string",
+            "enum": [
+                "epic",
+                "story",
+                "task",
+                "question",
+                "problem",
+                "knowledge-node",
+                "knowledge-bit",
+                "definition",
+                "action",
+                "scheduled-task",
+                "state"
+            ],
+            "x-enum-varnames": [
+                "ChildTypeEpic",
+                "ChildTypeStory",
+                "ChildTypeTask",
+                "ChildTypeQuestion",
+                "ChildTypeProblem",
+                "ChildTypeKnowledgeNode",
+                "ChildTypeKnowledgeBit",
+                "ChildTypeDefinition",
+                "ChildTypeAction",
+                "ChildTypeScheduledTask",
+                "ChildTypeState"
+            ]
+        },
+        "containerchild.ParentType": {
+            "type": "string",
+            "enum": [
+                "epic",
+                "story",
+                "task",
+                "question",
+                "problem",
+                "knowledge-node",
+                "knowledge-bit",
+                "definition",
+                "action",
+                "scheduled-task",
+                "state"
+            ],
+            "x-enum-varnames": [
+                "ParentTypeEpic",
+                "ParentTypeStory",
+                "ParentTypeTask",
+                "ParentTypeQuestion",
+                "ParentTypeProblem",
+                "ParentTypeKnowledgeNode",
+                "ParentTypeKnowledgeBit",
+                "ParentTypeDefinition",
+                "ParentTypeAction",
+                "ParentTypeScheduledTask",
+                "ParentTypeState"
+            ]
+        },
+        "ent.ContainerChild": {
+            "type": "object",
+            "properties": {
+                "child_id": {
+                    "description": "ChildID holds the value of the \"child_id\" field.",
+                    "type": "integer"
+                },
+                "child_order": {
+                    "description": "ChildOrder holds the value of the \"child_order\" field.",
+                    "type": "integer"
+                },
+                "child_type": {
+                    "description": "ChildType holds the value of the \"child_type\" field.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/containerchild.ChildType"
+                        }
+                    ]
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the ContainerChildQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.ContainerChildEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "parent_id": {
+                    "description": "ParentID holds the value of the \"parent_id\" field.",
+                    "type": "integer"
+                },
+                "parent_order": {
+                    "description": "ParentOrder holds the value of the \"parent_order\" field.",
+                    "type": "integer"
+                },
+                "parent_type": {
+                    "description": "ParentType holds the value of the \"parent_type\" field.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/containerchild.ParentType"
+                        }
+                    ]
+                }
+            }
+        },
+        "ent.ContainerChildEdges": {
+            "type": "object",
+            "properties": {
+                "child": {
+                    "description": "Child holds the value of the child edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Task"
+                        }
+                    ]
+                },
+                "parent": {
+                    "description": "Parent holds the value of the parent edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Task"
+                        }
+                    ]
+                }
+            }
+        },
+        "ent.Task": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "description": "Actions holds the value of the \"actions\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "description": "Definitions holds the value of the \"definitions\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "description": "Description holds the value of the \"description\" field.",
+                    "type": "string"
+                },
+                "done": {
+                    "description": "Done holds the value of the \"done\" field.",
+                    "type": "boolean"
+                },
+                "done_date_time": {
+                    "description": "DoneDateTime holds the value of the \"done_date_time\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the TaskQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.TaskEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "knowledge_bits": {
+                    "description": "KnowledgeBits holds the value of the \"knowledge_bits\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledge_nodes": {
+                    "description": "KnowledgeNodes holds the value of the \"knowledge_nodes\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "description": "Notes holds the value of the \"notes\" field.",
+                    "type": "string"
+                },
+                "parent_containers": {
+                    "description": "ParentContainers holds the value of the \"parent_containers\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "problems": {
+                    "description": "Problems holds the value of the \"problems\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "description": "Questions holds the value of the \"questions\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "description": "Tags holds the value of the \"tags\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ent.TaskEdges": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "description": "Children holds the value of the children edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.ContainerChild"
+                    }
+                },
+                "parents": {
+                    "description": "Parents holds the value of the parents edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.ContainerChild"
+                    }
+                }
+            }
+        },
+        "handlers.IDsRequest": {
+            "type": "object",
+            "required": [
+                "ids"
+            ],
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "handlers.NewTaskRequest": {
+            "type": "object",
+            "properties": {
+                "parent": {
+                    "$ref": "#/definitions/handlers.ParentRequest"
+                },
+                "task": {
+                    "$ref": "#/definitions/handlers.TaskRequest"
+                }
+            }
+        },
+        "handlers.ParentObj": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.ParentRequest": {
+            "type": "object",
+            "properties": {
+                "obj": {
+                    "$ref": "#/definitions/handlers.ParentObj"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.TaskIDRequest": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.TaskRequest": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "done": {
+                    "type": "boolean"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "knowledgeBits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parents": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handlers.TestResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handlers.UpdateTaskRequest": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "integer"
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "done": {
+                    "type": "boolean"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "knowledgeBits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parents": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

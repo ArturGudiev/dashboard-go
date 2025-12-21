@@ -63,11 +63,10 @@ func (Task) Edges() []ent.Edge {
 	return []ent.Edge{
 		// Parent-child relationships through ContainerChild join table
 		// A task can be a parent to multiple children
-		edge.From("children_relations", ContainerChild.Type).
+		edge.From("children", ContainerChild.Type).
 			Ref("parent"),
 		// A task can be a child to multiple parents
-		edge.From("parents_relations", ContainerChild.Type).
+		edge.From("parents", ContainerChild.Type).
 			Ref("child"),
 	}
 }
-

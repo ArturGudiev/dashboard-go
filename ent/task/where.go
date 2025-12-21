@@ -355,21 +355,21 @@ func DoneDateTimeNotNil() predicate.Task {
 	return predicate.Task(sql.FieldNotNull(FieldDoneDateTime))
 }
 
-// HasChildrenRelations applies the HasEdge predicate on the "children_relations" edge.
-func HasChildrenRelations() predicate.Task {
+// HasChildren applies the HasEdge predicate on the "children" edge.
+func HasChildren() predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ChildrenRelationsTable, ChildrenRelationsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, ChildrenTable, ChildrenColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasChildrenRelationsWith applies the HasEdge predicate on the "children_relations" edge with a given conditions (other predicates).
-func HasChildrenRelationsWith(preds ...predicate.ContainerChild) predicate.Task {
+// HasChildrenWith applies the HasEdge predicate on the "children" edge with a given conditions (other predicates).
+func HasChildrenWith(preds ...predicate.ContainerChild) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
-		step := newChildrenRelationsStep()
+		step := newChildrenStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -378,21 +378,21 @@ func HasChildrenRelationsWith(preds ...predicate.ContainerChild) predicate.Task 
 	})
 }
 
-// HasParentsRelations applies the HasEdge predicate on the "parents_relations" edge.
-func HasParentsRelations() predicate.Task {
+// HasParents applies the HasEdge predicate on the "parents" edge.
+func HasParents() predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ParentsRelationsTable, ParentsRelationsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, ParentsTable, ParentsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasParentsRelationsWith applies the HasEdge predicate on the "parents_relations" edge with a given conditions (other predicates).
-func HasParentsRelationsWith(preds ...predicate.ContainerChild) predicate.Task {
+// HasParentsWith applies the HasEdge predicate on the "parents" edge with a given conditions (other predicates).
+func HasParentsWith(preds ...predicate.ContainerChild) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
-		step := newParentsRelationsStep()
+		step := newParentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
