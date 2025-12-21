@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 	"fmt"
 	"strings"
@@ -18,11 +19,11 @@ type ContainerChild struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// ParentType holds the value of the "parent_type" field.
-	ParentType containerchild.ParentType `json:"parent_type,omitempty"`
+	ParentType schema.ContainerType `json:"parent_type,omitempty"`
 	// ParentID holds the value of the "parent_id" field.
 	ParentID int `json:"parent_id,omitempty"`
 	// ChildType holds the value of the "child_type" field.
-	ChildType containerchild.ChildType `json:"child_type,omitempty"`
+	ChildType schema.ContainerType `json:"child_type,omitempty"`
 	// ChildID holds the value of the "child_id" field.
 	ChildID int `json:"child_id,omitempty"`
 	// ChildOrder holds the value of the "child_order" field.
@@ -102,7 +103,7 @@ func (_m *ContainerChild) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field parent_type", values[i])
 			} else if value.Valid {
-				_m.ParentType = containerchild.ParentType(value.String)
+				_m.ParentType = schema.ContainerType(value.String)
 			}
 		case containerchild.FieldParentID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -114,7 +115,7 @@ func (_m *ContainerChild) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field child_type", values[i])
 			} else if value.Valid {
-				_m.ChildType = containerchild.ChildType(value.String)
+				_m.ChildType = schema.ContainerType(value.String)
 			}
 		case containerchild.FieldChildID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {

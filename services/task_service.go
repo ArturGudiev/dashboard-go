@@ -3,6 +3,7 @@ package services
 import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/models"
 	"context"
 	"fmt"
@@ -26,9 +27,9 @@ func (s *TaskService) GetOpenDescendantTasks(ctx context.Context, parentTask *en
 	// Get all child relationships where this task is the parent
 	childRelations, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 			containerchild.ParentID(parentTask.ID),
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
 		WithChild().
 		All(ctx)
@@ -61,9 +62,9 @@ func (s *TaskService) GetParent(ctx context.Context, task *ent.Task) *ent.Task {
 	// Get all parent relationships where this task is the child
 	parentRelations, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 			containerchild.ChildID(task.ID),
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
 		WithParent().
 		All(ctx)
@@ -158,9 +159,9 @@ func (s *TaskService) FinishTaskById(ctx context.Context, taskID int) (*ent.Task
 func (s *TaskService) GetChildSubtasks(ctx context.Context, parentID int) ([]*ent.Task, error) {
 	childRelations, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 			containerchild.ParentID(parentID),
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
 		Order(containerchild.ByChildOrder()).
 		WithChild().
@@ -196,9 +197,9 @@ func (s *TaskService) AddSubtask(ctx context.Context, parentID int, description 
 	// Get the count of existing children to set child_order
 	childCount, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 			containerchild.ParentID(parentID),
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
 		Count(ctx)
 	if err != nil {
@@ -208,9 +209,9 @@ func (s *TaskService) AddSubtask(ctx context.Context, parentID int, description 
 	// Get the count of existing parents to set parent_order
 	parentCount, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 			containerchild.ChildID(newTask.ID),
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 		).
 		Count(ctx)
 	if err != nil {
@@ -219,9 +220,9 @@ func (s *TaskService) AddSubtask(ctx context.Context, parentID int, description 
 
 	// Create the parent-child relationship
 	_, err = s.client.ContainerChild.Create().
-		SetParentType(containerchild.ParentTypeTask).
+		SetParentType(schema.ContainerTypeTask).
 		SetParentID(parentID).
-		SetChildType(containerchild.ChildTypeTask).
+		SetChildType(schema.ContainerTypeTask).
 		SetChildID(newTask.ID).
 		SetChildOrder(childCount).
 		SetParentOrder(parentCount).
@@ -244,9 +245,9 @@ func (s *TaskService) GetTaskFull(ctx context.Context, taskID int) (*models.Task
 	// Get children tasks (tasks where this task is the parent)
 	childRelations, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 			containerchild.ParentID(taskID),
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
 		Order(containerchild.ByChildOrder()).
 		WithChild().

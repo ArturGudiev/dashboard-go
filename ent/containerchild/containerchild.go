@@ -3,6 +3,7 @@
 package containerchild
 
 import (
+	"arturgudiev/dashboard/ent/schema"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -86,64 +87,20 @@ var (
 	IDValidator func(int) error
 )
 
-// ParentType defines the type for the "parent_type" enum field.
-type ParentType string
-
-// ParentType values.
-const (
-	ParentTypeEpic          ParentType = "epic"
-	ParentTypeStory         ParentType = "story"
-	ParentTypeTask          ParentType = "task"
-	ParentTypeQuestion      ParentType = "question"
-	ParentTypeProblem       ParentType = "problem"
-	ParentTypeKnowledgeNode ParentType = "knowledge-node"
-	ParentTypeKnowledgeBit  ParentType = "knowledge-bit"
-	ParentTypeDefinition    ParentType = "definition"
-	ParentTypeAction        ParentType = "action"
-	ParentTypeScheduledTask ParentType = "scheduled-task"
-	ParentTypeState         ParentType = "state"
-)
-
-func (pt ParentType) String() string {
-	return string(pt)
-}
-
 // ParentTypeValidator is a validator for the "parent_type" field enum values. It is called by the builders before save.
-func ParentTypeValidator(pt ParentType) error {
+func ParentTypeValidator(pt schema.ContainerType) error {
 	switch pt {
-	case ParentTypeEpic, ParentTypeStory, ParentTypeTask, ParentTypeQuestion, ParentTypeProblem, ParentTypeKnowledgeNode, ParentTypeKnowledgeBit, ParentTypeDefinition, ParentTypeAction, ParentTypeScheduledTask, ParentTypeState:
+	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state":
 		return nil
 	default:
 		return fmt.Errorf("containerchild: invalid enum value for parent_type field: %q", pt)
 	}
 }
 
-// ChildType defines the type for the "child_type" enum field.
-type ChildType string
-
-// ChildType values.
-const (
-	ChildTypeEpic          ChildType = "epic"
-	ChildTypeStory         ChildType = "story"
-	ChildTypeTask          ChildType = "task"
-	ChildTypeQuestion      ChildType = "question"
-	ChildTypeProblem       ChildType = "problem"
-	ChildTypeKnowledgeNode ChildType = "knowledge-node"
-	ChildTypeKnowledgeBit  ChildType = "knowledge-bit"
-	ChildTypeDefinition    ChildType = "definition"
-	ChildTypeAction        ChildType = "action"
-	ChildTypeScheduledTask ChildType = "scheduled-task"
-	ChildTypeState         ChildType = "state"
-)
-
-func (ct ChildType) String() string {
-	return string(ct)
-}
-
 // ChildTypeValidator is a validator for the "child_type" field enum values. It is called by the builders before save.
-func ChildTypeValidator(ct ChildType) error {
+func ChildTypeValidator(ct schema.ContainerType) error {
 	switch ct {
-	case ChildTypeEpic, ChildTypeStory, ChildTypeTask, ChildTypeQuestion, ChildTypeProblem, ChildTypeKnowledgeNode, ChildTypeKnowledgeBit, ChildTypeDefinition, ChildTypeAction, ChildTypeScheduledTask, ChildTypeState:
+	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state":
 		return nil
 	default:
 		return fmt.Errorf("containerchild: invalid enum value for child_type field: %q", ct)

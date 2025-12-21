@@ -5,6 +5,8 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/predicate"
+	"arturgudiev/dashboard/ent/problem"
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
 	"context"
@@ -27,6 +29,7 @@ const (
 
 	// Node types.
 	TypeContainerChild = "ContainerChild"
+	TypeProblem        = "Problem"
 	TypeTask           = "Task"
 	TypeTest           = "Test"
 )
@@ -37,8 +40,8 @@ type ContainerChildMutation struct {
 	op              Op
 	typ             string
 	id              *int
-	parent_type     *containerchild.ParentType
-	child_type      *containerchild.ChildType
+	parent_type     *schema.ContainerType
+	child_type      *schema.ContainerType
 	child_order     *int
 	addchild_order  *int
 	parent_order    *int
@@ -158,12 +161,12 @@ func (m *ContainerChildMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetParentType sets the "parent_type" field.
-func (m *ContainerChildMutation) SetParentType(ct containerchild.ParentType) {
-	m.parent_type = &ct
+func (m *ContainerChildMutation) SetParentType(st schema.ContainerType) {
+	m.parent_type = &st
 }
 
 // ParentType returns the value of the "parent_type" field in the mutation.
-func (m *ContainerChildMutation) ParentType() (r containerchild.ParentType, exists bool) {
+func (m *ContainerChildMutation) ParentType() (r schema.ContainerType, exists bool) {
 	v := m.parent_type
 	if v == nil {
 		return
@@ -174,7 +177,7 @@ func (m *ContainerChildMutation) ParentType() (r containerchild.ParentType, exis
 // OldParentType returns the old "parent_type" field's value of the ContainerChild entity.
 // If the ContainerChild object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ContainerChildMutation) OldParentType(ctx context.Context) (v containerchild.ParentType, err error) {
+func (m *ContainerChildMutation) OldParentType(ctx context.Context) (v schema.ContainerType, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldParentType is only allowed on UpdateOne operations")
 	}
@@ -230,12 +233,12 @@ func (m *ContainerChildMutation) ResetParentID() {
 }
 
 // SetChildType sets the "child_type" field.
-func (m *ContainerChildMutation) SetChildType(ct containerchild.ChildType) {
-	m.child_type = &ct
+func (m *ContainerChildMutation) SetChildType(st schema.ContainerType) {
+	m.child_type = &st
 }
 
 // ChildType returns the value of the "child_type" field in the mutation.
-func (m *ContainerChildMutation) ChildType() (r containerchild.ChildType, exists bool) {
+func (m *ContainerChildMutation) ChildType() (r schema.ContainerType, exists bool) {
 	v := m.child_type
 	if v == nil {
 		return
@@ -246,7 +249,7 @@ func (m *ContainerChildMutation) ChildType() (r containerchild.ChildType, exists
 // OldChildType returns the old "child_type" field's value of the ContainerChild entity.
 // If the ContainerChild object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ContainerChildMutation) OldChildType(ctx context.Context) (v containerchild.ChildType, err error) {
+func (m *ContainerChildMutation) OldChildType(ctx context.Context) (v schema.ContainerType, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldChildType is only allowed on UpdateOne operations")
 	}
@@ -571,7 +574,7 @@ func (m *ContainerChildMutation) OldField(ctx context.Context, name string) (ent
 func (m *ContainerChildMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case containerchild.FieldParentType:
-		v, ok := value.(containerchild.ParentType)
+		v, ok := value.(schema.ContainerType)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -585,7 +588,7 @@ func (m *ContainerChildMutation) SetField(name string, value ent.Value) error {
 		m.SetParentID(v)
 		return nil
 	case containerchild.FieldChildType:
-		v, ok := value.(containerchild.ChildType)
+		v, ok := value.(schema.ContainerType)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -800,6 +803,1280 @@ func (m *ContainerChildMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown ContainerChild edge %s", name)
+}
+
+// ProblemMutation represents an operation that mutates the Problem nodes in the graph.
+type ProblemMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *int
+	description             *string
+	tags                    *[]string
+	appendtags              []string
+	notes                   *string
+	problems                *[]int
+	appendproblems          []int
+	questions               *[]int
+	appendquestions         []int
+	actions                 *[]int
+	appendactions           []int
+	definitions             *[]int
+	appenddefinitions       []int
+	knowledge_bits          *[]int
+	appendknowledge_bits    []int
+	parent_containers       *[][]interface{}
+	appendparent_containers [][]interface{}
+	knowledge_nodes         *[]int
+	appendknowledge_nodes   []int
+	done_date_time          *time.Time
+	solution                *string
+	clearedFields           map[string]struct{}
+	done                    bool
+	oldValue                func(context.Context) (*Problem, error)
+	predicates              []predicate.Problem
+}
+
+var _ ent.Mutation = (*ProblemMutation)(nil)
+
+// problemOption allows management of the mutation configuration using functional options.
+type problemOption func(*ProblemMutation)
+
+// newProblemMutation creates new mutation for the Problem entity.
+func newProblemMutation(c config, op Op, opts ...problemOption) *ProblemMutation {
+	m := &ProblemMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeProblem,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withProblemID sets the ID field of the mutation.
+func withProblemID(id int) problemOption {
+	return func(m *ProblemMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Problem
+		)
+		m.oldValue = func(ctx context.Context) (*Problem, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Problem.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withProblem sets the old Problem of the mutation.
+func withProblem(node *Problem) problemOption {
+	return func(m *ProblemMutation) {
+		m.oldValue = func(context.Context) (*Problem, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ProblemMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ProblemMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Problem entities.
+func (m *ProblemMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ProblemMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ProblemMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Problem.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDescription sets the "description" field.
+func (m *ProblemMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *ProblemMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *ProblemMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetTags sets the "tags" field.
+func (m *ProblemMutation) SetTags(s []string) {
+	m.tags = &s
+	m.appendtags = nil
+}
+
+// Tags returns the value of the "tags" field in the mutation.
+func (m *ProblemMutation) Tags() (r []string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old "tags" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldTags(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTags is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// AppendTags adds s to the "tags" field.
+func (m *ProblemMutation) AppendTags(s []string) {
+	m.appendtags = append(m.appendtags, s...)
+}
+
+// AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
+func (m *ProblemMutation) AppendedTags() ([]string, bool) {
+	if len(m.appendtags) == 0 {
+		return nil, false
+	}
+	return m.appendtags, true
+}
+
+// ClearTags clears the value of the "tags" field.
+func (m *ProblemMutation) ClearTags() {
+	m.tags = nil
+	m.appendtags = nil
+	m.clearedFields[problem.FieldTags] = struct{}{}
+}
+
+// TagsCleared returns if the "tags" field was cleared in this mutation.
+func (m *ProblemMutation) TagsCleared() bool {
+	_, ok := m.clearedFields[problem.FieldTags]
+	return ok
+}
+
+// ResetTags resets all changes to the "tags" field.
+func (m *ProblemMutation) ResetTags() {
+	m.tags = nil
+	m.appendtags = nil
+	delete(m.clearedFields, problem.FieldTags)
+}
+
+// SetNotes sets the "notes" field.
+func (m *ProblemMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *ProblemMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldNotes(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (m *ProblemMutation) ClearNotes() {
+	m.notes = nil
+	m.clearedFields[problem.FieldNotes] = struct{}{}
+}
+
+// NotesCleared returns if the "notes" field was cleared in this mutation.
+func (m *ProblemMutation) NotesCleared() bool {
+	_, ok := m.clearedFields[problem.FieldNotes]
+	return ok
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *ProblemMutation) ResetNotes() {
+	m.notes = nil
+	delete(m.clearedFields, problem.FieldNotes)
+}
+
+// SetProblems sets the "problems" field.
+func (m *ProblemMutation) SetProblems(i []int) {
+	m.problems = &i
+	m.appendproblems = nil
+}
+
+// Problems returns the value of the "problems" field in the mutation.
+func (m *ProblemMutation) Problems() (r []int, exists bool) {
+	v := m.problems
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProblems returns the old "problems" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldProblems(ctx context.Context) (v []int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProblems is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProblems requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProblems: %w", err)
+	}
+	return oldValue.Problems, nil
+}
+
+// AppendProblems adds i to the "problems" field.
+func (m *ProblemMutation) AppendProblems(i []int) {
+	m.appendproblems = append(m.appendproblems, i...)
+}
+
+// AppendedProblems returns the list of values that were appended to the "problems" field in this mutation.
+func (m *ProblemMutation) AppendedProblems() ([]int, bool) {
+	if len(m.appendproblems) == 0 {
+		return nil, false
+	}
+	return m.appendproblems, true
+}
+
+// ClearProblems clears the value of the "problems" field.
+func (m *ProblemMutation) ClearProblems() {
+	m.problems = nil
+	m.appendproblems = nil
+	m.clearedFields[problem.FieldProblems] = struct{}{}
+}
+
+// ProblemsCleared returns if the "problems" field was cleared in this mutation.
+func (m *ProblemMutation) ProblemsCleared() bool {
+	_, ok := m.clearedFields[problem.FieldProblems]
+	return ok
+}
+
+// ResetProblems resets all changes to the "problems" field.
+func (m *ProblemMutation) ResetProblems() {
+	m.problems = nil
+	m.appendproblems = nil
+	delete(m.clearedFields, problem.FieldProblems)
+}
+
+// SetQuestions sets the "questions" field.
+func (m *ProblemMutation) SetQuestions(i []int) {
+	m.questions = &i
+	m.appendquestions = nil
+}
+
+// Questions returns the value of the "questions" field in the mutation.
+func (m *ProblemMutation) Questions() (r []int, exists bool) {
+	v := m.questions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldQuestions returns the old "questions" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldQuestions(ctx context.Context) (v []int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldQuestions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldQuestions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldQuestions: %w", err)
+	}
+	return oldValue.Questions, nil
+}
+
+// AppendQuestions adds i to the "questions" field.
+func (m *ProblemMutation) AppendQuestions(i []int) {
+	m.appendquestions = append(m.appendquestions, i...)
+}
+
+// AppendedQuestions returns the list of values that were appended to the "questions" field in this mutation.
+func (m *ProblemMutation) AppendedQuestions() ([]int, bool) {
+	if len(m.appendquestions) == 0 {
+		return nil, false
+	}
+	return m.appendquestions, true
+}
+
+// ClearQuestions clears the value of the "questions" field.
+func (m *ProblemMutation) ClearQuestions() {
+	m.questions = nil
+	m.appendquestions = nil
+	m.clearedFields[problem.FieldQuestions] = struct{}{}
+}
+
+// QuestionsCleared returns if the "questions" field was cleared in this mutation.
+func (m *ProblemMutation) QuestionsCleared() bool {
+	_, ok := m.clearedFields[problem.FieldQuestions]
+	return ok
+}
+
+// ResetQuestions resets all changes to the "questions" field.
+func (m *ProblemMutation) ResetQuestions() {
+	m.questions = nil
+	m.appendquestions = nil
+	delete(m.clearedFields, problem.FieldQuestions)
+}
+
+// SetActions sets the "actions" field.
+func (m *ProblemMutation) SetActions(i []int) {
+	m.actions = &i
+	m.appendactions = nil
+}
+
+// Actions returns the value of the "actions" field in the mutation.
+func (m *ProblemMutation) Actions() (r []int, exists bool) {
+	v := m.actions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActions returns the old "actions" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldActions(ctx context.Context) (v []int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActions: %w", err)
+	}
+	return oldValue.Actions, nil
+}
+
+// AppendActions adds i to the "actions" field.
+func (m *ProblemMutation) AppendActions(i []int) {
+	m.appendactions = append(m.appendactions, i...)
+}
+
+// AppendedActions returns the list of values that were appended to the "actions" field in this mutation.
+func (m *ProblemMutation) AppendedActions() ([]int, bool) {
+	if len(m.appendactions) == 0 {
+		return nil, false
+	}
+	return m.appendactions, true
+}
+
+// ClearActions clears the value of the "actions" field.
+func (m *ProblemMutation) ClearActions() {
+	m.actions = nil
+	m.appendactions = nil
+	m.clearedFields[problem.FieldActions] = struct{}{}
+}
+
+// ActionsCleared returns if the "actions" field was cleared in this mutation.
+func (m *ProblemMutation) ActionsCleared() bool {
+	_, ok := m.clearedFields[problem.FieldActions]
+	return ok
+}
+
+// ResetActions resets all changes to the "actions" field.
+func (m *ProblemMutation) ResetActions() {
+	m.actions = nil
+	m.appendactions = nil
+	delete(m.clearedFields, problem.FieldActions)
+}
+
+// SetDefinitions sets the "definitions" field.
+func (m *ProblemMutation) SetDefinitions(i []int) {
+	m.definitions = &i
+	m.appenddefinitions = nil
+}
+
+// Definitions returns the value of the "definitions" field in the mutation.
+func (m *ProblemMutation) Definitions() (r []int, exists bool) {
+	v := m.definitions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDefinitions returns the old "definitions" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldDefinitions(ctx context.Context) (v []int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDefinitions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDefinitions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDefinitions: %w", err)
+	}
+	return oldValue.Definitions, nil
+}
+
+// AppendDefinitions adds i to the "definitions" field.
+func (m *ProblemMutation) AppendDefinitions(i []int) {
+	m.appenddefinitions = append(m.appenddefinitions, i...)
+}
+
+// AppendedDefinitions returns the list of values that were appended to the "definitions" field in this mutation.
+func (m *ProblemMutation) AppendedDefinitions() ([]int, bool) {
+	if len(m.appenddefinitions) == 0 {
+		return nil, false
+	}
+	return m.appenddefinitions, true
+}
+
+// ClearDefinitions clears the value of the "definitions" field.
+func (m *ProblemMutation) ClearDefinitions() {
+	m.definitions = nil
+	m.appenddefinitions = nil
+	m.clearedFields[problem.FieldDefinitions] = struct{}{}
+}
+
+// DefinitionsCleared returns if the "definitions" field was cleared in this mutation.
+func (m *ProblemMutation) DefinitionsCleared() bool {
+	_, ok := m.clearedFields[problem.FieldDefinitions]
+	return ok
+}
+
+// ResetDefinitions resets all changes to the "definitions" field.
+func (m *ProblemMutation) ResetDefinitions() {
+	m.definitions = nil
+	m.appenddefinitions = nil
+	delete(m.clearedFields, problem.FieldDefinitions)
+}
+
+// SetKnowledgeBits sets the "knowledge_bits" field.
+func (m *ProblemMutation) SetKnowledgeBits(i []int) {
+	m.knowledge_bits = &i
+	m.appendknowledge_bits = nil
+}
+
+// KnowledgeBits returns the value of the "knowledge_bits" field in the mutation.
+func (m *ProblemMutation) KnowledgeBits() (r []int, exists bool) {
+	v := m.knowledge_bits
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKnowledgeBits returns the old "knowledge_bits" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldKnowledgeBits(ctx context.Context) (v []int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKnowledgeBits is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKnowledgeBits requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKnowledgeBits: %w", err)
+	}
+	return oldValue.KnowledgeBits, nil
+}
+
+// AppendKnowledgeBits adds i to the "knowledge_bits" field.
+func (m *ProblemMutation) AppendKnowledgeBits(i []int) {
+	m.appendknowledge_bits = append(m.appendknowledge_bits, i...)
+}
+
+// AppendedKnowledgeBits returns the list of values that were appended to the "knowledge_bits" field in this mutation.
+func (m *ProblemMutation) AppendedKnowledgeBits() ([]int, bool) {
+	if len(m.appendknowledge_bits) == 0 {
+		return nil, false
+	}
+	return m.appendknowledge_bits, true
+}
+
+// ClearKnowledgeBits clears the value of the "knowledge_bits" field.
+func (m *ProblemMutation) ClearKnowledgeBits() {
+	m.knowledge_bits = nil
+	m.appendknowledge_bits = nil
+	m.clearedFields[problem.FieldKnowledgeBits] = struct{}{}
+}
+
+// KnowledgeBitsCleared returns if the "knowledge_bits" field was cleared in this mutation.
+func (m *ProblemMutation) KnowledgeBitsCleared() bool {
+	_, ok := m.clearedFields[problem.FieldKnowledgeBits]
+	return ok
+}
+
+// ResetKnowledgeBits resets all changes to the "knowledge_bits" field.
+func (m *ProblemMutation) ResetKnowledgeBits() {
+	m.knowledge_bits = nil
+	m.appendknowledge_bits = nil
+	delete(m.clearedFields, problem.FieldKnowledgeBits)
+}
+
+// SetParentContainers sets the "parent_containers" field.
+func (m *ProblemMutation) SetParentContainers(i [][]interface{}) {
+	m.parent_containers = &i
+	m.appendparent_containers = nil
+}
+
+// ParentContainers returns the value of the "parent_containers" field in the mutation.
+func (m *ProblemMutation) ParentContainers() (r [][]interface{}, exists bool) {
+	v := m.parent_containers
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentContainers returns the old "parent_containers" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldParentContainers(ctx context.Context) (v [][]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentContainers is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentContainers requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentContainers: %w", err)
+	}
+	return oldValue.ParentContainers, nil
+}
+
+// AppendParentContainers adds i to the "parent_containers" field.
+func (m *ProblemMutation) AppendParentContainers(i [][]interface{}) {
+	m.appendparent_containers = append(m.appendparent_containers, i...)
+}
+
+// AppendedParentContainers returns the list of values that were appended to the "parent_containers" field in this mutation.
+func (m *ProblemMutation) AppendedParentContainers() ([][]interface{}, bool) {
+	if len(m.appendparent_containers) == 0 {
+		return nil, false
+	}
+	return m.appendparent_containers, true
+}
+
+// ClearParentContainers clears the value of the "parent_containers" field.
+func (m *ProblemMutation) ClearParentContainers() {
+	m.parent_containers = nil
+	m.appendparent_containers = nil
+	m.clearedFields[problem.FieldParentContainers] = struct{}{}
+}
+
+// ParentContainersCleared returns if the "parent_containers" field was cleared in this mutation.
+func (m *ProblemMutation) ParentContainersCleared() bool {
+	_, ok := m.clearedFields[problem.FieldParentContainers]
+	return ok
+}
+
+// ResetParentContainers resets all changes to the "parent_containers" field.
+func (m *ProblemMutation) ResetParentContainers() {
+	m.parent_containers = nil
+	m.appendparent_containers = nil
+	delete(m.clearedFields, problem.FieldParentContainers)
+}
+
+// SetKnowledgeNodes sets the "knowledge_nodes" field.
+func (m *ProblemMutation) SetKnowledgeNodes(i []int) {
+	m.knowledge_nodes = &i
+	m.appendknowledge_nodes = nil
+}
+
+// KnowledgeNodes returns the value of the "knowledge_nodes" field in the mutation.
+func (m *ProblemMutation) KnowledgeNodes() (r []int, exists bool) {
+	v := m.knowledge_nodes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKnowledgeNodes returns the old "knowledge_nodes" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldKnowledgeNodes(ctx context.Context) (v []int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKnowledgeNodes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKnowledgeNodes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKnowledgeNodes: %w", err)
+	}
+	return oldValue.KnowledgeNodes, nil
+}
+
+// AppendKnowledgeNodes adds i to the "knowledge_nodes" field.
+func (m *ProblemMutation) AppendKnowledgeNodes(i []int) {
+	m.appendknowledge_nodes = append(m.appendknowledge_nodes, i...)
+}
+
+// AppendedKnowledgeNodes returns the list of values that were appended to the "knowledge_nodes" field in this mutation.
+func (m *ProblemMutation) AppendedKnowledgeNodes() ([]int, bool) {
+	if len(m.appendknowledge_nodes) == 0 {
+		return nil, false
+	}
+	return m.appendknowledge_nodes, true
+}
+
+// ClearKnowledgeNodes clears the value of the "knowledge_nodes" field.
+func (m *ProblemMutation) ClearKnowledgeNodes() {
+	m.knowledge_nodes = nil
+	m.appendknowledge_nodes = nil
+	m.clearedFields[problem.FieldKnowledgeNodes] = struct{}{}
+}
+
+// KnowledgeNodesCleared returns if the "knowledge_nodes" field was cleared in this mutation.
+func (m *ProblemMutation) KnowledgeNodesCleared() bool {
+	_, ok := m.clearedFields[problem.FieldKnowledgeNodes]
+	return ok
+}
+
+// ResetKnowledgeNodes resets all changes to the "knowledge_nodes" field.
+func (m *ProblemMutation) ResetKnowledgeNodes() {
+	m.knowledge_nodes = nil
+	m.appendknowledge_nodes = nil
+	delete(m.clearedFields, problem.FieldKnowledgeNodes)
+}
+
+// SetDoneDateTime sets the "done_date_time" field.
+func (m *ProblemMutation) SetDoneDateTime(t time.Time) {
+	m.done_date_time = &t
+}
+
+// DoneDateTime returns the value of the "done_date_time" field in the mutation.
+func (m *ProblemMutation) DoneDateTime() (r time.Time, exists bool) {
+	v := m.done_date_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDoneDateTime returns the old "done_date_time" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldDoneDateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDoneDateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDoneDateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDoneDateTime: %w", err)
+	}
+	return oldValue.DoneDateTime, nil
+}
+
+// ClearDoneDateTime clears the value of the "done_date_time" field.
+func (m *ProblemMutation) ClearDoneDateTime() {
+	m.done_date_time = nil
+	m.clearedFields[problem.FieldDoneDateTime] = struct{}{}
+}
+
+// DoneDateTimeCleared returns if the "done_date_time" field was cleared in this mutation.
+func (m *ProblemMutation) DoneDateTimeCleared() bool {
+	_, ok := m.clearedFields[problem.FieldDoneDateTime]
+	return ok
+}
+
+// ResetDoneDateTime resets all changes to the "done_date_time" field.
+func (m *ProblemMutation) ResetDoneDateTime() {
+	m.done_date_time = nil
+	delete(m.clearedFields, problem.FieldDoneDateTime)
+}
+
+// SetSolution sets the "solution" field.
+func (m *ProblemMutation) SetSolution(s string) {
+	m.solution = &s
+}
+
+// Solution returns the value of the "solution" field in the mutation.
+func (m *ProblemMutation) Solution() (r string, exists bool) {
+	v := m.solution
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSolution returns the old "solution" field's value of the Problem entity.
+// If the Problem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProblemMutation) OldSolution(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSolution is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSolution requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSolution: %w", err)
+	}
+	return oldValue.Solution, nil
+}
+
+// ClearSolution clears the value of the "solution" field.
+func (m *ProblemMutation) ClearSolution() {
+	m.solution = nil
+	m.clearedFields[problem.FieldSolution] = struct{}{}
+}
+
+// SolutionCleared returns if the "solution" field was cleared in this mutation.
+func (m *ProblemMutation) SolutionCleared() bool {
+	_, ok := m.clearedFields[problem.FieldSolution]
+	return ok
+}
+
+// ResetSolution resets all changes to the "solution" field.
+func (m *ProblemMutation) ResetSolution() {
+	m.solution = nil
+	delete(m.clearedFields, problem.FieldSolution)
+}
+
+// Where appends a list predicates to the ProblemMutation builder.
+func (m *ProblemMutation) Where(ps ...predicate.Problem) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ProblemMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ProblemMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Problem, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ProblemMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ProblemMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Problem).
+func (m *ProblemMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ProblemMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.description != nil {
+		fields = append(fields, problem.FieldDescription)
+	}
+	if m.tags != nil {
+		fields = append(fields, problem.FieldTags)
+	}
+	if m.notes != nil {
+		fields = append(fields, problem.FieldNotes)
+	}
+	if m.problems != nil {
+		fields = append(fields, problem.FieldProblems)
+	}
+	if m.questions != nil {
+		fields = append(fields, problem.FieldQuestions)
+	}
+	if m.actions != nil {
+		fields = append(fields, problem.FieldActions)
+	}
+	if m.definitions != nil {
+		fields = append(fields, problem.FieldDefinitions)
+	}
+	if m.knowledge_bits != nil {
+		fields = append(fields, problem.FieldKnowledgeBits)
+	}
+	if m.parent_containers != nil {
+		fields = append(fields, problem.FieldParentContainers)
+	}
+	if m.knowledge_nodes != nil {
+		fields = append(fields, problem.FieldKnowledgeNodes)
+	}
+	if m.done_date_time != nil {
+		fields = append(fields, problem.FieldDoneDateTime)
+	}
+	if m.solution != nil {
+		fields = append(fields, problem.FieldSolution)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ProblemMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case problem.FieldDescription:
+		return m.Description()
+	case problem.FieldTags:
+		return m.Tags()
+	case problem.FieldNotes:
+		return m.Notes()
+	case problem.FieldProblems:
+		return m.Problems()
+	case problem.FieldQuestions:
+		return m.Questions()
+	case problem.FieldActions:
+		return m.Actions()
+	case problem.FieldDefinitions:
+		return m.Definitions()
+	case problem.FieldKnowledgeBits:
+		return m.KnowledgeBits()
+	case problem.FieldParentContainers:
+		return m.ParentContainers()
+	case problem.FieldKnowledgeNodes:
+		return m.KnowledgeNodes()
+	case problem.FieldDoneDateTime:
+		return m.DoneDateTime()
+	case problem.FieldSolution:
+		return m.Solution()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ProblemMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case problem.FieldDescription:
+		return m.OldDescription(ctx)
+	case problem.FieldTags:
+		return m.OldTags(ctx)
+	case problem.FieldNotes:
+		return m.OldNotes(ctx)
+	case problem.FieldProblems:
+		return m.OldProblems(ctx)
+	case problem.FieldQuestions:
+		return m.OldQuestions(ctx)
+	case problem.FieldActions:
+		return m.OldActions(ctx)
+	case problem.FieldDefinitions:
+		return m.OldDefinitions(ctx)
+	case problem.FieldKnowledgeBits:
+		return m.OldKnowledgeBits(ctx)
+	case problem.FieldParentContainers:
+		return m.OldParentContainers(ctx)
+	case problem.FieldKnowledgeNodes:
+		return m.OldKnowledgeNodes(ctx)
+	case problem.FieldDoneDateTime:
+		return m.OldDoneDateTime(ctx)
+	case problem.FieldSolution:
+		return m.OldSolution(ctx)
+	}
+	return nil, fmt.Errorf("unknown Problem field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProblemMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case problem.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case problem.FieldTags:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
+		return nil
+	case problem.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	case problem.FieldProblems:
+		v, ok := value.([]int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProblems(v)
+		return nil
+	case problem.FieldQuestions:
+		v, ok := value.([]int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetQuestions(v)
+		return nil
+	case problem.FieldActions:
+		v, ok := value.([]int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActions(v)
+		return nil
+	case problem.FieldDefinitions:
+		v, ok := value.([]int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDefinitions(v)
+		return nil
+	case problem.FieldKnowledgeBits:
+		v, ok := value.([]int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKnowledgeBits(v)
+		return nil
+	case problem.FieldParentContainers:
+		v, ok := value.([][]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentContainers(v)
+		return nil
+	case problem.FieldKnowledgeNodes:
+		v, ok := value.([]int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKnowledgeNodes(v)
+		return nil
+	case problem.FieldDoneDateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDoneDateTime(v)
+		return nil
+	case problem.FieldSolution:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSolution(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Problem field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ProblemMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ProblemMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProblemMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Problem numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ProblemMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(problem.FieldTags) {
+		fields = append(fields, problem.FieldTags)
+	}
+	if m.FieldCleared(problem.FieldNotes) {
+		fields = append(fields, problem.FieldNotes)
+	}
+	if m.FieldCleared(problem.FieldProblems) {
+		fields = append(fields, problem.FieldProblems)
+	}
+	if m.FieldCleared(problem.FieldQuestions) {
+		fields = append(fields, problem.FieldQuestions)
+	}
+	if m.FieldCleared(problem.FieldActions) {
+		fields = append(fields, problem.FieldActions)
+	}
+	if m.FieldCleared(problem.FieldDefinitions) {
+		fields = append(fields, problem.FieldDefinitions)
+	}
+	if m.FieldCleared(problem.FieldKnowledgeBits) {
+		fields = append(fields, problem.FieldKnowledgeBits)
+	}
+	if m.FieldCleared(problem.FieldParentContainers) {
+		fields = append(fields, problem.FieldParentContainers)
+	}
+	if m.FieldCleared(problem.FieldKnowledgeNodes) {
+		fields = append(fields, problem.FieldKnowledgeNodes)
+	}
+	if m.FieldCleared(problem.FieldDoneDateTime) {
+		fields = append(fields, problem.FieldDoneDateTime)
+	}
+	if m.FieldCleared(problem.FieldSolution) {
+		fields = append(fields, problem.FieldSolution)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ProblemMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ProblemMutation) ClearField(name string) error {
+	switch name {
+	case problem.FieldTags:
+		m.ClearTags()
+		return nil
+	case problem.FieldNotes:
+		m.ClearNotes()
+		return nil
+	case problem.FieldProblems:
+		m.ClearProblems()
+		return nil
+	case problem.FieldQuestions:
+		m.ClearQuestions()
+		return nil
+	case problem.FieldActions:
+		m.ClearActions()
+		return nil
+	case problem.FieldDefinitions:
+		m.ClearDefinitions()
+		return nil
+	case problem.FieldKnowledgeBits:
+		m.ClearKnowledgeBits()
+		return nil
+	case problem.FieldParentContainers:
+		m.ClearParentContainers()
+		return nil
+	case problem.FieldKnowledgeNodes:
+		m.ClearKnowledgeNodes()
+		return nil
+	case problem.FieldDoneDateTime:
+		m.ClearDoneDateTime()
+		return nil
+	case problem.FieldSolution:
+		m.ClearSolution()
+		return nil
+	}
+	return fmt.Errorf("unknown Problem nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ProblemMutation) ResetField(name string) error {
+	switch name {
+	case problem.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case problem.FieldTags:
+		m.ResetTags()
+		return nil
+	case problem.FieldNotes:
+		m.ResetNotes()
+		return nil
+	case problem.FieldProblems:
+		m.ResetProblems()
+		return nil
+	case problem.FieldQuestions:
+		m.ResetQuestions()
+		return nil
+	case problem.FieldActions:
+		m.ResetActions()
+		return nil
+	case problem.FieldDefinitions:
+		m.ResetDefinitions()
+		return nil
+	case problem.FieldKnowledgeBits:
+		m.ResetKnowledgeBits()
+		return nil
+	case problem.FieldParentContainers:
+		m.ResetParentContainers()
+		return nil
+	case problem.FieldKnowledgeNodes:
+		m.ResetKnowledgeNodes()
+		return nil
+	case problem.FieldDoneDateTime:
+		m.ResetDoneDateTime()
+		return nil
+	case problem.FieldSolution:
+		m.ResetSolution()
+		return nil
+	}
+	return fmt.Errorf("unknown Problem field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ProblemMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ProblemMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ProblemMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ProblemMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ProblemMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ProblemMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ProblemMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Problem unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ProblemMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Problem edge %s", name)
 }
 
 // TaskMutation represents an operation that mutates the Task nodes in the graph.

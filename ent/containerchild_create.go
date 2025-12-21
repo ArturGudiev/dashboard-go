@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 	"context"
 	"errors"
@@ -21,7 +22,7 @@ type ContainerChildCreate struct {
 }
 
 // SetParentType sets the "parent_type" field.
-func (_c *ContainerChildCreate) SetParentType(v containerchild.ParentType) *ContainerChildCreate {
+func (_c *ContainerChildCreate) SetParentType(v schema.ContainerType) *ContainerChildCreate {
 	_c.mutation.SetParentType(v)
 	return _c
 }
@@ -33,7 +34,7 @@ func (_c *ContainerChildCreate) SetParentID(v int) *ContainerChildCreate {
 }
 
 // SetChildType sets the "child_type" field.
-func (_c *ContainerChildCreate) SetChildType(v containerchild.ChildType) *ContainerChildCreate {
+func (_c *ContainerChildCreate) SetChildType(v schema.ContainerType) *ContainerChildCreate {
 	_c.mutation.SetChildType(v)
 	return _c
 }

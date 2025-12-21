@@ -9,6 +9,9 @@ import (
 // ContainerChild is the predicate function for containerchild builders.
 type ContainerChild func(*sql.Selector)
 
+// Problem is the predicate function for problem builders.
+type Problem func(*sql.Selector)
+
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)
 

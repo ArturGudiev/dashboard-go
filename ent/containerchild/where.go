@@ -4,6 +4,7 @@ package containerchild
 
 import (
 	"arturgudiev/dashboard/ent/predicate"
+	"arturgudiev/dashboard/ent/schema"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -75,23 +76,33 @@ func ParentOrder(v int) predicate.ContainerChild {
 }
 
 // ParentTypeEQ applies the EQ predicate on the "parent_type" field.
-func ParentTypeEQ(v ParentType) predicate.ContainerChild {
-	return predicate.ContainerChild(sql.FieldEQ(FieldParentType, v))
+func ParentTypeEQ(v schema.ContainerType) predicate.ContainerChild {
+	vc := v
+	return predicate.ContainerChild(sql.FieldEQ(FieldParentType, vc))
 }
 
 // ParentTypeNEQ applies the NEQ predicate on the "parent_type" field.
-func ParentTypeNEQ(v ParentType) predicate.ContainerChild {
-	return predicate.ContainerChild(sql.FieldNEQ(FieldParentType, v))
+func ParentTypeNEQ(v schema.ContainerType) predicate.ContainerChild {
+	vc := v
+	return predicate.ContainerChild(sql.FieldNEQ(FieldParentType, vc))
 }
 
 // ParentTypeIn applies the In predicate on the "parent_type" field.
-func ParentTypeIn(vs ...ParentType) predicate.ContainerChild {
-	return predicate.ContainerChild(sql.FieldIn(FieldParentType, vs...))
+func ParentTypeIn(vs ...schema.ContainerType) predicate.ContainerChild {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ContainerChild(sql.FieldIn(FieldParentType, v...))
 }
 
 // ParentTypeNotIn applies the NotIn predicate on the "parent_type" field.
-func ParentTypeNotIn(vs ...ParentType) predicate.ContainerChild {
-	return predicate.ContainerChild(sql.FieldNotIn(FieldParentType, vs...))
+func ParentTypeNotIn(vs ...schema.ContainerType) predicate.ContainerChild {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ContainerChild(sql.FieldNotIn(FieldParentType, v...))
 }
 
 // ParentIDEQ applies the EQ predicate on the "parent_id" field.
@@ -115,23 +126,33 @@ func ParentIDNotIn(vs ...int) predicate.ContainerChild {
 }
 
 // ChildTypeEQ applies the EQ predicate on the "child_type" field.
-func ChildTypeEQ(v ChildType) predicate.ContainerChild {
-	return predicate.ContainerChild(sql.FieldEQ(FieldChildType, v))
+func ChildTypeEQ(v schema.ContainerType) predicate.ContainerChild {
+	vc := v
+	return predicate.ContainerChild(sql.FieldEQ(FieldChildType, vc))
 }
 
 // ChildTypeNEQ applies the NEQ predicate on the "child_type" field.
-func ChildTypeNEQ(v ChildType) predicate.ContainerChild {
-	return predicate.ContainerChild(sql.FieldNEQ(FieldChildType, v))
+func ChildTypeNEQ(v schema.ContainerType) predicate.ContainerChild {
+	vc := v
+	return predicate.ContainerChild(sql.FieldNEQ(FieldChildType, vc))
 }
 
 // ChildTypeIn applies the In predicate on the "child_type" field.
-func ChildTypeIn(vs ...ChildType) predicate.ContainerChild {
-	return predicate.ContainerChild(sql.FieldIn(FieldChildType, vs...))
+func ChildTypeIn(vs ...schema.ContainerType) predicate.ContainerChild {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ContainerChild(sql.FieldIn(FieldChildType, v...))
 }
 
 // ChildTypeNotIn applies the NotIn predicate on the "child_type" field.
-func ChildTypeNotIn(vs ...ChildType) predicate.ContainerChild {
-	return predicate.ContainerChild(sql.FieldNotIn(FieldChildType, vs...))
+func ChildTypeNotIn(vs ...schema.ContainerType) predicate.ContainerChild {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ContainerChild(sql.FieldNotIn(FieldChildType, v...))
 }
 
 // ChildIDEQ applies the EQ predicate on the "child_id" field.

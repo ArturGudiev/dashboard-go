@@ -10,6 +10,7 @@ import (
 
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 
 	_ "github.com/lib/pq"
@@ -17,20 +18,20 @@ import (
 
 // TaskJSON represents the structure of tasks in the JSON file
 type TaskJSON struct {
-	ID           int       `json:"_id"`
-	Description  string    `json:"description"`
-	Tags         []string  `json:"tags"`
-	Done         bool      `json:"done"`
-	Notes        string    `json:"notes"`
-	Tasks        []int     `json:"tasks"` // Child task IDs
-	Problems     []int     `json:"problems"`
-	Questions    []int     `json:"questions"`
-	Actions      []int     `json:"actions"`
-	Definitions  []int     `json:"definitions"`
-	KnowledgeBits []int    `json:"knowledgeBits"`
-	KnowledgeNodes []int   `json:"knowledgeNodes"`
+	ID               int             `json:"_id"`
+	Description      string          `json:"description"`
+	Tags             []string        `json:"tags"`
+	Done             bool            `json:"done"`
+	Notes            string          `json:"notes"`
+	Tasks            []int           `json:"tasks"` // Child task IDs
+	Problems         []int           `json:"problems"`
+	Questions        []int           `json:"questions"`
+	Actions          []int           `json:"actions"`
+	Definitions      []int           `json:"definitions"`
+	KnowledgeBits    []int           `json:"knowledgeBits"`
+	KnowledgeNodes   []int           `json:"knowledgeNodes"`
 	ParentContainers [][]interface{} `json:"parents"`
-	DoneDateTime *string   `json:"doneDateTime"`
+	DoneDateTime     *string         `json:"doneDateTime"`
 }
 
 // importTasks imports tasks from a JSON file
@@ -55,7 +56,7 @@ func importTasks(jsonPath string) error {
 		jsonPath = `C:\Programming\NodeJS\dashboard\data\tasks.json`
 	}
 	log.Printf("Reading tasks from: %s", jsonPath)
-	
+
 	jsonData, err := os.ReadFile(jsonPath)
 	if err != nil {
 		return fmt.Errorf("failed to read JSON file: %v", err)
@@ -72,12 +73,12 @@ func importTasks(jsonPath string) error {
 	// Create a map to track which tasks have been inserted
 	// This helps us handle parent-child relationships
 	taskMap := make(map[int]bool)
-	
+
 	// First pass: Insert all tasks
 	log.Println("Step 1: Inserting tasks into database...")
 	inserted := 0
 	skipped := 0
-	
+
 	for _, taskJSON := range tasks {
 		// Check if task already exists
 		exists, err := client.Task.Query().
@@ -87,7 +88,7 @@ func importTasks(jsonPath string) error {
 			log.Printf("Error checking if task %d exists: %v", taskJSON.ID, err)
 			continue
 		}
-		
+
 		if exists {
 			log.Printf("Task %d already exists, skipping...", taskJSON.ID)
 			skipped++
@@ -139,7 +140,7 @@ func importTasks(jsonPath string) error {
 
 		taskMap[taskJSON.ID] = true
 		inserted++
-		
+
 		if inserted%100 == 0 {
 			log.Printf("Inserted %d tasks...", inserted)
 		}
@@ -187,7 +188,7 @@ func importTasks(jsonPath string) error {
 						case int:
 							parentIDFromDesc = v
 						}
-						
+
 						if parentIDFromDesc == taskJSON.ID {
 							parentOrder = idx
 							break
@@ -195,7 +196,7 @@ func importTasks(jsonPath string) error {
 					}
 				}
 			}
-			
+
 			// If parent not found in child's parents array, default to 0
 			if parentOrder == -1 {
 				parentOrder = 0
@@ -204,9 +205,9 @@ func importTasks(jsonPath string) error {
 			// Check if relationship already exists
 			exists, err := client.ContainerChild.Query().
 				Where(
-					containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+					containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 					containerchild.ParentID(taskJSON.ID),
-					containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+					containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 					containerchild.ChildID(childID),
 				).
 				Exist(ctx)
@@ -222,12 +223,12 @@ func importTasks(jsonPath string) error {
 
 			// Create relationship with both order fields
 			_, err = client.ContainerChild.Create().
-				SetParentType(containerchild.ParentTypeTask).
+				SetParentType(schema.ContainerTypeTask).
 				SetParentID(taskJSON.ID).
-				SetChildType(containerchild.ChildTypeTask).
+				SetChildType(schema.ContainerTypeTask).
 				SetChildID(childID).
-				SetChildOrder(childOrder).    // Position in parent's children array
-				SetParentOrder(parentOrder).  // Position in child's parents array
+				SetChildOrder(childOrder).   // Position in parent's children array
+				SetParentOrder(parentOrder). // Position in child's parents array
 				Save(ctx)
 			if err != nil {
 				log.Printf("Error creating relationship %d -> %d: %v", taskJSON.ID, childID, err)
@@ -235,23 +236,22 @@ func importTasks(jsonPath string) error {
 			}
 
 			relationshipsCreated++
-			
+
 			if relationshipsCreated%100 == 0 {
 				log.Printf("Created %d relationships...", relationshipsCreated)
 			}
 		}
 	}
 
-	log.Printf("Step 2 complete: Created %d relationships, skipped %d existing relationships", 
+	log.Printf("Step 2 complete: Created %d relationships, skipped %d existing relationships",
 		relationshipsCreated, relationshipsSkipped)
-	
+
 	log.Println("Import completed successfully!")
 	fmt.Printf("\nSummary:\n")
 	fmt.Printf("  Tasks inserted: %d\n", inserted)
 	fmt.Printf("  Tasks skipped (already exist): %d\n", skipped)
 	fmt.Printf("  Relationships created: %d\n", relationshipsCreated)
 	fmt.Printf("  Relationships skipped (already exist): %d\n", relationshipsSkipped)
-	
+
 	return nil
 }
-

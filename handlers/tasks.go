@@ -7,6 +7,7 @@ import (
 
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 
 	"github.com/gin-gonic/gin"
@@ -409,9 +410,9 @@ func (h *Handler) NewTask(c *gin.Context) {
 
 		exists, err := h.App.Client.ContainerChild.Query().
 			Where(
-				containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+				containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 				containerchild.ParentID(parentTask.ID),
-				containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+				containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 				containerchild.ChildID(newTask.ID),
 			).
 			Exist(ctx)
@@ -424,9 +425,9 @@ func (h *Handler) NewTask(c *gin.Context) {
 		if !exists {
 			childCount, err := h.App.Client.ContainerChild.Query().
 				Where(
-					containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+					containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 					containerchild.ParentID(parentTask.ID),
-					containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+					containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 				).
 				Count(ctx)
 			if err != nil {
@@ -437,9 +438,9 @@ func (h *Handler) NewTask(c *gin.Context) {
 
 			parentCount, err := h.App.Client.ContainerChild.Query().
 				Where(
-					containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+					containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 					containerchild.ChildID(newTask.ID),
-					containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+					containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 				).
 				Count(ctx)
 			if err != nil {
@@ -449,9 +450,9 @@ func (h *Handler) NewTask(c *gin.Context) {
 			}
 
 			_, err = h.App.Client.ContainerChild.Create().
-				SetParentType(containerchild.ParentTypeTask).
+				SetParentType(schema.ContainerTypeTask).
 				SetParentID(parentTask.ID).
-				SetChildType(containerchild.ChildTypeTask).
+				SetChildType(schema.ContainerTypeTask).
 				SetChildID(newTask.ID).
 				SetChildOrder(childCount).
 				SetParentOrder(parentCount).
@@ -474,7 +475,7 @@ func (h *Handler) NewTask(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request  body      UpdateTaskRequest  true  "Task update request"
-// @Success      200      {object}  ent.Task
+// @Success      200      {object}  TaskResponse
 // @Failure      400      {object}  map[string]string
 // @Failure      404      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
@@ -540,5 +541,23 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, updatedTask)
+	// Convert to custom response type to ensure all fields are included
+	response := TaskResponse{
+		ID:               updatedTask.ID,
+		Description:      updatedTask.Description,
+		Tags:             updatedTask.Tags,
+		Done:             updatedTask.Done,
+		Notes:            updatedTask.Notes,
+		Problems:         updatedTask.Problems,
+		Questions:        updatedTask.Questions,
+		Actions:          updatedTask.Actions,
+		Definitions:      updatedTask.Definitions,
+		KnowledgeBits:    updatedTask.KnowledgeBits,
+		ParentContainers: updatedTask.ParentContainers,
+		KnowledgeNodes:   updatedTask.KnowledgeNodes,
+		DoneDateTime:     updatedTask.DoneDateTime,
+		Edges:            updatedTask.Edges,
+	}
+
+	c.JSON(200, response)
 }

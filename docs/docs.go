@@ -67,7 +67,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.Task"
+                            "$ref": "#/definitions/handlers.TaskResponse"
                         }
                     },
                     "500": {
@@ -288,6 +288,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/get-problems": {
+            "post": {
+                "description": "Returns multiple problems by their IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "problems"
+                ],
+                "summary": "Get problems by IDs",
+                "parameters": [
+                    {
+                        "description": "List of problem IDs",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.IDsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.ProblemResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/get-tasks": {
             "post": {
                 "description": "Returns multiple tasks by their IDs",
@@ -318,12 +373,73 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/ent.Task"
+                                "$ref": "#/definitions/handlers.TaskResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/new-problem": {
+            "post": {
+                "description": "Creates a new problem with optional parent relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "problems"
+                ],
+                "summary": "Create new problem",
+                "parameters": [
+                    {
+                        "description": "Problem creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NewProblemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ProblemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -372,6 +488,133 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ent.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/problem/{id}": {
+            "get": {
+                "description": "Returns a problem by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "problems"
+                ],
+                "summary": "Get problem by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Problem ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ProblemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/solve-problem/{id}": {
+            "put": {
+                "description": "Sets the solution for a problem",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "problems"
+                ],
+                "summary": "Solve problem",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Problem ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Solution request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SolveProblemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ProblemResponse"
                         }
                     },
                     "400": {
@@ -498,6 +741,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/update-problem": {
+            "put": {
+                "description": "Updates an existing problem by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "problems"
+                ],
+                "summary": "Update problem",
+                "parameters": [
+                    {
+                        "description": "Problem update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UpdateProblemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ProblemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/update-task": {
             "put": {
                 "description": "Updates an existing task by ID",
@@ -526,7 +830,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.Task"
+                            "$ref": "#/definitions/handlers.TaskResponse"
                         }
                     },
                     "400": {
@@ -561,64 +865,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "containerchild.ChildType": {
-            "type": "string",
-            "enum": [
-                "epic",
-                "story",
-                "task",
-                "question",
-                "problem",
-                "knowledge-node",
-                "knowledge-bit",
-                "definition",
-                "action",
-                "scheduled-task",
-                "state"
-            ],
-            "x-enum-varnames": [
-                "ChildTypeEpic",
-                "ChildTypeStory",
-                "ChildTypeTask",
-                "ChildTypeQuestion",
-                "ChildTypeProblem",
-                "ChildTypeKnowledgeNode",
-                "ChildTypeKnowledgeBit",
-                "ChildTypeDefinition",
-                "ChildTypeAction",
-                "ChildTypeScheduledTask",
-                "ChildTypeState"
-            ]
-        },
-        "containerchild.ParentType": {
-            "type": "string",
-            "enum": [
-                "epic",
-                "story",
-                "task",
-                "question",
-                "problem",
-                "knowledge-node",
-                "knowledge-bit",
-                "definition",
-                "action",
-                "scheduled-task",
-                "state"
-            ],
-            "x-enum-varnames": [
-                "ParentTypeEpic",
-                "ParentTypeStory",
-                "ParentTypeTask",
-                "ParentTypeQuestion",
-                "ParentTypeProblem",
-                "ParentTypeKnowledgeNode",
-                "ParentTypeKnowledgeBit",
-                "ParentTypeDefinition",
-                "ParentTypeAction",
-                "ParentTypeScheduledTask",
-                "ParentTypeState"
-            ]
-        },
         "ent.ContainerChild": {
             "type": "object",
             "properties": {
@@ -634,7 +880,7 @@ const docTemplate = `{
                     "description": "ChildType holds the value of the \"child_type\" field.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/containerchild.ChildType"
+                            "$ref": "#/definitions/schema.ContainerType"
                         }
                     ]
                 },
@@ -662,7 +908,7 @@ const docTemplate = `{
                     "description": "ParentType holds the value of the \"parent_type\" field.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/containerchild.ParentType"
+                            "$ref": "#/definitions/schema.ContainerType"
                         }
                     ]
                 }
@@ -812,6 +1058,17 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.NewProblemRequest": {
+            "type": "object",
+            "properties": {
+                "parent": {
+                    "$ref": "#/definitions/handlers.ParentRequest"
+                },
+                "problem": {
+                    "$ref": "#/definitions/handlers.ProblemRequest"
+                }
+            }
+        },
         "handlers.NewTaskRequest": {
             "type": "object",
             "properties": {
@@ -838,6 +1095,152 @@ const docTemplate = `{
                     "$ref": "#/definitions/handlers.ParentObj"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ProblemRequest": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "knowledgeBits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parents": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "solution": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handlers.ProblemResponse": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "done_date_time": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "knowledge_bits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledge_nodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parent_containers": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "solution": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handlers.SolveProblemRequest": {
+            "type": "object",
+            "required": [
+                "solution"
+            ],
+            "properties": {
+                "solution": {
                     "type": "string"
                 }
             }
@@ -1005,12 +1408,78 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.UpdateProblemRequest": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "knowledgeBits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parents": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "solution": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "handlers.UpdateTaskRequest": {
             "type": "object",
             "properties": {
-                "_id": {
-                    "type": "integer"
-                },
                 "actions": {
                     "type": "array",
                     "items": {
@@ -1031,6 +1500,9 @@ const docTemplate = `{
                 },
                 "doneDateTime": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "knowledgeBits": {
                     "type": "array",
@@ -1073,6 +1545,35 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "schema.ContainerType": {
+            "type": "string",
+            "enum": [
+                "epic",
+                "story",
+                "task",
+                "question",
+                "problem",
+                "knowledge-node",
+                "knowledge-bit",
+                "definition",
+                "action",
+                "scheduled-task",
+                "state"
+            ],
+            "x-enum-varnames": [
+                "ContainerTypeEpic",
+                "ContainerTypeStory",
+                "ContainerTypeTask",
+                "ContainerTypeQuestion",
+                "ContainerTypeProblem",
+                "ContainerTypeKnowledgeNode",
+                "ContainerTypeKnowledgeBit",
+                "ContainerTypeDefinition",
+                "ContainerTypeAction",
+                "ContainerTypeScheduledTask",
+                "ContainerTypeState"
+            ]
         }
     }
 }`

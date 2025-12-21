@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
 	"context"
@@ -76,6 +77,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			containerchild.Table: containerchild.ValidColumn,
+			problem.Table:        problem.ValidColumn,
 			task.Table:           task.ValidColumn,
 			test.Table:           test.ValidColumn,
 		})

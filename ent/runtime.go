@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
@@ -39,6 +40,52 @@ func init() {
 	containerchildDescID := containerchildFields[0].Descriptor()
 	// containerchild.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	containerchild.IDValidator = containerchildDescID.Validators[0].(func(int) error)
+	problemFields := schema.Problem{}.Fields()
+	_ = problemFields
+	// problemDescDescription is the schema descriptor for description field.
+	problemDescDescription := problemFields[1].Descriptor()
+	// problem.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	problem.DescriptionValidator = problemDescDescription.Validators[0].(func(string) error)
+	// problemDescTags is the schema descriptor for tags field.
+	problemDescTags := problemFields[2].Descriptor()
+	// problem.DefaultTags holds the default value on creation for the tags field.
+	problem.DefaultTags = problemDescTags.Default.([]string)
+	// problemDescNotes is the schema descriptor for notes field.
+	problemDescNotes := problemFields[3].Descriptor()
+	// problem.DefaultNotes holds the default value on creation for the notes field.
+	problem.DefaultNotes = problemDescNotes.Default.(string)
+	// problemDescProblems is the schema descriptor for problems field.
+	problemDescProblems := problemFields[4].Descriptor()
+	// problem.DefaultProblems holds the default value on creation for the problems field.
+	problem.DefaultProblems = problemDescProblems.Default.([]int)
+	// problemDescQuestions is the schema descriptor for questions field.
+	problemDescQuestions := problemFields[5].Descriptor()
+	// problem.DefaultQuestions holds the default value on creation for the questions field.
+	problem.DefaultQuestions = problemDescQuestions.Default.([]int)
+	// problemDescActions is the schema descriptor for actions field.
+	problemDescActions := problemFields[6].Descriptor()
+	// problem.DefaultActions holds the default value on creation for the actions field.
+	problem.DefaultActions = problemDescActions.Default.([]int)
+	// problemDescDefinitions is the schema descriptor for definitions field.
+	problemDescDefinitions := problemFields[7].Descriptor()
+	// problem.DefaultDefinitions holds the default value on creation for the definitions field.
+	problem.DefaultDefinitions = problemDescDefinitions.Default.([]int)
+	// problemDescKnowledgeBits is the schema descriptor for knowledge_bits field.
+	problemDescKnowledgeBits := problemFields[8].Descriptor()
+	// problem.DefaultKnowledgeBits holds the default value on creation for the knowledge_bits field.
+	problem.DefaultKnowledgeBits = problemDescKnowledgeBits.Default.([]int)
+	// problemDescParentContainers is the schema descriptor for parent_containers field.
+	problemDescParentContainers := problemFields[9].Descriptor()
+	// problem.DefaultParentContainers holds the default value on creation for the parent_containers field.
+	problem.DefaultParentContainers = problemDescParentContainers.Default.([][]interface{})
+	// problemDescKnowledgeNodes is the schema descriptor for knowledge_nodes field.
+	problemDescKnowledgeNodes := problemFields[10].Descriptor()
+	// problem.DefaultKnowledgeNodes holds the default value on creation for the knowledge_nodes field.
+	problem.DefaultKnowledgeNodes = problemDescKnowledgeNodes.Default.([]int)
+	// problemDescID is the schema descriptor for id field.
+	problemDescID := problemFields[0].Descriptor()
+	// problem.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	problem.IDValidator = problemDescID.Validators[0].(func(int) error)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescDescription is the schema descriptor for description field.

@@ -50,7 +50,7 @@ type NewTaskRequest struct {
 
 // UpdateTaskRequest represents a request to update an existing task
 type UpdateTaskRequest struct {
-	ID               int             `json:"_id"`
+	ID               int             `json:"id"`
 	Description      string          `json:"description"`
 	Tags             []string        `json:"tags,omitempty"`
 	Done             bool            `json:"done,omitempty"`
@@ -81,4 +81,65 @@ type TaskResponse struct {
 	KnowledgeNodes   []int           `json:"knowledge_nodes"`
 	DoneDateTime     *time.Time      `json:"done_date_time"`
 	Edges            ent.TaskEdges   `json:"edges"`
+}
+
+// ProblemRequest represents a full problem request (used in new-problem endpoint)
+type ProblemRequest struct {
+	Description      string          `json:"description"`
+	Tags             []string        `json:"tags,omitempty"`
+	Notes            string          `json:"notes,omitempty"`
+	Problems         []int           `json:"problems,omitempty"`
+	Questions        []int           `json:"questions,omitempty"`
+	Actions          []int           `json:"actions,omitempty"`
+	Definitions      []int           `json:"definitions,omitempty"`
+	KnowledgeBits    []int           `json:"knowledgeBits,omitempty"`
+	KnowledgeNodes   []int           `json:"knowledgeNodes,omitempty"`
+	ParentContainers [][]interface{} `json:"parents,omitempty"`
+	DoneDateTime     *time.Time      `json:"doneDateTime,omitempty"`
+	Solution         *string         `json:"solution,omitempty"`
+}
+
+// NewProblemRequest represents a request to create a new problem with optional parent
+type NewProblemRequest struct {
+	Problem ProblemRequest `json:"problem"`
+	Parent  *ParentRequest `json:"parent,omitempty"`
+}
+
+// UpdateProblemRequest represents a request to update an existing problem
+type UpdateProblemRequest struct {
+	ID               int             `json:"id"`
+	Description      string          `json:"description"`
+	Tags             []string        `json:"tags,omitempty"`
+	Notes            string          `json:"notes,omitempty"`
+	Problems         []int           `json:"problems,omitempty"`
+	Questions        []int           `json:"questions,omitempty"`
+	Actions          []int           `json:"actions,omitempty"`
+	Definitions      []int           `json:"definitions,omitempty"`
+	KnowledgeBits    []int           `json:"knowledgeBits,omitempty"`
+	KnowledgeNodes   []int           `json:"knowledgeNodes,omitempty"`
+	ParentContainers [][]interface{} `json:"parents,omitempty"`
+	DoneDateTime     *time.Time      `json:"doneDateTime,omitempty"`
+	Solution         *string         `json:"solution,omitempty"`
+}
+
+// SolveProblemRequest represents a request to solve a problem
+type SolveProblemRequest struct {
+	Solution string `json:"solution" binding:"required"`
+}
+
+// ProblemResponse represents a problem response with all fields always included
+type ProblemResponse struct {
+	ID               int             `json:"id"`
+	Description      string          `json:"description"`
+	Tags             []string        `json:"tags"`
+	Notes            string          `json:"notes"`
+	Problems         []int           `json:"problems"`
+	Questions        []int           `json:"questions"`
+	Actions          []int           `json:"actions"`
+	Definitions      []int           `json:"definitions"`
+	KnowledgeBits    []int           `json:"knowledge_bits"`
+	ParentContainers [][]interface{} `json:"parent_containers"`
+	KnowledgeNodes   []int           `json:"knowledge_nodes"`
+	DoneDateTime     *time.Time      `json:"done_date_time"`
+	Solution         *string         `json:"solution"`
 }

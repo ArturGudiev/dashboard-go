@@ -1,57 +1,5 @@
 basePath: /
 definitions:
-  containerchild.ChildType:
-    enum:
-    - epic
-    - story
-    - task
-    - question
-    - problem
-    - knowledge-node
-    - knowledge-bit
-    - definition
-    - action
-    - scheduled-task
-    - state
-    type: string
-    x-enum-varnames:
-    - ChildTypeEpic
-    - ChildTypeStory
-    - ChildTypeTask
-    - ChildTypeQuestion
-    - ChildTypeProblem
-    - ChildTypeKnowledgeNode
-    - ChildTypeKnowledgeBit
-    - ChildTypeDefinition
-    - ChildTypeAction
-    - ChildTypeScheduledTask
-    - ChildTypeState
-  containerchild.ParentType:
-    enum:
-    - epic
-    - story
-    - task
-    - question
-    - problem
-    - knowledge-node
-    - knowledge-bit
-    - definition
-    - action
-    - scheduled-task
-    - state
-    type: string
-    x-enum-varnames:
-    - ParentTypeEpic
-    - ParentTypeStory
-    - ParentTypeTask
-    - ParentTypeQuestion
-    - ParentTypeProblem
-    - ParentTypeKnowledgeNode
-    - ParentTypeKnowledgeBit
-    - ParentTypeDefinition
-    - ParentTypeAction
-    - ParentTypeScheduledTask
-    - ParentTypeState
   ent.ContainerChild:
     properties:
       child_id:
@@ -62,7 +10,7 @@ definitions:
         type: integer
       child_type:
         allOf:
-        - $ref: '#/definitions/containerchild.ChildType'
+        - $ref: '#/definitions/schema.ContainerType'
         description: ChildType holds the value of the "child_type" field.
       edges:
         allOf:
@@ -81,7 +29,7 @@ definitions:
         type: integer
       parent_type:
         allOf:
-        - $ref: '#/definitions/containerchild.ParentType'
+        - $ref: '#/definitions/schema.ContainerType'
         description: ParentType holds the value of the "parent_type" field.
     type: object
   ent.ContainerChildEdges:
@@ -182,6 +130,13 @@ definitions:
     required:
     - ids
     type: object
+  handlers.NewProblemRequest:
+    properties:
+      parent:
+        $ref: '#/definitions/handlers.ParentRequest'
+      problem:
+        $ref: '#/definitions/handlers.ProblemRequest'
+    type: object
   handlers.NewTaskRequest:
     properties:
       parent:
@@ -200,6 +155,103 @@ definitions:
         $ref: '#/definitions/handlers.ParentObj'
       type:
         type: string
+    type: object
+  handlers.ProblemRequest:
+    properties:
+      actions:
+        items:
+          type: integer
+        type: array
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      doneDateTime:
+        type: string
+      knowledgeBits:
+        items:
+          type: integer
+        type: array
+      knowledgeNodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parents:
+        items:
+          items: {}
+          type: array
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      solution:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  handlers.ProblemResponse:
+    properties:
+      actions:
+        items:
+          type: integer
+        type: array
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      done_date_time:
+        type: string
+      id:
+        type: integer
+      knowledge_bits:
+        items:
+          type: integer
+        type: array
+      knowledge_nodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parent_containers:
+        items:
+          items: {}
+          type: array
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      solution:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  handlers.SolveProblemRequest:
+    properties:
+      solution:
+        type: string
+    required:
+    - solution
     type: object
   handlers.TaskIDRequest:
     properties:
@@ -309,10 +361,54 @@ definitions:
           type: string
         type: array
     type: object
+  handlers.UpdateProblemRequest:
+    properties:
+      actions:
+        items:
+          type: integer
+        type: array
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      doneDateTime:
+        type: string
+      id:
+        type: integer
+      knowledgeBits:
+        items:
+          type: integer
+        type: array
+      knowledgeNodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parents:
+        items:
+          items: {}
+          type: array
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      solution:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
   handlers.UpdateTaskRequest:
     properties:
-      _id:
-        type: integer
       actions:
         items:
           type: integer
@@ -327,6 +423,8 @@ definitions:
         type: boolean
       doneDateTime:
         type: string
+      id:
+        type: integer
       knowledgeBits:
         items:
           type: integer
@@ -355,6 +453,32 @@ definitions:
           type: string
         type: array
     type: object
+  schema.ContainerType:
+    enum:
+    - epic
+    - story
+    - task
+    - question
+    - problem
+    - knowledge-node
+    - knowledge-bit
+    - definition
+    - action
+    - scheduled-task
+    - state
+    type: string
+    x-enum-varnames:
+    - ContainerTypeEpic
+    - ContainerTypeStory
+    - ContainerTypeTask
+    - ContainerTypeQuestion
+    - ContainerTypeProblem
+    - ContainerTypeKnowledgeNode
+    - ContainerTypeKnowledgeBit
+    - ContainerTypeDefinition
+    - ContainerTypeAction
+    - ContainerTypeScheduledTask
+    - ContainerTypeState
 host: localhost:8080
 info:
   contact:
@@ -397,7 +521,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.Task'
+            $ref: '#/definitions/handlers.TaskResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -543,6 +667,42 @@ paths:
       summary: Finish multiple tasks recursively
       tags:
       - tasks
+  /get-problems:
+    post:
+      consumes:
+      - application/json
+      description: Returns multiple problems by their IDs
+      parameters:
+      - description: List of problem IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.IDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.ProblemResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get problems by IDs
+      tags:
+      - problems
   /get-tasks:
     post:
       consumes:
@@ -562,7 +722,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/ent.Task'
+              $ref: '#/definitions/handlers.TaskResponse'
             type: array
         "400":
           description: Bad Request
@@ -579,6 +739,46 @@ paths:
       summary: Get tasks by IDs
       tags:
       - tasks
+  /new-problem:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new problem with optional parent relationship
+      parameters:
+      - description: Problem creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.NewProblemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ProblemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new problem
+      tags:
+      - problems
   /new-task:
     post:
       consumes:
@@ -619,6 +819,90 @@ paths:
       summary: Create new task
       tags:
       - tasks
+  /problem/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a problem by its ID
+      parameters:
+      - description: Problem ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ProblemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get problem by ID
+      tags:
+      - problems
+  /solve-problem/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Sets the solution for a problem
+      parameters:
+      - description: Problem ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Solution request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SolveProblemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ProblemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Solve problem
+      tags:
+      - problems
   /task/{id}:
     get:
       consumes:
@@ -681,6 +965,46 @@ paths:
       summary: Get all tests
       tags:
       - tests
+  /update-problem:
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing problem by ID
+      parameters:
+      - description: Problem update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateProblemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ProblemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update problem
+      tags:
+      - problems
   /update-task:
     put:
       consumes:
@@ -699,7 +1023,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.Task'
+            $ref: '#/definitions/handlers.TaskResponse'
         "400":
           description: Bad Request
           schema:

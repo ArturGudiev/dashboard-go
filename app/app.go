@@ -14,9 +14,10 @@ import (
 
 // App holds all application dependencies
 type App struct {
-	Client      *ent.Client
-	TaskService *services.TaskService
-	ctx         context.Context // Default context for CLI operations
+	Client         *ent.Client
+	TaskService    *services.TaskService
+	ProblemService *services.ProblemService
+	ctx            context.Context // Default context for CLI operations
 }
 
 // NewApp creates a new App instance with all dependencies initialized
@@ -54,11 +55,13 @@ func NewApp() (*App, error) {
 
 	// Initialize services
 	taskService := services.NewTaskService(client)
+	problemService := services.NewProblemService(client)
 
 	return &App{
-		Client:      client,
-		TaskService: taskService,
-		ctx:         context.Background(), // Default context for CLI
+		Client:         client,
+		TaskService:    taskService,
+		ProblemService: problemService,
+		ctx:            context.Background(), // Default context for CLI
 	}, nil
 }
 

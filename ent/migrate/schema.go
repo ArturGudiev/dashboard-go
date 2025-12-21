@@ -66,6 +66,28 @@ var (
 			},
 		},
 	}
+	// ProblemsColumns holds the columns for the "problems" table.
+	ProblemsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON, Nullable: true},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "problems", Type: field.TypeJSON, Nullable: true},
+		{Name: "questions", Type: field.TypeJSON, Nullable: true},
+		{Name: "actions", Type: field.TypeJSON, Nullable: true},
+		{Name: "definitions", Type: field.TypeJSON, Nullable: true},
+		{Name: "knowledge_bits", Type: field.TypeJSON, Nullable: true},
+		{Name: "parent_containers", Type: field.TypeJSON, Nullable: true},
+		{Name: "knowledge_nodes", Type: field.TypeJSON, Nullable: true},
+		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
+		{Name: "solution", Type: field.TypeString, Nullable: true},
+	}
+	// ProblemsTable holds the schema information for the "problems" table.
+	ProblemsTable = &schema.Table{
+		Name:       "problems",
+		Columns:    ProblemsColumns,
+		PrimaryKey: []*schema.Column{ProblemsColumns[0]},
+	}
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -103,6 +125,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ContainerChildrenTable,
+		ProblemsTable,
 		TasksTable,
 		TestsTable,
 	}

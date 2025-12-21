@@ -333,7 +333,7 @@ func (_q *ContainerChildQuery) WithChild(opts ...func(*TaskQuery)) *ContainerChi
 // Example:
 //
 //	var v []struct {
-//		ParentType containerchild.ParentType `json:"parent_type,omitempty"`
+//		ParentType schema.ContainerType `json:"parent_type,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -356,7 +356,7 @@ func (_q *ContainerChildQuery) GroupBy(field string, fields ...string) *Containe
 // Example:
 //
 //	var v []struct {
-//		ParentType containerchild.ParentType `json:"parent_type,omitempty"`
+//		ParentType schema.ContainerType `json:"parent_type,omitempty"`
 //	}
 //
 //	client.ContainerChild.Query().

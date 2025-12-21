@@ -7,6 +7,7 @@ import (
 	"arturgudiev/dashboard/app"
 	_ "arturgudiev/dashboard/docs" // Swagger docs
 	"arturgudiev/dashboard/handlers"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -68,6 +69,8 @@ func main() {
 
 	router.GET("/", h.Root)
 	router.GET("/tests", h.GetTests)
+
+	// Task routes
 	router.GET("/task/:id", h.GetTaskByID)
 	router.POST("/get-tasks", h.GetTasksByIDs)
 	router.PUT("/add-anonymous-task", h.AddAnonymousTask)
@@ -77,6 +80,13 @@ func main() {
 	router.PUT("/finish-tasks-by-ids/", h.FinishTasksByIDs)
 	router.POST("/new-task", h.NewTask)
 	router.PUT("/update-task", h.UpdateTask)
+
+	// Problem routes
+	router.GET("/problem/:id", h.GetProblemByID)
+	router.POST("/get-problems", h.GetProblemsByIDs)
+	router.PUT("/solve-problem/:id", h.SolveProblem)
+	router.POST("/new-problem", h.NewProblem)
+	router.PUT("/update-problem", h.UpdateProblem)
 
 	// Start server
 	port := os.Getenv("PORT")

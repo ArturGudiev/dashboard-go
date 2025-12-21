@@ -5,6 +5,7 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/predicate"
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 	"context"
 	"errors"
@@ -29,13 +30,13 @@ func (_u *ContainerChildUpdate) Where(ps ...predicate.ContainerChild) *Container
 }
 
 // SetParentType sets the "parent_type" field.
-func (_u *ContainerChildUpdate) SetParentType(v containerchild.ParentType) *ContainerChildUpdate {
+func (_u *ContainerChildUpdate) SetParentType(v schema.ContainerType) *ContainerChildUpdate {
 	_u.mutation.SetParentType(v)
 	return _u
 }
 
 // SetNillableParentType sets the "parent_type" field if the given value is not nil.
-func (_u *ContainerChildUpdate) SetNillableParentType(v *containerchild.ParentType) *ContainerChildUpdate {
+func (_u *ContainerChildUpdate) SetNillableParentType(v *schema.ContainerType) *ContainerChildUpdate {
 	if v != nil {
 		_u.SetParentType(*v)
 	}
@@ -57,13 +58,13 @@ func (_u *ContainerChildUpdate) SetNillableParentID(v *int) *ContainerChildUpdat
 }
 
 // SetChildType sets the "child_type" field.
-func (_u *ContainerChildUpdate) SetChildType(v containerchild.ChildType) *ContainerChildUpdate {
+func (_u *ContainerChildUpdate) SetChildType(v schema.ContainerType) *ContainerChildUpdate {
 	_u.mutation.SetChildType(v)
 	return _u
 }
 
 // SetNillableChildType sets the "child_type" field if the given value is not nil.
-func (_u *ContainerChildUpdate) SetNillableChildType(v *containerchild.ChildType) *ContainerChildUpdate {
+func (_u *ContainerChildUpdate) SetNillableChildType(v *schema.ContainerType) *ContainerChildUpdate {
 	if v != nil {
 		_u.SetChildType(*v)
 	}
@@ -330,13 +331,13 @@ type ContainerChildUpdateOne struct {
 }
 
 // SetParentType sets the "parent_type" field.
-func (_u *ContainerChildUpdateOne) SetParentType(v containerchild.ParentType) *ContainerChildUpdateOne {
+func (_u *ContainerChildUpdateOne) SetParentType(v schema.ContainerType) *ContainerChildUpdateOne {
 	_u.mutation.SetParentType(v)
 	return _u
 }
 
 // SetNillableParentType sets the "parent_type" field if the given value is not nil.
-func (_u *ContainerChildUpdateOne) SetNillableParentType(v *containerchild.ParentType) *ContainerChildUpdateOne {
+func (_u *ContainerChildUpdateOne) SetNillableParentType(v *schema.ContainerType) *ContainerChildUpdateOne {
 	if v != nil {
 		_u.SetParentType(*v)
 	}
@@ -358,13 +359,13 @@ func (_u *ContainerChildUpdateOne) SetNillableParentID(v *int) *ContainerChildUp
 }
 
 // SetChildType sets the "child_type" field.
-func (_u *ContainerChildUpdateOne) SetChildType(v containerchild.ChildType) *ContainerChildUpdateOne {
+func (_u *ContainerChildUpdateOne) SetChildType(v schema.ContainerType) *ContainerChildUpdateOne {
 	_u.mutation.SetChildType(v)
 	return _u
 }
 
 // SetNillableChildType sets the "child_type" field if the given value is not nil.
-func (_u *ContainerChildUpdateOne) SetNillableChildType(v *containerchild.ChildType) *ContainerChildUpdateOne {
+func (_u *ContainerChildUpdateOne) SetNillableChildType(v *schema.ContainerType) *ContainerChildUpdateOne {
 	if v != nil {
 		_u.SetChildType(*v)
 	}

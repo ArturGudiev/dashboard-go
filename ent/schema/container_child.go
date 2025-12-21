@@ -2,11 +2,11 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"entgo.io/ent/dialect/entsql"
 )
 
 // ContainerChild holds the schema definition for the ContainerChild entity (join table).
@@ -23,35 +23,11 @@ func (ContainerChild) Fields() []ent.Field {
 			Positive().
 			Immutable(),
 		field.Enum("parent_type").
-			Values(
-				"epic",
-				"story",
-				"task",
-				"question",
-				"problem",
-				"knowledge-node",
-				"knowledge-bit",
-				"definition",
-				"action",
-				"scheduled-task",
-				"state",
-			),
+			GoType(ContainerType("")),
 		field.Int("parent_id").
 			Positive(),
 		field.Enum("child_type").
-			Values(
-				"epic",
-				"story",
-				"task",
-				"question",
-				"problem",
-				"knowledge-node",
-				"knowledge-bit",
-				"definition",
-				"action",
-				"scheduled-task",
-				"state",
-			),
+			GoType(ContainerType("")),
 		field.Int("child_id").
 			Positive(),
 		// child_order: position of this child within the parent's children list
@@ -107,5 +83,3 @@ func (ContainerChild) Annotations() []schema.Annotation {
 		},
 	}
 }
-
-

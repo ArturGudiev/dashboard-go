@@ -4,6 +4,7 @@ import (
 	"arturgudiev/dashboard/app"
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/utils"
 	"bufio"
@@ -240,9 +241,9 @@ func printTaskInfo(ctx context.Context, application *app.App, t *ent.Task) {
 	// Get and display child tasks
 	childRelations, err := application.Client.ContainerChild.Query().
 		Where(
-			containerchild.ParentTypeEQ(containerchild.ParentTypeTask),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 			containerchild.ParentID(t.ID),
-			containerchild.ChildTypeEQ(containerchild.ChildTypeTask),
+			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
 		Order(containerchild.ByChildOrder()).
 		WithChild().
@@ -266,7 +267,43 @@ func printTaskInfo(ctx context.Context, application *app.App, t *ent.Task) {
 		}
 	}
 
-	fmt.Println("\nCommands: q/quit/exit - quit, r/refresh - refresh task, t+ <description> - add subtask")
+	// Get and display child problems
+	childProblemRelations, err := application.Client.ContainerChild.Query().
+		Where(
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
+			containerchild.ParentID(t.ID),
+			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
+		).
+		Order(containerchild.ByChildOrder()).
+		All(ctx)
+
+	if err == nil && len(childProblemRelations) > 0 {
+		// Load problems manually since edges don't support Problem
+		openProblems := []*ent.Problem{}
+		for _, relation := range childProblemRelations {
+			childProblem, err := application.Client.Problem.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+			// Filter to only open problems (solution is null)
+			if childProblem.Solution == nil {
+				openProblems = append(openProblems, childProblem)
+			}
+		}
+
+		if len(openProblems) > 0 {
+			fmt.Println("\nChild Problems:")
+			for i, childProblem := range openProblems {
+				status := "Open"
+				if childProblem.Solution != nil {
+					status = "Solved"
+				}
+				fmt.Printf("  %d. [ID: %d] %s - %s\n", i+1, childProblem.ID, status, childProblem.Description)
+			}
+		}
+	}
+
+	fmt.Println("\nCommands: q/quit/exit - quit, r/refresh - refresh task, t+ <description> - add subtask, p+ <description> - add problem")
 }
 
 // viewTaskInteractive shows task details and allows interactive commands
@@ -314,6 +351,23 @@ func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 				continue
 			}
 			// Continue loop to refresh and show the new subtask
+			continue
+		}
+
+		// Check for p+ command (case-sensitive for the +)
+		if strings.HasPrefix(line, "p+ ") {
+			description := strings.TrimSpace(line[3:])
+			if description == "" {
+				fmt.Println("Error: Description required. Usage: p+ <description>")
+				utils.WaitForUserInput()
+				continue
+			}
+			if err := addSubproblem(ctx, application, currentID, description); err != nil {
+				fmt.Printf("Error adding problem: %v\n", err)
+				utils.WaitForUserInput()
+				continue
+			}
+			// Continue loop to refresh and show the new problem
 			continue
 		}
 
@@ -388,7 +442,7 @@ func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 			// Empty input, refresh
 			continue
 		default:
-			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, or 't+ <description>' to add subtask.\n", line)
+			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, or 'p+ <description>' to add problem.\n", line)
 			utils.WaitForUserInput()
 		}
 	}
@@ -578,5 +632,58 @@ func addSubtask(ctx context.Context, application *app.App, parentID int, descrip
 		return err
 	}
 	fmt.Printf("Subtask created successfully! ID: %d\n", newTask.ID)
+	return nil
+}
+
+// addSubproblem creates a new problem as a child of the given parent task
+func addSubproblem(ctx context.Context, application *app.App, parentTaskID int, description string) error {
+	// Create the new problem (not done - solution is null by default)
+	newProblem, err := application.Client.Problem.Create().
+		SetDescription(description).
+		SetTags([]string{}).
+		SetNotes("").
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create problem: %v", err)
+	}
+
+	// Get the count of existing children to set child_order
+	childCount, err := application.Client.ContainerChild.Query().
+		Where(
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
+			containerchild.ParentID(parentTaskID),
+			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count children: %v", err)
+	}
+
+	// Get the count of existing parents to set parent_order
+	parentCount, err := application.Client.ContainerChild.Query().
+		Where(
+			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
+			containerchild.ChildID(newProblem.ID),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count parents: %v", err)
+	}
+
+	// Create the parent-child relationship
+	_, err = application.Client.ContainerChild.Create().
+		SetParentType(schema.ContainerTypeTask).
+		SetParentID(parentTaskID).
+		SetChildType(schema.ContainerTypeProblem).
+		SetChildID(newProblem.ID).
+		SetChildOrder(childCount).
+		SetParentOrder(parentCount).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create relationship: %v", err)
+	}
+
+	fmt.Printf("Problem created successfully! ID: %d\n", newProblem.ID)
 	return nil
 }
