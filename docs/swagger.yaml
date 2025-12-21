@@ -250,6 +250,54 @@ definitions:
           type: string
         type: array
     type: object
+  handlers.TaskResponse:
+    properties:
+      actions:
+        items:
+          type: integer
+        type: array
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      done:
+        type: boolean
+      done_date_time:
+        type: string
+      edges:
+        $ref: '#/definitions/ent.TaskEdges'
+      id:
+        type: integer
+      knowledge_bits:
+        items:
+          type: integer
+        type: array
+      knowledge_nodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parent_containers:
+        items:
+          items: {}
+          type: array
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
   handlers.TestResponse:
     properties:
       id:
@@ -363,17 +411,23 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns the count of done tasks (placeholder endpoint)
+      description: Returns all done tasks where doneDateTime is today
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
+            items:
+              $ref: '#/definitions/ent.Task'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
             additionalProperties:
-              type: integer
+              type: string
             type: object
-      summary: Get done tasks count
+      summary: Get done tasks from today
       tags:
       - tasks
   /finish-task/{id}:
@@ -393,7 +447,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.Task'
+            $ref: '#/definitions/handlers.TaskResponse'
         "400":
           description: Bad Request
           schema:
@@ -582,7 +636,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.Task'
+            $ref: '#/definitions/handlers.TaskResponse'
         "400":
           description: Bad Request
           schema:

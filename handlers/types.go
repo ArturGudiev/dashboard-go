@@ -1,6 +1,9 @@
 package handlers
 
-import "time"
+import (
+	"arturgudiev/dashboard/ent"
+	"time"
+)
 
 // IDsRequest represents a request with a list of IDs
 type IDsRequest struct {
@@ -60,4 +63,22 @@ type UpdateTaskRequest struct {
 	KnowledgeNodes   []int           `json:"knowledgeNodes,omitempty"`
 	ParentContainers [][]interface{} `json:"parents,omitempty"`
 	DoneDateTime     *time.Time      `json:"doneDateTime,omitempty"`
+}
+
+// TaskResponse represents a task response with all fields always included
+type TaskResponse struct {
+	ID               int             `json:"id"`
+	Description      string          `json:"description"`
+	Tags             []string        `json:"tags"`
+	Done             bool            `json:"done"`
+	Notes            string          `json:"notes"`
+	Problems         []int           `json:"problems"`
+	Questions        []int           `json:"questions"`
+	Actions          []int           `json:"actions"`
+	Definitions      []int           `json:"definitions"`
+	KnowledgeBits    []int           `json:"knowledge_bits"`
+	ParentContainers [][]interface{} `json:"parent_containers"`
+	KnowledgeNodes   []int           `json:"knowledge_nodes"`
+	DoneDateTime     *time.Time      `json:"done_date_time"`
+	Edges            ent.TaskEdges   `json:"edges"`
 }

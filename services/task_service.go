@@ -121,14 +121,14 @@ func (s *TaskService) FinishTaskRecursively(ctx context.Context, task *ent.Task)
 	// Mark all tasks as done with current timestamp
 	now := time.Now()
 	for _, taskToFinish := range allTasksToFinish {
-		_, err := s.client.Task.UpdateOneID(taskToFinish.ID).
-			SetDone(true).
-			SetDoneDateTime(now).
-			Save(ctx)
-		if err != nil {
-			return err
-		}
+		_ = s.FinishTaskRecursively(ctx, taskToFinish)
 	}
+
+	s.client.Task.UpdateOneID(task.ID).
+		SetDone(true).
+		SetDoneDateTime(now).
+		Save(ctx)
+
 	return nil
 }
 

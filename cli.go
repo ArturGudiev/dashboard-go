@@ -249,15 +249,19 @@ func printTaskInfo(ctx context.Context, application *app.App, t *ent.Task) {
 		All(ctx)
 
 	if err == nil && len(childRelations) > 0 {
-		fmt.Println("\nChild Tasks:")
-		for i, relation := range childRelations {
+		// Filter to only open tasks
+		openTasks := []*ent.Task{}
+		for _, relation := range childRelations {
 			childTask := relation.Edges.Child
-			if childTask != nil {
-				status := "Open"
-				if childTask.Done {
-					status = "Done"
-				}
-				fmt.Printf("  %d. [ID: %d] %s - %s\n", i+1, childTask.ID, status, childTask.Description)
+			if childTask != nil && !childTask.Done {
+				openTasks = append(openTasks, childTask)
+			}
+		}
+
+		if len(openTasks) > 0 {
+			fmt.Println("\nChild Tasks:")
+			for i, childTask := range openTasks {
+				fmt.Printf("  %d. [ID: %d] Open - %s\n", i+1, childTask.ID, childTask.Description)
 			}
 		}
 	}

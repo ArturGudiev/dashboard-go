@@ -3,12 +3,14 @@ package handlers
 import (
 	"log"
 	"strconv"
+	"time"
 
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/task"
 
 	"github.com/gin-gonic/gin"
+	"github.com/niemeyer/pretty"
 )
 
 // GetTaskByID handles GET /task/:id
@@ -18,7 +20,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        id   path      int  true  "Task ID"
-// @Success      200  {object}  ent.Task
+// @Success      200  {object}  TaskResponse
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -41,7 +43,27 @@ func (h *Handler) GetTaskByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, task)
+	pretty.Print(task)
+
+	// Convert to custom response type to ensure all fields are included
+	response := TaskResponse{
+		ID:               task.ID,
+		Description:      task.Description,
+		Tags:             task.Tags,
+		Done:             task.Done,
+		Notes:            task.Notes,
+		Problems:         task.Problems,
+		Questions:        task.Questions,
+		Actions:          task.Actions,
+		Definitions:      task.Definitions,
+		KnowledgeBits:    task.KnowledgeBits,
+		ParentContainers: task.ParentContainers,
+		KnowledgeNodes:   task.KnowledgeNodes,
+		DoneDateTime:     task.DoneDateTime,
+		Edges:            task.Edges,
+	}
+
+	c.JSON(200, response)
 }
 
 // GetTasksByIDs handles POST /get-tasks
@@ -51,7 +73,7 @@ func (h *Handler) GetTaskByID(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request  body      IDsRequest  true  "List of task IDs"
-// @Success      200      {array}   ent.Task
+// @Success      200      {array}   TaskResponse
 // @Failure      400      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /get-tasks [post]
@@ -68,7 +90,28 @@ func (h *Handler) GetTasksByIDs(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, tasks)
+	// Convert to slice of TaskResponse to ensure all fields are included
+	responses := make([]TaskResponse, len(tasks))
+	for i, t := range tasks {
+		responses[i] = TaskResponse{
+			ID:               t.ID,
+			Description:      t.Description,
+			Tags:             t.Tags,
+			Done:             t.Done,
+			Notes:            t.Notes,
+			Problems:         t.Problems,
+			Questions:        t.Questions,
+			Actions:          t.Actions,
+			Definitions:      t.Definitions,
+			KnowledgeBits:    t.KnowledgeBits,
+			ParentContainers: t.ParentContainers,
+			KnowledgeNodes:   t.KnowledgeNodes,
+			DoneDateTime:     t.DoneDateTime,
+			Edges:            t.Edges,
+		}
+	}
+
+	c.JSON(200, responses)
 }
 
 // AddAnonymousTask handles PUT /add-anonymous-task
@@ -77,7 +120,7 @@ func (h *Handler) GetTasksByIDs(c *gin.Context) {
 // @Tags         tasks
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  ent.Task
+// @Success      200  {object}  TaskResponse
 // @Failure      500  {object}  map[string]string
 // @Router       /add-anonymous-task [put]
 func (h *Handler) AddAnonymousTask(c *gin.Context) {
@@ -86,6 +129,7 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 		SetDone(true).
 		SetTags([]string{}).
 		SetNotes("").
+		SetDoneDateTime(time.Now()).
 		Save(c.Request.Context())
 
 	if err != nil {
@@ -95,19 +139,62 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 	}
 
 	log.Printf("Successfully created task with ID: %d", newTask.ID)
-	c.JSON(200, newTask)
+
+	// Convert to custom response type to ensure all fields are included
+	response := TaskResponse{
+		ID:               newTask.ID,
+		Description:      newTask.Description,
+		Tags:             newTask.Tags,
+		Done:             newTask.Done,
+		Notes:            newTask.Notes,
+		Problems:         newTask.Problems,
+		Questions:        newTask.Questions,
+		Actions:          newTask.Actions,
+		Definitions:      newTask.Definitions,
+		KnowledgeBits:    newTask.KnowledgeBits,
+		ParentContainers: newTask.ParentContainers,
+		KnowledgeNodes:   newTask.KnowledgeNodes,
+		DoneDateTime:     newTask.DoneDateTime,
+		Edges:            newTask.Edges,
+	}
+
+	c.JSON(200, response)
 }
 
 // GetDoneTasks handles GET /done-tasks
-// @Summary      Get done tasks count
-// @Description  Returns the count of done tasks (placeholder endpoint)
+// @Summary      Get done tasks from today
+// @Description  Returns all done tasks where doneDateTime is today
 // @Tags         tasks
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  map[string]int
+// @Success      200  {array}   ent.Task
+// @Failure      500  {object}  map[string]string
 // @Router       /done-tasks [get]
 func (h *Handler) GetDoneTasks(c *gin.Context) {
-	c.JSON(200, gin.H{"doneTasks": 777})
+	ctx := c.Request.Context()
+
+	// Get start of today (00:00:00)
+	now := time.Now()
+	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	startOfTomorrow := startOfToday.AddDate(0, 0, 1)
+
+	// Query tasks where Done is true and DoneDateTime is today
+	tasks, err := h.App.Client.Task.Query().
+		Where(
+			task.DoneEQ(true),
+			task.DoneDateTimeNotNil(),
+			task.DoneDateTimeGTE(startOfToday),
+			task.DoneDateTimeLT(startOfTomorrow),
+		).
+		All(ctx)
+
+	if err != nil {
+		log.Printf("Error querying done tasks: %v", err)
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, len(tasks))
 }
 
 // FinishTask handles PUT /finish-task/:id
@@ -117,7 +204,7 @@ func (h *Handler) GetDoneTasks(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      int  true  "Task ID"
-// @Success      200  {object}  ent.Task
+// @Success      200  {object}  TaskResponse
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -143,7 +230,25 @@ func (h *Handler) FinishTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, updatedTask)
+	// Convert to custom response type to ensure all fields are included
+	response := TaskResponse{
+		ID:               updatedTask.ID,
+		Description:      updatedTask.Description,
+		Tags:             updatedTask.Tags,
+		Done:             updatedTask.Done,
+		Notes:            updatedTask.Notes,
+		Problems:         updatedTask.Problems,
+		Questions:        updatedTask.Questions,
+		Actions:          updatedTask.Actions,
+		Definitions:      updatedTask.Definitions,
+		KnowledgeBits:    updatedTask.KnowledgeBits,
+		ParentContainers: updatedTask.ParentContainers,
+		KnowledgeNodes:   updatedTask.KnowledgeNodes,
+		DoneDateTime:     updatedTask.DoneDateTime,
+		Edges:            updatedTask.Edges,
+	}
+
+	c.JSON(200, response)
 }
 
 // FinishTasks handles PUT /finish-tasks/

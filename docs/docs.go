@@ -84,7 +84,7 @@ const docTemplate = `{
         },
         "/done-tasks": {
             "get": {
-                "description": "Returns the count of done tasks (placeholder endpoint)",
+                "description": "Returns all done tasks where doneDateTime is today",
                 "consumes": [
                     "application/json"
                 ],
@@ -94,14 +94,23 @@ const docTemplate = `{
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Get done tasks count",
+                "summary": "Get done tasks from today",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.Task"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "integer"
+                                "type": "string"
                             }
                         }
                     }
@@ -134,7 +143,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.Task"
+                            "$ref": "#/definitions/handlers.TaskResponse"
                         }
                     },
                     "400": {
@@ -421,7 +430,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.Task"
+                            "$ref": "#/definitions/handlers.TaskResponse"
                         }
                     },
                     "400": {
@@ -881,6 +890,78 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "parents": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handlers.TaskResponse": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "done": {
+                    "type": "boolean"
+                },
+                "done_date_time": {
+                    "type": "string"
+                },
+                "edges": {
+                    "$ref": "#/definitions/ent.TaskEdges"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "knowledge_bits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledge_nodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parent_containers": {
                     "type": "array",
                     "items": {
                         "type": "array",
