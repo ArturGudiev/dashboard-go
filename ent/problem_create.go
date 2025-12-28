@@ -3,7 +3,7 @@
 package ent
 
 import (
-	"arturgudiev/dashboard/ent/task"
+	"arturgudiev/dashboard/ent/problem"
 	"context"
 	"errors"
 	"fmt"
@@ -13,47 +13,33 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// TaskCreate is the builder for creating a Task entity.
-type TaskCreate struct {
+// ProblemCreate is the builder for creating a Problem entity.
+type ProblemCreate struct {
 	config
-	mutation *TaskMutation
+	mutation *ProblemMutation
 	hooks    []Hook
 }
 
 // SetDescription sets the "description" field.
-func (_c *TaskCreate) SetDescription(v string) *TaskCreate {
+func (_c *ProblemCreate) SetDescription(v string) *ProblemCreate {
 	_c.mutation.SetDescription(v)
 	return _c
 }
 
 // SetTags sets the "tags" field.
-func (_c *TaskCreate) SetTags(v []string) *TaskCreate {
+func (_c *ProblemCreate) SetTags(v []string) *ProblemCreate {
 	_c.mutation.SetTags(v)
 	return _c
 }
 
-// SetDone sets the "done" field.
-func (_c *TaskCreate) SetDone(v bool) *TaskCreate {
-	_c.mutation.SetDone(v)
-	return _c
-}
-
-// SetNillableDone sets the "done" field if the given value is not nil.
-func (_c *TaskCreate) SetNillableDone(v *bool) *TaskCreate {
-	if v != nil {
-		_c.SetDone(*v)
-	}
-	return _c
-}
-
 // SetNotes sets the "notes" field.
-func (_c *TaskCreate) SetNotes(v string) *TaskCreate {
+func (_c *ProblemCreate) SetNotes(v string) *ProblemCreate {
 	_c.mutation.SetNotes(v)
 	return _c
 }
 
 // SetNillableNotes sets the "notes" field if the given value is not nil.
-func (_c *TaskCreate) SetNillableNotes(v *string) *TaskCreate {
+func (_c *ProblemCreate) SetNillableNotes(v *string) *ProblemCreate {
 	if v != nil {
 		_c.SetNotes(*v)
 	}
@@ -61,80 +47,94 @@ func (_c *TaskCreate) SetNillableNotes(v *string) *TaskCreate {
 }
 
 // SetProblems sets the "problems" field.
-func (_c *TaskCreate) SetProblems(v []int) *TaskCreate {
+func (_c *ProblemCreate) SetProblems(v []int) *ProblemCreate {
 	_c.mutation.SetProblems(v)
 	return _c
 }
 
 // SetQuestions sets the "questions" field.
-func (_c *TaskCreate) SetQuestions(v []int) *TaskCreate {
+func (_c *ProblemCreate) SetQuestions(v []int) *ProblemCreate {
 	_c.mutation.SetQuestions(v)
 	return _c
 }
 
 // SetActions sets the "actions" field.
-func (_c *TaskCreate) SetActions(v []int) *TaskCreate {
+func (_c *ProblemCreate) SetActions(v []int) *ProblemCreate {
 	_c.mutation.SetActions(v)
 	return _c
 }
 
 // SetDefinitions sets the "definitions" field.
-func (_c *TaskCreate) SetDefinitions(v []int) *TaskCreate {
+func (_c *ProblemCreate) SetDefinitions(v []int) *ProblemCreate {
 	_c.mutation.SetDefinitions(v)
 	return _c
 }
 
 // SetKnowledgeBits sets the "knowledge_bits" field.
-func (_c *TaskCreate) SetKnowledgeBits(v []int) *TaskCreate {
+func (_c *ProblemCreate) SetKnowledgeBits(v []int) *ProblemCreate {
 	_c.mutation.SetKnowledgeBits(v)
 	return _c
 }
 
 // SetParentContainers sets the "parent_containers" field.
-func (_c *TaskCreate) SetParentContainers(v [][]interface{}) *TaskCreate {
+func (_c *ProblemCreate) SetParentContainers(v [][]interface{}) *ProblemCreate {
 	_c.mutation.SetParentContainers(v)
 	return _c
 }
 
 // SetKnowledgeNodes sets the "knowledge_nodes" field.
-func (_c *TaskCreate) SetKnowledgeNodes(v []int) *TaskCreate {
+func (_c *ProblemCreate) SetKnowledgeNodes(v []int) *ProblemCreate {
 	_c.mutation.SetKnowledgeNodes(v)
 	return _c
 }
 
 // SetDoneDateTime sets the "done_date_time" field.
-func (_c *TaskCreate) SetDoneDateTime(v time.Time) *TaskCreate {
+func (_c *ProblemCreate) SetDoneDateTime(v time.Time) *ProblemCreate {
 	_c.mutation.SetDoneDateTime(v)
 	return _c
 }
 
 // SetNillableDoneDateTime sets the "done_date_time" field if the given value is not nil.
-func (_c *TaskCreate) SetNillableDoneDateTime(v *time.Time) *TaskCreate {
+func (_c *ProblemCreate) SetNillableDoneDateTime(v *time.Time) *ProblemCreate {
 	if v != nil {
 		_c.SetDoneDateTime(*v)
 	}
 	return _c
 }
 
+// SetSolution sets the "solution" field.
+func (_c *ProblemCreate) SetSolution(v string) *ProblemCreate {
+	_c.mutation.SetSolution(v)
+	return _c
+}
+
+// SetNillableSolution sets the "solution" field if the given value is not nil.
+func (_c *ProblemCreate) SetNillableSolution(v *string) *ProblemCreate {
+	if v != nil {
+		_c.SetSolution(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
-func (_c *TaskCreate) SetID(v int) *TaskCreate {
+func (_c *ProblemCreate) SetID(v int) *ProblemCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
 
-// Mutation returns the TaskMutation object of the builder.
-func (_c *TaskCreate) Mutation() *TaskMutation {
+// Mutation returns the ProblemMutation object of the builder.
+func (_c *ProblemCreate) Mutation() *ProblemMutation {
 	return _c.mutation
 }
 
-// Save creates the Task in the database.
-func (_c *TaskCreate) Save(ctx context.Context) (*Task, error) {
+// Save creates the Problem in the database.
+func (_c *ProblemCreate) Save(ctx context.Context) (*Problem, error) {
 	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *TaskCreate) SaveX(ctx context.Context) *Task {
+func (_c *ProblemCreate) SaveX(ctx context.Context) *Problem {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -143,84 +143,77 @@ func (_c *TaskCreate) SaveX(ctx context.Context) *Task {
 }
 
 // Exec executes the query.
-func (_c *TaskCreate) Exec(ctx context.Context) error {
+func (_c *ProblemCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *TaskCreate) ExecX(ctx context.Context) {
+func (_c *ProblemCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *TaskCreate) defaults() {
+func (_c *ProblemCreate) defaults() {
 	if _, ok := _c.mutation.Tags(); !ok {
-		v := task.DefaultTags
+		v := problem.DefaultTags
 		_c.mutation.SetTags(v)
 	}
-	if _, ok := _c.mutation.Done(); !ok {
-		v := task.DefaultDone
-		_c.mutation.SetDone(v)
-	}
 	if _, ok := _c.mutation.Notes(); !ok {
-		v := task.DefaultNotes
+		v := problem.DefaultNotes
 		_c.mutation.SetNotes(v)
 	}
 	if _, ok := _c.mutation.Problems(); !ok {
-		v := task.DefaultProblems
+		v := problem.DefaultProblems
 		_c.mutation.SetProblems(v)
 	}
 	if _, ok := _c.mutation.Questions(); !ok {
-		v := task.DefaultQuestions
+		v := problem.DefaultQuestions
 		_c.mutation.SetQuestions(v)
 	}
 	if _, ok := _c.mutation.Actions(); !ok {
-		v := task.DefaultActions
+		v := problem.DefaultActions
 		_c.mutation.SetActions(v)
 	}
 	if _, ok := _c.mutation.Definitions(); !ok {
-		v := task.DefaultDefinitions
+		v := problem.DefaultDefinitions
 		_c.mutation.SetDefinitions(v)
 	}
 	if _, ok := _c.mutation.KnowledgeBits(); !ok {
-		v := task.DefaultKnowledgeBits
+		v := problem.DefaultKnowledgeBits
 		_c.mutation.SetKnowledgeBits(v)
 	}
 	if _, ok := _c.mutation.ParentContainers(); !ok {
-		v := task.DefaultParentContainers
+		v := problem.DefaultParentContainers
 		_c.mutation.SetParentContainers(v)
 	}
 	if _, ok := _c.mutation.KnowledgeNodes(); !ok {
-		v := task.DefaultKnowledgeNodes
+		v := problem.DefaultKnowledgeNodes
 		_c.mutation.SetKnowledgeNodes(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *TaskCreate) check() error {
+func (_c *ProblemCreate) check() error {
 	if _, ok := _c.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Task.description"`)}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Problem.description"`)}
 	}
 	if v, ok := _c.mutation.Description(); ok {
-		if err := task.DescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Task.description": %w`, err)}
+		if err := problem.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Problem.description": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Done(); !ok {
-		return &ValidationError{Name: "done", err: errors.New(`ent: missing required field "Task.done"`)}
-	}
 	if v, ok := _c.mutation.ID(); ok {
-		if err := task.IDValidator(v); err != nil {
-			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Task.id": %w`, err)}
+		if err := problem.IDValidator(v); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Problem.id": %w`, err)}
 		}
 	}
 	return nil
 }
 
-func (_c *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
+func (_c *ProblemCreate) sqlSave(ctx context.Context) (*Problem, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -240,87 +233,87 @@ func (_c *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
 	return _node, nil
 }
 
-func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
+func (_c *ProblemCreate) createSpec() (*Problem, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Task{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+		_node = &Problem{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(problem.Table, sqlgraph.NewFieldSpec(problem.FieldID, field.TypeInt))
 	)
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
 	if value, ok := _c.mutation.Description(); ok {
-		_spec.SetField(task.FieldDescription, field.TypeString, value)
+		_spec.SetField(problem.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
 	if value, ok := _c.mutation.Tags(); ok {
-		_spec.SetField(task.FieldTags, field.TypeJSON, value)
+		_spec.SetField(problem.FieldTags, field.TypeJSON, value)
 		_node.Tags = value
 	}
-	if value, ok := _c.mutation.Done(); ok {
-		_spec.SetField(task.FieldDone, field.TypeBool, value)
-		_node.Done = value
-	}
 	if value, ok := _c.mutation.Notes(); ok {
-		_spec.SetField(task.FieldNotes, field.TypeString, value)
+		_spec.SetField(problem.FieldNotes, field.TypeString, value)
 		_node.Notes = value
 	}
 	if value, ok := _c.mutation.Problems(); ok {
-		_spec.SetField(task.FieldProblems, field.TypeJSON, value)
+		_spec.SetField(problem.FieldProblems, field.TypeJSON, value)
 		_node.Problems = value
 	}
 	if value, ok := _c.mutation.Questions(); ok {
-		_spec.SetField(task.FieldQuestions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldQuestions, field.TypeJSON, value)
 		_node.Questions = value
 	}
 	if value, ok := _c.mutation.Actions(); ok {
-		_spec.SetField(task.FieldActions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldActions, field.TypeJSON, value)
 		_node.Actions = value
 	}
 	if value, ok := _c.mutation.Definitions(); ok {
-		_spec.SetField(task.FieldDefinitions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldDefinitions, field.TypeJSON, value)
 		_node.Definitions = value
 	}
 	if value, ok := _c.mutation.KnowledgeBits(); ok {
-		_spec.SetField(task.FieldKnowledgeBits, field.TypeJSON, value)
+		_spec.SetField(problem.FieldKnowledgeBits, field.TypeJSON, value)
 		_node.KnowledgeBits = value
 	}
 	if value, ok := _c.mutation.ParentContainers(); ok {
-		_spec.SetField(task.FieldParentContainers, field.TypeJSON, value)
+		_spec.SetField(problem.FieldParentContainers, field.TypeJSON, value)
 		_node.ParentContainers = value
 	}
 	if value, ok := _c.mutation.KnowledgeNodes(); ok {
-		_spec.SetField(task.FieldKnowledgeNodes, field.TypeJSON, value)
+		_spec.SetField(problem.FieldKnowledgeNodes, field.TypeJSON, value)
 		_node.KnowledgeNodes = value
 	}
 	if value, ok := _c.mutation.DoneDateTime(); ok {
-		_spec.SetField(task.FieldDoneDateTime, field.TypeTime, value)
+		_spec.SetField(problem.FieldDoneDateTime, field.TypeTime, value)
 		_node.DoneDateTime = &value
+	}
+	if value, ok := _c.mutation.Solution(); ok {
+		_spec.SetField(problem.FieldSolution, field.TypeString, value)
+		_node.Solution = &value
 	}
 	return _node, _spec
 }
 
-// TaskCreateBulk is the builder for creating many Task entities in bulk.
-type TaskCreateBulk struct {
+// ProblemCreateBulk is the builder for creating many Problem entities in bulk.
+type ProblemCreateBulk struct {
 	config
 	err      error
-	builders []*TaskCreate
+	builders []*ProblemCreate
 }
 
-// Save creates the Task entities in the database.
-func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
+// Save creates the Problem entities in the database.
+func (_c *ProblemCreateBulk) Save(ctx context.Context) ([]*Problem, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*Task, len(_c.builders))
+	nodes := make([]*Problem, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*TaskMutation)
+				mutation, ok := m.(*ProblemMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -367,7 +360,7 @@ func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *TaskCreateBulk) SaveX(ctx context.Context) []*Task {
+func (_c *ProblemCreateBulk) SaveX(ctx context.Context) []*Problem {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -376,13 +369,13 @@ func (_c *TaskCreateBulk) SaveX(ctx context.Context) []*Task {
 }
 
 // Exec executes the query.
-func (_c *TaskCreateBulk) Exec(ctx context.Context) error {
+func (_c *ProblemCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *TaskCreateBulk) ExecX(ctx context.Context) {
+func (_c *ProblemCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}

@@ -7,7 +7,6 @@ import (
 	"arturgudiev/dashboard/ent/schema"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -125,6 +124,26 @@ func ParentIDNotIn(vs ...int) predicate.ContainerChild {
 	return predicate.ContainerChild(sql.FieldNotIn(FieldParentID, vs...))
 }
 
+// ParentIDGT applies the GT predicate on the "parent_id" field.
+func ParentIDGT(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldGT(FieldParentID, v))
+}
+
+// ParentIDGTE applies the GTE predicate on the "parent_id" field.
+func ParentIDGTE(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldGTE(FieldParentID, v))
+}
+
+// ParentIDLT applies the LT predicate on the "parent_id" field.
+func ParentIDLT(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldLT(FieldParentID, v))
+}
+
+// ParentIDLTE applies the LTE predicate on the "parent_id" field.
+func ParentIDLTE(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldLTE(FieldParentID, v))
+}
+
 // ChildTypeEQ applies the EQ predicate on the "child_type" field.
 func ChildTypeEQ(v schema.ContainerType) predicate.ContainerChild {
 	vc := v
@@ -173,6 +192,26 @@ func ChildIDIn(vs ...int) predicate.ContainerChild {
 // ChildIDNotIn applies the NotIn predicate on the "child_id" field.
 func ChildIDNotIn(vs ...int) predicate.ContainerChild {
 	return predicate.ContainerChild(sql.FieldNotIn(FieldChildID, vs...))
+}
+
+// ChildIDGT applies the GT predicate on the "child_id" field.
+func ChildIDGT(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldGT(FieldChildID, v))
+}
+
+// ChildIDGTE applies the GTE predicate on the "child_id" field.
+func ChildIDGTE(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldGTE(FieldChildID, v))
+}
+
+// ChildIDLT applies the LT predicate on the "child_id" field.
+func ChildIDLT(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldLT(FieldChildID, v))
+}
+
+// ChildIDLTE applies the LTE predicate on the "child_id" field.
+func ChildIDLTE(v int) predicate.ContainerChild {
+	return predicate.ContainerChild(sql.FieldLTE(FieldChildID, v))
 }
 
 // ChildOrderEQ applies the EQ predicate on the "child_order" field.
@@ -253,52 +292,6 @@ func ParentOrderLT(v int) predicate.ContainerChild {
 // ParentOrderLTE applies the LTE predicate on the "parent_order" field.
 func ParentOrderLTE(v int) predicate.ContainerChild {
 	return predicate.ContainerChild(sql.FieldLTE(FieldParentOrder, v))
-}
-
-// HasParent applies the HasEdge predicate on the "parent" edge.
-func HasParent() predicate.ContainerChild {
-	return predicate.ContainerChild(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, ParentTable, ParentColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasParentWith applies the HasEdge predicate on the "parent" edge with a given conditions (other predicates).
-func HasParentWith(preds ...predicate.Task) predicate.ContainerChild {
-	return predicate.ContainerChild(func(s *sql.Selector) {
-		step := newParentStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasChild applies the HasEdge predicate on the "child" edge.
-func HasChild() predicate.ContainerChild {
-	return predicate.ContainerChild(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, ChildTable, ChildColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasChildWith applies the HasEdge predicate on the "child" edge with a given conditions (other predicates).
-func HasChildWith(preds ...predicate.Task) predicate.ContainerChild {
-	return predicate.ContainerChild(func(s *sql.Selector) {
-		step := newChildStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // And groups predicates with the AND operator between them.

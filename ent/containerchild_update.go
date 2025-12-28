@@ -6,7 +6,6 @@ import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/predicate"
 	"arturgudiev/dashboard/ent/schema"
-	"arturgudiev/dashboard/ent/task"
 	"context"
 	"errors"
 	"fmt"
@@ -45,6 +44,7 @@ func (_u *ContainerChildUpdate) SetNillableParentType(v *schema.ContainerType) *
 
 // SetParentID sets the "parent_id" field.
 func (_u *ContainerChildUpdate) SetParentID(v int) *ContainerChildUpdate {
+	_u.mutation.ResetParentID()
 	_u.mutation.SetParentID(v)
 	return _u
 }
@@ -54,6 +54,12 @@ func (_u *ContainerChildUpdate) SetNillableParentID(v *int) *ContainerChildUpdat
 	if v != nil {
 		_u.SetParentID(*v)
 	}
+	return _u
+}
+
+// AddParentID adds value to the "parent_id" field.
+func (_u *ContainerChildUpdate) AddParentID(v int) *ContainerChildUpdate {
+	_u.mutation.AddParentID(v)
 	return _u
 }
 
@@ -73,6 +79,7 @@ func (_u *ContainerChildUpdate) SetNillableChildType(v *schema.ContainerType) *C
 
 // SetChildID sets the "child_id" field.
 func (_u *ContainerChildUpdate) SetChildID(v int) *ContainerChildUpdate {
+	_u.mutation.ResetChildID()
 	_u.mutation.SetChildID(v)
 	return _u
 }
@@ -82,6 +89,12 @@ func (_u *ContainerChildUpdate) SetNillableChildID(v *int) *ContainerChildUpdate
 	if v != nil {
 		_u.SetChildID(*v)
 	}
+	return _u
+}
+
+// AddChildID adds value to the "child_id" field.
+func (_u *ContainerChildUpdate) AddChildID(v int) *ContainerChildUpdate {
+	_u.mutation.AddChildID(v)
 	return _u
 }
 
@@ -127,31 +140,9 @@ func (_u *ContainerChildUpdate) AddParentOrder(v int) *ContainerChildUpdate {
 	return _u
 }
 
-// SetParent sets the "parent" edge to the Task entity.
-func (_u *ContainerChildUpdate) SetParent(v *Task) *ContainerChildUpdate {
-	return _u.SetParentID(v.ID)
-}
-
-// SetChild sets the "child" edge to the Task entity.
-func (_u *ContainerChildUpdate) SetChild(v *Task) *ContainerChildUpdate {
-	return _u.SetChildID(v.ID)
-}
-
 // Mutation returns the ContainerChildMutation object of the builder.
 func (_u *ContainerChildUpdate) Mutation() *ContainerChildMutation {
 	return _u.mutation
-}
-
-// ClearParent clears the "parent" edge to the Task entity.
-func (_u *ContainerChildUpdate) ClearParent() *ContainerChildUpdate {
-	_u.mutation.ClearParent()
-	return _u
-}
-
-// ClearChild clears the "child" edge to the Task entity.
-func (_u *ContainerChildUpdate) ClearChild() *ContainerChildUpdate {
-	_u.mutation.ClearChild()
-	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -213,12 +204,6 @@ func (_u *ContainerChildUpdate) check() error {
 			return &ValidationError{Name: "parent_order", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.parent_order": %w`, err)}
 		}
 	}
-	if _u.mutation.ParentCleared() && len(_u.mutation.ParentIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "ContainerChild.parent"`)
-	}
-	if _u.mutation.ChildCleared() && len(_u.mutation.ChildIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "ContainerChild.child"`)
-	}
 	return nil
 }
 
@@ -237,8 +222,20 @@ func (_u *ContainerChildUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if value, ok := _u.mutation.ParentType(); ok {
 		_spec.SetField(containerchild.FieldParentType, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.ParentID(); ok {
+		_spec.SetField(containerchild.FieldParentID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedParentID(); ok {
+		_spec.AddField(containerchild.FieldParentID, field.TypeInt, value)
+	}
 	if value, ok := _u.mutation.ChildType(); ok {
 		_spec.SetField(containerchild.FieldChildType, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ChildID(); ok {
+		_spec.SetField(containerchild.FieldChildID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChildID(); ok {
+		_spec.AddField(containerchild.FieldChildID, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.ChildOrder(); ok {
 		_spec.SetField(containerchild.FieldChildOrder, field.TypeInt, value)
@@ -251,64 +248,6 @@ func (_u *ContainerChildUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.AddedParentOrder(); ok {
 		_spec.AddField(containerchild.FieldParentOrder, field.TypeInt, value)
-	}
-	if _u.mutation.ParentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ParentTable,
-			Columns: []string{containerchild.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ParentTable,
-			Columns: []string{containerchild.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ChildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ChildTable,
-			Columns: []string{containerchild.ChildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ChildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ChildTable,
-			Columns: []string{containerchild.ChildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -346,6 +285,7 @@ func (_u *ContainerChildUpdateOne) SetNillableParentType(v *schema.ContainerType
 
 // SetParentID sets the "parent_id" field.
 func (_u *ContainerChildUpdateOne) SetParentID(v int) *ContainerChildUpdateOne {
+	_u.mutation.ResetParentID()
 	_u.mutation.SetParentID(v)
 	return _u
 }
@@ -355,6 +295,12 @@ func (_u *ContainerChildUpdateOne) SetNillableParentID(v *int) *ContainerChildUp
 	if v != nil {
 		_u.SetParentID(*v)
 	}
+	return _u
+}
+
+// AddParentID adds value to the "parent_id" field.
+func (_u *ContainerChildUpdateOne) AddParentID(v int) *ContainerChildUpdateOne {
+	_u.mutation.AddParentID(v)
 	return _u
 }
 
@@ -374,6 +320,7 @@ func (_u *ContainerChildUpdateOne) SetNillableChildType(v *schema.ContainerType)
 
 // SetChildID sets the "child_id" field.
 func (_u *ContainerChildUpdateOne) SetChildID(v int) *ContainerChildUpdateOne {
+	_u.mutation.ResetChildID()
 	_u.mutation.SetChildID(v)
 	return _u
 }
@@ -383,6 +330,12 @@ func (_u *ContainerChildUpdateOne) SetNillableChildID(v *int) *ContainerChildUpd
 	if v != nil {
 		_u.SetChildID(*v)
 	}
+	return _u
+}
+
+// AddChildID adds value to the "child_id" field.
+func (_u *ContainerChildUpdateOne) AddChildID(v int) *ContainerChildUpdateOne {
+	_u.mutation.AddChildID(v)
 	return _u
 }
 
@@ -428,31 +381,9 @@ func (_u *ContainerChildUpdateOne) AddParentOrder(v int) *ContainerChildUpdateOn
 	return _u
 }
 
-// SetParent sets the "parent" edge to the Task entity.
-func (_u *ContainerChildUpdateOne) SetParent(v *Task) *ContainerChildUpdateOne {
-	return _u.SetParentID(v.ID)
-}
-
-// SetChild sets the "child" edge to the Task entity.
-func (_u *ContainerChildUpdateOne) SetChild(v *Task) *ContainerChildUpdateOne {
-	return _u.SetChildID(v.ID)
-}
-
 // Mutation returns the ContainerChildMutation object of the builder.
 func (_u *ContainerChildUpdateOne) Mutation() *ContainerChildMutation {
 	return _u.mutation
-}
-
-// ClearParent clears the "parent" edge to the Task entity.
-func (_u *ContainerChildUpdateOne) ClearParent() *ContainerChildUpdateOne {
-	_u.mutation.ClearParent()
-	return _u
-}
-
-// ClearChild clears the "child" edge to the Task entity.
-func (_u *ContainerChildUpdateOne) ClearChild() *ContainerChildUpdateOne {
-	_u.mutation.ClearChild()
-	return _u
 }
 
 // Where appends a list predicates to the ContainerChildUpdate builder.
@@ -527,12 +458,6 @@ func (_u *ContainerChildUpdateOne) check() error {
 			return &ValidationError{Name: "parent_order", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.parent_order": %w`, err)}
 		}
 	}
-	if _u.mutation.ParentCleared() && len(_u.mutation.ParentIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "ContainerChild.parent"`)
-	}
-	if _u.mutation.ChildCleared() && len(_u.mutation.ChildIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "ContainerChild.child"`)
-	}
 	return nil
 }
 
@@ -568,8 +493,20 @@ func (_u *ContainerChildUpdateOne) sqlSave(ctx context.Context) (_node *Containe
 	if value, ok := _u.mutation.ParentType(); ok {
 		_spec.SetField(containerchild.FieldParentType, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.ParentID(); ok {
+		_spec.SetField(containerchild.FieldParentID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedParentID(); ok {
+		_spec.AddField(containerchild.FieldParentID, field.TypeInt, value)
+	}
 	if value, ok := _u.mutation.ChildType(); ok {
 		_spec.SetField(containerchild.FieldChildType, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ChildID(); ok {
+		_spec.SetField(containerchild.FieldChildID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChildID(); ok {
+		_spec.AddField(containerchild.FieldChildID, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.ChildOrder(); ok {
 		_spec.SetField(containerchild.FieldChildOrder, field.TypeInt, value)
@@ -582,64 +519,6 @@ func (_u *ContainerChildUpdateOne) sqlSave(ctx context.Context) (_node *Containe
 	}
 	if value, ok := _u.mutation.AddedParentOrder(); ok {
 		_spec.AddField(containerchild.FieldParentOrder, field.TypeInt, value)
-	}
-	if _u.mutation.ParentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ParentTable,
-			Columns: []string{containerchild.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ParentTable,
-			Columns: []string{containerchild.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ChildCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ChildTable,
-			Columns: []string{containerchild.ChildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ChildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ChildTable,
-			Columns: []string{containerchild.ChildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &ContainerChild{config: _u.config}
 	_spec.Assign = _node.assignValues

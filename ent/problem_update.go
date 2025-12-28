@@ -4,7 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/predicate"
-	"arturgudiev/dashboard/ent/task"
+	"arturgudiev/dashboard/ent/problem"
 	"context"
 	"errors"
 	"fmt"
@@ -16,27 +16,27 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// TaskUpdate is the builder for updating Task entities.
-type TaskUpdate struct {
+// ProblemUpdate is the builder for updating Problem entities.
+type ProblemUpdate struct {
 	config
 	hooks    []Hook
-	mutation *TaskMutation
+	mutation *ProblemMutation
 }
 
-// Where appends a list predicates to the TaskUpdate builder.
-func (_u *TaskUpdate) Where(ps ...predicate.Task) *TaskUpdate {
+// Where appends a list predicates to the ProblemUpdate builder.
+func (_u *ProblemUpdate) Where(ps ...predicate.Problem) *ProblemUpdate {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // SetDescription sets the "description" field.
-func (_u *TaskUpdate) SetDescription(v string) *TaskUpdate {
+func (_u *ProblemUpdate) SetDescription(v string) *ProblemUpdate {
 	_u.mutation.SetDescription(v)
 	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *TaskUpdate) SetNillableDescription(v *string) *TaskUpdate {
+func (_u *ProblemUpdate) SetNillableDescription(v *string) *ProblemUpdate {
 	if v != nil {
 		_u.SetDescription(*v)
 	}
@@ -44,45 +44,31 @@ func (_u *TaskUpdate) SetNillableDescription(v *string) *TaskUpdate {
 }
 
 // SetTags sets the "tags" field.
-func (_u *TaskUpdate) SetTags(v []string) *TaskUpdate {
+func (_u *ProblemUpdate) SetTags(v []string) *ProblemUpdate {
 	_u.mutation.SetTags(v)
 	return _u
 }
 
 // AppendTags appends value to the "tags" field.
-func (_u *TaskUpdate) AppendTags(v []string) *TaskUpdate {
+func (_u *ProblemUpdate) AppendTags(v []string) *ProblemUpdate {
 	_u.mutation.AppendTags(v)
 	return _u
 }
 
 // ClearTags clears the value of the "tags" field.
-func (_u *TaskUpdate) ClearTags() *TaskUpdate {
+func (_u *ProblemUpdate) ClearTags() *ProblemUpdate {
 	_u.mutation.ClearTags()
 	return _u
 }
 
-// SetDone sets the "done" field.
-func (_u *TaskUpdate) SetDone(v bool) *TaskUpdate {
-	_u.mutation.SetDone(v)
-	return _u
-}
-
-// SetNillableDone sets the "done" field if the given value is not nil.
-func (_u *TaskUpdate) SetNillableDone(v *bool) *TaskUpdate {
-	if v != nil {
-		_u.SetDone(*v)
-	}
-	return _u
-}
-
 // SetNotes sets the "notes" field.
-func (_u *TaskUpdate) SetNotes(v string) *TaskUpdate {
+func (_u *ProblemUpdate) SetNotes(v string) *ProblemUpdate {
 	_u.mutation.SetNotes(v)
 	return _u
 }
 
 // SetNillableNotes sets the "notes" field if the given value is not nil.
-func (_u *TaskUpdate) SetNillableNotes(v *string) *TaskUpdate {
+func (_u *ProblemUpdate) SetNillableNotes(v *string) *ProblemUpdate {
 	if v != nil {
 		_u.SetNotes(*v)
 	}
@@ -90,145 +76,145 @@ func (_u *TaskUpdate) SetNillableNotes(v *string) *TaskUpdate {
 }
 
 // ClearNotes clears the value of the "notes" field.
-func (_u *TaskUpdate) ClearNotes() *TaskUpdate {
+func (_u *ProblemUpdate) ClearNotes() *ProblemUpdate {
 	_u.mutation.ClearNotes()
 	return _u
 }
 
 // SetProblems sets the "problems" field.
-func (_u *TaskUpdate) SetProblems(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) SetProblems(v []int) *ProblemUpdate {
 	_u.mutation.SetProblems(v)
 	return _u
 }
 
 // AppendProblems appends value to the "problems" field.
-func (_u *TaskUpdate) AppendProblems(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) AppendProblems(v []int) *ProblemUpdate {
 	_u.mutation.AppendProblems(v)
 	return _u
 }
 
 // ClearProblems clears the value of the "problems" field.
-func (_u *TaskUpdate) ClearProblems() *TaskUpdate {
+func (_u *ProblemUpdate) ClearProblems() *ProblemUpdate {
 	_u.mutation.ClearProblems()
 	return _u
 }
 
 // SetQuestions sets the "questions" field.
-func (_u *TaskUpdate) SetQuestions(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) SetQuestions(v []int) *ProblemUpdate {
 	_u.mutation.SetQuestions(v)
 	return _u
 }
 
 // AppendQuestions appends value to the "questions" field.
-func (_u *TaskUpdate) AppendQuestions(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) AppendQuestions(v []int) *ProblemUpdate {
 	_u.mutation.AppendQuestions(v)
 	return _u
 }
 
 // ClearQuestions clears the value of the "questions" field.
-func (_u *TaskUpdate) ClearQuestions() *TaskUpdate {
+func (_u *ProblemUpdate) ClearQuestions() *ProblemUpdate {
 	_u.mutation.ClearQuestions()
 	return _u
 }
 
 // SetActions sets the "actions" field.
-func (_u *TaskUpdate) SetActions(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) SetActions(v []int) *ProblemUpdate {
 	_u.mutation.SetActions(v)
 	return _u
 }
 
 // AppendActions appends value to the "actions" field.
-func (_u *TaskUpdate) AppendActions(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) AppendActions(v []int) *ProblemUpdate {
 	_u.mutation.AppendActions(v)
 	return _u
 }
 
 // ClearActions clears the value of the "actions" field.
-func (_u *TaskUpdate) ClearActions() *TaskUpdate {
+func (_u *ProblemUpdate) ClearActions() *ProblemUpdate {
 	_u.mutation.ClearActions()
 	return _u
 }
 
 // SetDefinitions sets the "definitions" field.
-func (_u *TaskUpdate) SetDefinitions(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) SetDefinitions(v []int) *ProblemUpdate {
 	_u.mutation.SetDefinitions(v)
 	return _u
 }
 
 // AppendDefinitions appends value to the "definitions" field.
-func (_u *TaskUpdate) AppendDefinitions(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) AppendDefinitions(v []int) *ProblemUpdate {
 	_u.mutation.AppendDefinitions(v)
 	return _u
 }
 
 // ClearDefinitions clears the value of the "definitions" field.
-func (_u *TaskUpdate) ClearDefinitions() *TaskUpdate {
+func (_u *ProblemUpdate) ClearDefinitions() *ProblemUpdate {
 	_u.mutation.ClearDefinitions()
 	return _u
 }
 
 // SetKnowledgeBits sets the "knowledge_bits" field.
-func (_u *TaskUpdate) SetKnowledgeBits(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) SetKnowledgeBits(v []int) *ProblemUpdate {
 	_u.mutation.SetKnowledgeBits(v)
 	return _u
 }
 
 // AppendKnowledgeBits appends value to the "knowledge_bits" field.
-func (_u *TaskUpdate) AppendKnowledgeBits(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) AppendKnowledgeBits(v []int) *ProblemUpdate {
 	_u.mutation.AppendKnowledgeBits(v)
 	return _u
 }
 
 // ClearKnowledgeBits clears the value of the "knowledge_bits" field.
-func (_u *TaskUpdate) ClearKnowledgeBits() *TaskUpdate {
+func (_u *ProblemUpdate) ClearKnowledgeBits() *ProblemUpdate {
 	_u.mutation.ClearKnowledgeBits()
 	return _u
 }
 
 // SetParentContainers sets the "parent_containers" field.
-func (_u *TaskUpdate) SetParentContainers(v [][]interface{}) *TaskUpdate {
+func (_u *ProblemUpdate) SetParentContainers(v [][]interface{}) *ProblemUpdate {
 	_u.mutation.SetParentContainers(v)
 	return _u
 }
 
 // AppendParentContainers appends value to the "parent_containers" field.
-func (_u *TaskUpdate) AppendParentContainers(v [][]interface{}) *TaskUpdate {
+func (_u *ProblemUpdate) AppendParentContainers(v [][]interface{}) *ProblemUpdate {
 	_u.mutation.AppendParentContainers(v)
 	return _u
 }
 
 // ClearParentContainers clears the value of the "parent_containers" field.
-func (_u *TaskUpdate) ClearParentContainers() *TaskUpdate {
+func (_u *ProblemUpdate) ClearParentContainers() *ProblemUpdate {
 	_u.mutation.ClearParentContainers()
 	return _u
 }
 
 // SetKnowledgeNodes sets the "knowledge_nodes" field.
-func (_u *TaskUpdate) SetKnowledgeNodes(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) SetKnowledgeNodes(v []int) *ProblemUpdate {
 	_u.mutation.SetKnowledgeNodes(v)
 	return _u
 }
 
 // AppendKnowledgeNodes appends value to the "knowledge_nodes" field.
-func (_u *TaskUpdate) AppendKnowledgeNodes(v []int) *TaskUpdate {
+func (_u *ProblemUpdate) AppendKnowledgeNodes(v []int) *ProblemUpdate {
 	_u.mutation.AppendKnowledgeNodes(v)
 	return _u
 }
 
 // ClearKnowledgeNodes clears the value of the "knowledge_nodes" field.
-func (_u *TaskUpdate) ClearKnowledgeNodes() *TaskUpdate {
+func (_u *ProblemUpdate) ClearKnowledgeNodes() *ProblemUpdate {
 	_u.mutation.ClearKnowledgeNodes()
 	return _u
 }
 
 // SetDoneDateTime sets the "done_date_time" field.
-func (_u *TaskUpdate) SetDoneDateTime(v time.Time) *TaskUpdate {
+func (_u *ProblemUpdate) SetDoneDateTime(v time.Time) *ProblemUpdate {
 	_u.mutation.SetDoneDateTime(v)
 	return _u
 }
 
 // SetNillableDoneDateTime sets the "done_date_time" field if the given value is not nil.
-func (_u *TaskUpdate) SetNillableDoneDateTime(v *time.Time) *TaskUpdate {
+func (_u *ProblemUpdate) SetNillableDoneDateTime(v *time.Time) *ProblemUpdate {
 	if v != nil {
 		_u.SetDoneDateTime(*v)
 	}
@@ -236,23 +222,43 @@ func (_u *TaskUpdate) SetNillableDoneDateTime(v *time.Time) *TaskUpdate {
 }
 
 // ClearDoneDateTime clears the value of the "done_date_time" field.
-func (_u *TaskUpdate) ClearDoneDateTime() *TaskUpdate {
+func (_u *ProblemUpdate) ClearDoneDateTime() *ProblemUpdate {
 	_u.mutation.ClearDoneDateTime()
 	return _u
 }
 
-// Mutation returns the TaskMutation object of the builder.
-func (_u *TaskUpdate) Mutation() *TaskMutation {
+// SetSolution sets the "solution" field.
+func (_u *ProblemUpdate) SetSolution(v string) *ProblemUpdate {
+	_u.mutation.SetSolution(v)
+	return _u
+}
+
+// SetNillableSolution sets the "solution" field if the given value is not nil.
+func (_u *ProblemUpdate) SetNillableSolution(v *string) *ProblemUpdate {
+	if v != nil {
+		_u.SetSolution(*v)
+	}
+	return _u
+}
+
+// ClearSolution clears the value of the "solution" field.
+func (_u *ProblemUpdate) ClearSolution() *ProblemUpdate {
+	_u.mutation.ClearSolution()
+	return _u
+}
+
+// Mutation returns the ProblemMutation object of the builder.
+func (_u *ProblemUpdate) Mutation() *ProblemMutation {
 	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (_u *TaskUpdate) Save(ctx context.Context) (int, error) {
+func (_u *ProblemUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *TaskUpdate) SaveX(ctx context.Context) int {
+func (_u *ProblemUpdate) SaveX(ctx context.Context) int {
 	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -261,33 +267,33 @@ func (_u *TaskUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (_u *TaskUpdate) Exec(ctx context.Context) error {
+func (_u *ProblemUpdate) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *TaskUpdate) ExecX(ctx context.Context) {
+func (_u *ProblemUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *TaskUpdate) check() error {
+func (_u *ProblemUpdate) check() error {
 	if v, ok := _u.mutation.Description(); ok {
-		if err := task.DescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Task.description": %w`, err)}
+		if err := problem.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Problem.description": %w`, err)}
 		}
 	}
 	return nil
 }
 
-func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+func (_u *ProblemUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(problem.Table, problem.Columns, sqlgraph.NewFieldSpec(problem.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -296,114 +302,117 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 	}
 	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(task.FieldDescription, field.TypeString, value)
+		_spec.SetField(problem.FieldDescription, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Tags(); ok {
-		_spec.SetField(task.FieldTags, field.TypeJSON, value)
+		_spec.SetField(problem.FieldTags, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedTags(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldTags, value)
+			sqljson.Append(u, problem.FieldTags, value)
 		})
 	}
 	if _u.mutation.TagsCleared() {
-		_spec.ClearField(task.FieldTags, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Done(); ok {
-		_spec.SetField(task.FieldDone, field.TypeBool, value)
+		_spec.ClearField(problem.FieldTags, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Notes(); ok {
-		_spec.SetField(task.FieldNotes, field.TypeString, value)
+		_spec.SetField(problem.FieldNotes, field.TypeString, value)
 	}
 	if _u.mutation.NotesCleared() {
-		_spec.ClearField(task.FieldNotes, field.TypeString)
+		_spec.ClearField(problem.FieldNotes, field.TypeString)
 	}
 	if value, ok := _u.mutation.Problems(); ok {
-		_spec.SetField(task.FieldProblems, field.TypeJSON, value)
+		_spec.SetField(problem.FieldProblems, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedProblems(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldProblems, value)
+			sqljson.Append(u, problem.FieldProblems, value)
 		})
 	}
 	if _u.mutation.ProblemsCleared() {
-		_spec.ClearField(task.FieldProblems, field.TypeJSON)
+		_spec.ClearField(problem.FieldProblems, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Questions(); ok {
-		_spec.SetField(task.FieldQuestions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldQuestions, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedQuestions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldQuestions, value)
+			sqljson.Append(u, problem.FieldQuestions, value)
 		})
 	}
 	if _u.mutation.QuestionsCleared() {
-		_spec.ClearField(task.FieldQuestions, field.TypeJSON)
+		_spec.ClearField(problem.FieldQuestions, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Actions(); ok {
-		_spec.SetField(task.FieldActions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldActions, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedActions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldActions, value)
+			sqljson.Append(u, problem.FieldActions, value)
 		})
 	}
 	if _u.mutation.ActionsCleared() {
-		_spec.ClearField(task.FieldActions, field.TypeJSON)
+		_spec.ClearField(problem.FieldActions, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Definitions(); ok {
-		_spec.SetField(task.FieldDefinitions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldDefinitions, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedDefinitions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldDefinitions, value)
+			sqljson.Append(u, problem.FieldDefinitions, value)
 		})
 	}
 	if _u.mutation.DefinitionsCleared() {
-		_spec.ClearField(task.FieldDefinitions, field.TypeJSON)
+		_spec.ClearField(problem.FieldDefinitions, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.KnowledgeBits(); ok {
-		_spec.SetField(task.FieldKnowledgeBits, field.TypeJSON, value)
+		_spec.SetField(problem.FieldKnowledgeBits, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedKnowledgeBits(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldKnowledgeBits, value)
+			sqljson.Append(u, problem.FieldKnowledgeBits, value)
 		})
 	}
 	if _u.mutation.KnowledgeBitsCleared() {
-		_spec.ClearField(task.FieldKnowledgeBits, field.TypeJSON)
+		_spec.ClearField(problem.FieldKnowledgeBits, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.ParentContainers(); ok {
-		_spec.SetField(task.FieldParentContainers, field.TypeJSON, value)
+		_spec.SetField(problem.FieldParentContainers, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedParentContainers(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldParentContainers, value)
+			sqljson.Append(u, problem.FieldParentContainers, value)
 		})
 	}
 	if _u.mutation.ParentContainersCleared() {
-		_spec.ClearField(task.FieldParentContainers, field.TypeJSON)
+		_spec.ClearField(problem.FieldParentContainers, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.KnowledgeNodes(); ok {
-		_spec.SetField(task.FieldKnowledgeNodes, field.TypeJSON, value)
+		_spec.SetField(problem.FieldKnowledgeNodes, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedKnowledgeNodes(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldKnowledgeNodes, value)
+			sqljson.Append(u, problem.FieldKnowledgeNodes, value)
 		})
 	}
 	if _u.mutation.KnowledgeNodesCleared() {
-		_spec.ClearField(task.FieldKnowledgeNodes, field.TypeJSON)
+		_spec.ClearField(problem.FieldKnowledgeNodes, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.DoneDateTime(); ok {
-		_spec.SetField(task.FieldDoneDateTime, field.TypeTime, value)
+		_spec.SetField(problem.FieldDoneDateTime, field.TypeTime, value)
 	}
 	if _u.mutation.DoneDateTimeCleared() {
-		_spec.ClearField(task.FieldDoneDateTime, field.TypeTime)
+		_spec.ClearField(problem.FieldDoneDateTime, field.TypeTime)
+	}
+	if value, ok := _u.mutation.Solution(); ok {
+		_spec.SetField(problem.FieldSolution, field.TypeString, value)
+	}
+	if _u.mutation.SolutionCleared() {
+		_spec.ClearField(problem.FieldSolution, field.TypeString)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{task.Label}
+			err = &NotFoundError{problem.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -413,22 +422,22 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	return _node, nil
 }
 
-// TaskUpdateOne is the builder for updating a single Task entity.
-type TaskUpdateOne struct {
+// ProblemUpdateOne is the builder for updating a single Problem entity.
+type ProblemUpdateOne struct {
 	config
 	fields   []string
 	hooks    []Hook
-	mutation *TaskMutation
+	mutation *ProblemMutation
 }
 
 // SetDescription sets the "description" field.
-func (_u *TaskUpdateOne) SetDescription(v string) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetDescription(v string) *ProblemUpdateOne {
 	_u.mutation.SetDescription(v)
 	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *TaskUpdateOne) SetNillableDescription(v *string) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetNillableDescription(v *string) *ProblemUpdateOne {
 	if v != nil {
 		_u.SetDescription(*v)
 	}
@@ -436,45 +445,31 @@ func (_u *TaskUpdateOne) SetNillableDescription(v *string) *TaskUpdateOne {
 }
 
 // SetTags sets the "tags" field.
-func (_u *TaskUpdateOne) SetTags(v []string) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetTags(v []string) *ProblemUpdateOne {
 	_u.mutation.SetTags(v)
 	return _u
 }
 
 // AppendTags appends value to the "tags" field.
-func (_u *TaskUpdateOne) AppendTags(v []string) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) AppendTags(v []string) *ProblemUpdateOne {
 	_u.mutation.AppendTags(v)
 	return _u
 }
 
 // ClearTags clears the value of the "tags" field.
-func (_u *TaskUpdateOne) ClearTags() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearTags() *ProblemUpdateOne {
 	_u.mutation.ClearTags()
 	return _u
 }
 
-// SetDone sets the "done" field.
-func (_u *TaskUpdateOne) SetDone(v bool) *TaskUpdateOne {
-	_u.mutation.SetDone(v)
-	return _u
-}
-
-// SetNillableDone sets the "done" field if the given value is not nil.
-func (_u *TaskUpdateOne) SetNillableDone(v *bool) *TaskUpdateOne {
-	if v != nil {
-		_u.SetDone(*v)
-	}
-	return _u
-}
-
 // SetNotes sets the "notes" field.
-func (_u *TaskUpdateOne) SetNotes(v string) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetNotes(v string) *ProblemUpdateOne {
 	_u.mutation.SetNotes(v)
 	return _u
 }
 
 // SetNillableNotes sets the "notes" field if the given value is not nil.
-func (_u *TaskUpdateOne) SetNillableNotes(v *string) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetNillableNotes(v *string) *ProblemUpdateOne {
 	if v != nil {
 		_u.SetNotes(*v)
 	}
@@ -482,145 +477,145 @@ func (_u *TaskUpdateOne) SetNillableNotes(v *string) *TaskUpdateOne {
 }
 
 // ClearNotes clears the value of the "notes" field.
-func (_u *TaskUpdateOne) ClearNotes() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearNotes() *ProblemUpdateOne {
 	_u.mutation.ClearNotes()
 	return _u
 }
 
 // SetProblems sets the "problems" field.
-func (_u *TaskUpdateOne) SetProblems(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetProblems(v []int) *ProblemUpdateOne {
 	_u.mutation.SetProblems(v)
 	return _u
 }
 
 // AppendProblems appends value to the "problems" field.
-func (_u *TaskUpdateOne) AppendProblems(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) AppendProblems(v []int) *ProblemUpdateOne {
 	_u.mutation.AppendProblems(v)
 	return _u
 }
 
 // ClearProblems clears the value of the "problems" field.
-func (_u *TaskUpdateOne) ClearProblems() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearProblems() *ProblemUpdateOne {
 	_u.mutation.ClearProblems()
 	return _u
 }
 
 // SetQuestions sets the "questions" field.
-func (_u *TaskUpdateOne) SetQuestions(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetQuestions(v []int) *ProblemUpdateOne {
 	_u.mutation.SetQuestions(v)
 	return _u
 }
 
 // AppendQuestions appends value to the "questions" field.
-func (_u *TaskUpdateOne) AppendQuestions(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) AppendQuestions(v []int) *ProblemUpdateOne {
 	_u.mutation.AppendQuestions(v)
 	return _u
 }
 
 // ClearQuestions clears the value of the "questions" field.
-func (_u *TaskUpdateOne) ClearQuestions() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearQuestions() *ProblemUpdateOne {
 	_u.mutation.ClearQuestions()
 	return _u
 }
 
 // SetActions sets the "actions" field.
-func (_u *TaskUpdateOne) SetActions(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetActions(v []int) *ProblemUpdateOne {
 	_u.mutation.SetActions(v)
 	return _u
 }
 
 // AppendActions appends value to the "actions" field.
-func (_u *TaskUpdateOne) AppendActions(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) AppendActions(v []int) *ProblemUpdateOne {
 	_u.mutation.AppendActions(v)
 	return _u
 }
 
 // ClearActions clears the value of the "actions" field.
-func (_u *TaskUpdateOne) ClearActions() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearActions() *ProblemUpdateOne {
 	_u.mutation.ClearActions()
 	return _u
 }
 
 // SetDefinitions sets the "definitions" field.
-func (_u *TaskUpdateOne) SetDefinitions(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetDefinitions(v []int) *ProblemUpdateOne {
 	_u.mutation.SetDefinitions(v)
 	return _u
 }
 
 // AppendDefinitions appends value to the "definitions" field.
-func (_u *TaskUpdateOne) AppendDefinitions(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) AppendDefinitions(v []int) *ProblemUpdateOne {
 	_u.mutation.AppendDefinitions(v)
 	return _u
 }
 
 // ClearDefinitions clears the value of the "definitions" field.
-func (_u *TaskUpdateOne) ClearDefinitions() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearDefinitions() *ProblemUpdateOne {
 	_u.mutation.ClearDefinitions()
 	return _u
 }
 
 // SetKnowledgeBits sets the "knowledge_bits" field.
-func (_u *TaskUpdateOne) SetKnowledgeBits(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetKnowledgeBits(v []int) *ProblemUpdateOne {
 	_u.mutation.SetKnowledgeBits(v)
 	return _u
 }
 
 // AppendKnowledgeBits appends value to the "knowledge_bits" field.
-func (_u *TaskUpdateOne) AppendKnowledgeBits(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) AppendKnowledgeBits(v []int) *ProblemUpdateOne {
 	_u.mutation.AppendKnowledgeBits(v)
 	return _u
 }
 
 // ClearKnowledgeBits clears the value of the "knowledge_bits" field.
-func (_u *TaskUpdateOne) ClearKnowledgeBits() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearKnowledgeBits() *ProblemUpdateOne {
 	_u.mutation.ClearKnowledgeBits()
 	return _u
 }
 
 // SetParentContainers sets the "parent_containers" field.
-func (_u *TaskUpdateOne) SetParentContainers(v [][]interface{}) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetParentContainers(v [][]interface{}) *ProblemUpdateOne {
 	_u.mutation.SetParentContainers(v)
 	return _u
 }
 
 // AppendParentContainers appends value to the "parent_containers" field.
-func (_u *TaskUpdateOne) AppendParentContainers(v [][]interface{}) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) AppendParentContainers(v [][]interface{}) *ProblemUpdateOne {
 	_u.mutation.AppendParentContainers(v)
 	return _u
 }
 
 // ClearParentContainers clears the value of the "parent_containers" field.
-func (_u *TaskUpdateOne) ClearParentContainers() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearParentContainers() *ProblemUpdateOne {
 	_u.mutation.ClearParentContainers()
 	return _u
 }
 
 // SetKnowledgeNodes sets the "knowledge_nodes" field.
-func (_u *TaskUpdateOne) SetKnowledgeNodes(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetKnowledgeNodes(v []int) *ProblemUpdateOne {
 	_u.mutation.SetKnowledgeNodes(v)
 	return _u
 }
 
 // AppendKnowledgeNodes appends value to the "knowledge_nodes" field.
-func (_u *TaskUpdateOne) AppendKnowledgeNodes(v []int) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) AppendKnowledgeNodes(v []int) *ProblemUpdateOne {
 	_u.mutation.AppendKnowledgeNodes(v)
 	return _u
 }
 
 // ClearKnowledgeNodes clears the value of the "knowledge_nodes" field.
-func (_u *TaskUpdateOne) ClearKnowledgeNodes() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearKnowledgeNodes() *ProblemUpdateOne {
 	_u.mutation.ClearKnowledgeNodes()
 	return _u
 }
 
 // SetDoneDateTime sets the "done_date_time" field.
-func (_u *TaskUpdateOne) SetDoneDateTime(v time.Time) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetDoneDateTime(v time.Time) *ProblemUpdateOne {
 	_u.mutation.SetDoneDateTime(v)
 	return _u
 }
 
 // SetNillableDoneDateTime sets the "done_date_time" field if the given value is not nil.
-func (_u *TaskUpdateOne) SetNillableDoneDateTime(v *time.Time) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) SetNillableDoneDateTime(v *time.Time) *ProblemUpdateOne {
 	if v != nil {
 		_u.SetDoneDateTime(*v)
 	}
@@ -628,36 +623,56 @@ func (_u *TaskUpdateOne) SetNillableDoneDateTime(v *time.Time) *TaskUpdateOne {
 }
 
 // ClearDoneDateTime clears the value of the "done_date_time" field.
-func (_u *TaskUpdateOne) ClearDoneDateTime() *TaskUpdateOne {
+func (_u *ProblemUpdateOne) ClearDoneDateTime() *ProblemUpdateOne {
 	_u.mutation.ClearDoneDateTime()
 	return _u
 }
 
-// Mutation returns the TaskMutation object of the builder.
-func (_u *TaskUpdateOne) Mutation() *TaskMutation {
+// SetSolution sets the "solution" field.
+func (_u *ProblemUpdateOne) SetSolution(v string) *ProblemUpdateOne {
+	_u.mutation.SetSolution(v)
+	return _u
+}
+
+// SetNillableSolution sets the "solution" field if the given value is not nil.
+func (_u *ProblemUpdateOne) SetNillableSolution(v *string) *ProblemUpdateOne {
+	if v != nil {
+		_u.SetSolution(*v)
+	}
+	return _u
+}
+
+// ClearSolution clears the value of the "solution" field.
+func (_u *ProblemUpdateOne) ClearSolution() *ProblemUpdateOne {
+	_u.mutation.ClearSolution()
+	return _u
+}
+
+// Mutation returns the ProblemMutation object of the builder.
+func (_u *ProblemUpdateOne) Mutation() *ProblemMutation {
 	return _u.mutation
 }
 
-// Where appends a list predicates to the TaskUpdate builder.
-func (_u *TaskUpdateOne) Where(ps ...predicate.Task) *TaskUpdateOne {
+// Where appends a list predicates to the ProblemUpdate builder.
+func (_u *ProblemUpdateOne) Where(ps ...predicate.Problem) *ProblemUpdateOne {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (_u *TaskUpdateOne) Select(field string, fields ...string) *TaskUpdateOne {
+func (_u *ProblemUpdateOne) Select(field string, fields ...string) *ProblemUpdateOne {
 	_u.fields = append([]string{field}, fields...)
 	return _u
 }
 
-// Save executes the query and returns the updated Task entity.
-func (_u *TaskUpdateOne) Save(ctx context.Context) (*Task, error) {
+// Save executes the query and returns the updated Problem entity.
+func (_u *ProblemUpdateOne) Save(ctx context.Context) (*Problem, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *TaskUpdateOne) SaveX(ctx context.Context) *Task {
+func (_u *ProblemUpdateOne) SaveX(ctx context.Context) *Problem {
 	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -666,46 +681,46 @@ func (_u *TaskUpdateOne) SaveX(ctx context.Context) *Task {
 }
 
 // Exec executes the query on the entity.
-func (_u *TaskUpdateOne) Exec(ctx context.Context) error {
+func (_u *ProblemUpdateOne) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *TaskUpdateOne) ExecX(ctx context.Context) {
+func (_u *ProblemUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *TaskUpdateOne) check() error {
+func (_u *ProblemUpdateOne) check() error {
 	if v, ok := _u.mutation.Description(); ok {
-		if err := task.DescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Task.description": %w`, err)}
+		if err := problem.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Problem.description": %w`, err)}
 		}
 	}
 	return nil
 }
 
-func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
+func (_u *ProblemUpdateOne) sqlSave(ctx context.Context) (_node *Problem, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(problem.Table, problem.Columns, sqlgraph.NewFieldSpec(problem.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Task.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Problem.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, task.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, problem.FieldID)
 		for _, f := range fields {
-			if !task.ValidColumn(f) {
+			if !problem.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != task.FieldID {
+			if f != problem.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -718,117 +733,120 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 		}
 	}
 	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(task.FieldDescription, field.TypeString, value)
+		_spec.SetField(problem.FieldDescription, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Tags(); ok {
-		_spec.SetField(task.FieldTags, field.TypeJSON, value)
+		_spec.SetField(problem.FieldTags, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedTags(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldTags, value)
+			sqljson.Append(u, problem.FieldTags, value)
 		})
 	}
 	if _u.mutation.TagsCleared() {
-		_spec.ClearField(task.FieldTags, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Done(); ok {
-		_spec.SetField(task.FieldDone, field.TypeBool, value)
+		_spec.ClearField(problem.FieldTags, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Notes(); ok {
-		_spec.SetField(task.FieldNotes, field.TypeString, value)
+		_spec.SetField(problem.FieldNotes, field.TypeString, value)
 	}
 	if _u.mutation.NotesCleared() {
-		_spec.ClearField(task.FieldNotes, field.TypeString)
+		_spec.ClearField(problem.FieldNotes, field.TypeString)
 	}
 	if value, ok := _u.mutation.Problems(); ok {
-		_spec.SetField(task.FieldProblems, field.TypeJSON, value)
+		_spec.SetField(problem.FieldProblems, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedProblems(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldProblems, value)
+			sqljson.Append(u, problem.FieldProblems, value)
 		})
 	}
 	if _u.mutation.ProblemsCleared() {
-		_spec.ClearField(task.FieldProblems, field.TypeJSON)
+		_spec.ClearField(problem.FieldProblems, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Questions(); ok {
-		_spec.SetField(task.FieldQuestions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldQuestions, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedQuestions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldQuestions, value)
+			sqljson.Append(u, problem.FieldQuestions, value)
 		})
 	}
 	if _u.mutation.QuestionsCleared() {
-		_spec.ClearField(task.FieldQuestions, field.TypeJSON)
+		_spec.ClearField(problem.FieldQuestions, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Actions(); ok {
-		_spec.SetField(task.FieldActions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldActions, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedActions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldActions, value)
+			sqljson.Append(u, problem.FieldActions, value)
 		})
 	}
 	if _u.mutation.ActionsCleared() {
-		_spec.ClearField(task.FieldActions, field.TypeJSON)
+		_spec.ClearField(problem.FieldActions, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Definitions(); ok {
-		_spec.SetField(task.FieldDefinitions, field.TypeJSON, value)
+		_spec.SetField(problem.FieldDefinitions, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedDefinitions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldDefinitions, value)
+			sqljson.Append(u, problem.FieldDefinitions, value)
 		})
 	}
 	if _u.mutation.DefinitionsCleared() {
-		_spec.ClearField(task.FieldDefinitions, field.TypeJSON)
+		_spec.ClearField(problem.FieldDefinitions, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.KnowledgeBits(); ok {
-		_spec.SetField(task.FieldKnowledgeBits, field.TypeJSON, value)
+		_spec.SetField(problem.FieldKnowledgeBits, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedKnowledgeBits(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldKnowledgeBits, value)
+			sqljson.Append(u, problem.FieldKnowledgeBits, value)
 		})
 	}
 	if _u.mutation.KnowledgeBitsCleared() {
-		_spec.ClearField(task.FieldKnowledgeBits, field.TypeJSON)
+		_spec.ClearField(problem.FieldKnowledgeBits, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.ParentContainers(); ok {
-		_spec.SetField(task.FieldParentContainers, field.TypeJSON, value)
+		_spec.SetField(problem.FieldParentContainers, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedParentContainers(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldParentContainers, value)
+			sqljson.Append(u, problem.FieldParentContainers, value)
 		})
 	}
 	if _u.mutation.ParentContainersCleared() {
-		_spec.ClearField(task.FieldParentContainers, field.TypeJSON)
+		_spec.ClearField(problem.FieldParentContainers, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.KnowledgeNodes(); ok {
-		_spec.SetField(task.FieldKnowledgeNodes, field.TypeJSON, value)
+		_spec.SetField(problem.FieldKnowledgeNodes, field.TypeJSON, value)
 	}
 	if value, ok := _u.mutation.AppendedKnowledgeNodes(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldKnowledgeNodes, value)
+			sqljson.Append(u, problem.FieldKnowledgeNodes, value)
 		})
 	}
 	if _u.mutation.KnowledgeNodesCleared() {
-		_spec.ClearField(task.FieldKnowledgeNodes, field.TypeJSON)
+		_spec.ClearField(problem.FieldKnowledgeNodes, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.DoneDateTime(); ok {
-		_spec.SetField(task.FieldDoneDateTime, field.TypeTime, value)
+		_spec.SetField(problem.FieldDoneDateTime, field.TypeTime, value)
 	}
 	if _u.mutation.DoneDateTimeCleared() {
-		_spec.ClearField(task.FieldDoneDateTime, field.TypeTime)
+		_spec.ClearField(problem.FieldDoneDateTime, field.TypeTime)
 	}
-	_node = &Task{config: _u.config}
+	if value, ok := _u.mutation.Solution(); ok {
+		_spec.SetField(problem.FieldSolution, field.TypeString, value)
+	}
+	if _u.mutation.SolutionCleared() {
+		_spec.ClearField(problem.FieldSolution, field.TypeString)
+	}
+	_node = &Problem{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{task.Label}
+			err = &NotFoundError{problem.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

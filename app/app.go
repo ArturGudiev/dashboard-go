@@ -1,6 +1,7 @@
 package app
 
 import (
+	"arturgudiev/dashboard/ent/schema"
 	"context"
 	"log"
 	"os"
@@ -14,10 +15,11 @@ import (
 
 // App holds all application dependencies
 type App struct {
-	Client         *ent.Client
-	TaskService    *services.TaskService
-	ProblemService *services.ProblemService
-	ctx            context.Context // Default context for CLI operations
+	Client           *ent.Client
+	TaskService      *services.TaskService
+	ProblemService   *services.ProblemService
+	ContainerService *services.ContainerService
+	ctx              context.Context // Default context for CLI operations
 }
 
 // NewApp creates a new App instance with all dependencies initialized
@@ -56,12 +58,14 @@ func NewApp() (*App, error) {
 	// Initialize services
 	taskService := services.NewTaskService(client)
 	problemService := services.NewProblemService(client)
+	containerService := services.NewContainerService(client)
 
 	return &App{
-		Client:         client,
-		TaskService:    taskService,
-		ProblemService: problemService,
-		ctx:            context.Background(), // Default context for CLI
+		Client:           client,
+		TaskService:      taskService,
+		ProblemService:   problemService,
+		ContainerService: containerService,
+		ctx:              context.Background(), // Default context for CLI
 	}, nil
 }
 
@@ -83,8 +87,8 @@ func (a *App) FinishTaskRecursively(task *ent.Task) error {
 }
 
 // AddSubtask creates a new subtask for the given parent task using default context
-func (a *App) AddSubtask(parentID int, description string) (*ent.Task, error) {
-	return a.TaskService.AddSubtask(a.ctx, parentID, description)
+func (a *App) AddSubtask(parentType schema.ContainerType, parentID int, description string) (*ent.Task, error) {
+	return a.TaskService.AddSubtask(a.ctx, parentType, parentID, description)
 }
 
 // GetOpenDescendantTasks recursively gets all descendant tasks that are not done using default context

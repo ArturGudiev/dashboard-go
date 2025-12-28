@@ -5,7 +5,6 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/predicate"
-	"arturgudiev/dashboard/ent/task"
 	"context"
 	"fmt"
 	"math"
@@ -23,8 +22,6 @@ type ContainerChildQuery struct {
 	order      []containerchild.OrderOption
 	inters     []Interceptor
 	predicates []predicate.ContainerChild
-	withParent *TaskQuery
-	withChild  *TaskQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,50 +56,6 @@ func (_q *ContainerChildQuery) Unique(unique bool) *ContainerChildQuery {
 func (_q *ContainerChildQuery) Order(o ...containerchild.OrderOption) *ContainerChildQuery {
 	_q.order = append(_q.order, o...)
 	return _q
-}
-
-// QueryParent chains the current query on the "parent" edge.
-func (_q *ContainerChildQuery) QueryParent() *TaskQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(containerchild.Table, containerchild.FieldID, selector),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, containerchild.ParentTable, containerchild.ParentColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryChild chains the current query on the "child" edge.
-func (_q *ContainerChildQuery) QueryChild() *TaskQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(containerchild.Table, containerchild.FieldID, selector),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, containerchild.ChildTable, containerchild.ChildColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first ContainerChild entity from the query.
@@ -297,34 +250,10 @@ func (_q *ContainerChildQuery) Clone() *ContainerChildQuery {
 		order:      append([]containerchild.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
 		predicates: append([]predicate.ContainerChild{}, _q.predicates...),
-		withParent: _q.withParent.Clone(),
-		withChild:  _q.withChild.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
-}
-
-// WithParent tells the query-builder to eager-load the nodes that are connected to
-// the "parent" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ContainerChildQuery) WithParent(opts ...func(*TaskQuery)) *ContainerChildQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withParent = query
-	return _q
-}
-
-// WithChild tells the query-builder to eager-load the nodes that are connected to
-// the "child" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ContainerChildQuery) WithChild(opts ...func(*TaskQuery)) *ContainerChildQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withChild = query
-	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -403,12 +332,8 @@ func (_q *ContainerChildQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *ContainerChildQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ContainerChild, error) {
 	var (
-		nodes       = []*ContainerChild{}
-		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
-			_q.withParent != nil,
-			_q.withChild != nil,
-		}
+		nodes = []*ContainerChild{}
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ContainerChild).scanValues(nil, columns)
@@ -416,7 +341,6 @@ func (_q *ContainerChildQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &ContainerChild{config: _q.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -428,78 +352,7 @@ func (_q *ContainerChildQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withParent; query != nil {
-		if err := _q.loadParent(ctx, query, nodes, nil,
-			func(n *ContainerChild, e *Task) { n.Edges.Parent = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withChild; query != nil {
-		if err := _q.loadChild(ctx, query, nodes, nil,
-			func(n *ContainerChild, e *Task) { n.Edges.Child = e }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (_q *ContainerChildQuery) loadParent(ctx context.Context, query *TaskQuery, nodes []*ContainerChild, init func(*ContainerChild), assign func(*ContainerChild, *Task)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ContainerChild)
-	for i := range nodes {
-		fk := nodes[i].ParentID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(task.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "parent_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *ContainerChildQuery) loadChild(ctx context.Context, query *TaskQuery, nodes []*ContainerChild, init func(*ContainerChild), assign func(*ContainerChild, *Task)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ContainerChild)
-	for i := range nodes {
-		fk := nodes[i].ChildID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(task.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "child_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
 }
 
 func (_q *ContainerChildQuery) sqlCount(ctx context.Context) (int, error) {
@@ -526,12 +379,6 @@ func (_q *ContainerChildQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != containerchild.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if _q.withParent != nil {
-			_spec.Node.AddColumnOnce(containerchild.FieldParentID)
-		}
-		if _q.withChild != nil {
-			_spec.Node.AddColumnOnce(containerchild.FieldChildID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

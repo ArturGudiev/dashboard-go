@@ -18,3 +18,8 @@ func WaitForUserInput() {
 	reader := bufio.NewReader(os.Stdin)
 	_, _ = reader.ReadString('\n')
 }
+
+func PrintAndWait(message string) {
+	fmt.Println(message)
+	WaitForUserInput()
+}

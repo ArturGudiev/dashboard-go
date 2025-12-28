@@ -5,13 +5,13 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// Task holds the schema definition for the Task entity.
-type Task struct {
+// Problem holds the schema definition for the Problem entity.
+type Problem struct {
 	ent.Schema
 }
 
-// Fields of the Task.
-func (Task) Fields() []ent.Field {
+// Fields of the Problem.
+func (Problem) Fields() []ent.Field {
 	return []ent.Field{
 		// id is automatically the primary key in Ent
 		field.Int("id").
@@ -22,8 +22,6 @@ func (Task) Fields() []ent.Field {
 		field.Strings("tags").
 			Optional().
 			Default([]string{}),
-		field.Bool("done").
-			Default(false),
 		field.String("notes").
 			Optional().
 			Default(""),
@@ -54,13 +52,16 @@ func (Task) Fields() []ent.Field {
 		field.Time("done_date_time").
 			Optional().
 			Nillable(),
+		// Solution field - can be null (string or null)
+		field.String("solution").
+			Optional().
+			Nillable(),
 	}
 }
 
-// Edges of the Task.
-func (Task) Edges() []ent.Edge {
+// Edges of the Problem.
+func (Problem) Edges() []ent.Edge {
 	// Note: Parent-child relationships are handled through ContainerChild join table
 	// using parent_type/child_type enums, not through Ent edges
-	// This allows polymorphic relationships (tasks, problems, etc.)
 	return []ent.Edge{}
 }

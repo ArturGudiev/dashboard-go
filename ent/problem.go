@@ -3,7 +3,7 @@
 package ent
 
 import (
-	"arturgudiev/dashboard/ent/task"
+	"arturgudiev/dashboard/ent/problem"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// Task is the model entity for the Task schema.
-type Task struct {
+// Problem is the model entity for the Problem schema.
+type Problem struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
@@ -22,8 +22,6 @@ type Task struct {
 	Description string `json:"description,omitempty"`
 	// Tags holds the value of the "tags" field.
 	Tags []string `json:"tags,omitempty"`
-	// Done holds the value of the "done" field.
-	Done bool `json:"done,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes string `json:"notes,omitempty"`
 	// Problems holds the value of the "problems" field.
@@ -42,23 +40,23 @@ type Task struct {
 	KnowledgeNodes []int `json:"knowledge_nodes,omitempty"`
 	// DoneDateTime holds the value of the "done_date_time" field.
 	DoneDateTime *time.Time `json:"done_date_time,omitempty"`
+	// Solution holds the value of the "solution" field.
+	Solution     *string `json:"solution,omitempty"`
 	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Task) scanValues(columns []string) ([]any, error) {
+func (*Problem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldTags, task.FieldProblems, task.FieldQuestions, task.FieldActions, task.FieldDefinitions, task.FieldKnowledgeBits, task.FieldParentContainers, task.FieldKnowledgeNodes:
+		case problem.FieldTags, problem.FieldProblems, problem.FieldQuestions, problem.FieldActions, problem.FieldDefinitions, problem.FieldKnowledgeBits, problem.FieldParentContainers, problem.FieldKnowledgeNodes:
 			values[i] = new([]byte)
-		case task.FieldDone:
-			values[i] = new(sql.NullBool)
-		case task.FieldID:
+		case problem.FieldID:
 			values[i] = new(sql.NullInt64)
-		case task.FieldDescription, task.FieldNotes:
+		case problem.FieldDescription, problem.FieldNotes, problem.FieldSolution:
 			values[i] = new(sql.NullString)
-		case task.FieldDoneDateTime:
+		case problem.FieldDoneDateTime:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -68,26 +66,26 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the Task fields.
-func (_m *Task) assignValues(columns []string, values []any) error {
+// to the Problem fields.
+func (_m *Problem) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldID:
+		case problem.FieldID:
 			value, ok := values[i].(*sql.NullInt64)
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			_m.ID = int(value.Int64)
-		case task.FieldDescription:
+		case problem.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
 			}
-		case task.FieldTags:
+		case problem.FieldTags:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -95,19 +93,13 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
-		case task.FieldDone:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field done", values[i])
-			} else if value.Valid {
-				_m.Done = value.Bool
-			}
-		case task.FieldNotes:
+		case problem.FieldNotes:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
 			} else if value.Valid {
 				_m.Notes = value.String
 			}
-		case task.FieldProblems:
+		case problem.FieldProblems:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field problems", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -115,7 +107,7 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field problems: %w", err)
 				}
 			}
-		case task.FieldQuestions:
+		case problem.FieldQuestions:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field questions", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -123,7 +115,7 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field questions: %w", err)
 				}
 			}
-		case task.FieldActions:
+		case problem.FieldActions:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field actions", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -131,7 +123,7 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field actions: %w", err)
 				}
 			}
-		case task.FieldDefinitions:
+		case problem.FieldDefinitions:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field definitions", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -139,7 +131,7 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field definitions: %w", err)
 				}
 			}
-		case task.FieldKnowledgeBits:
+		case problem.FieldKnowledgeBits:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field knowledge_bits", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -147,7 +139,7 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field knowledge_bits: %w", err)
 				}
 			}
-		case task.FieldParentContainers:
+		case problem.FieldParentContainers:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field parent_containers", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -155,7 +147,7 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field parent_containers: %w", err)
 				}
 			}
-		case task.FieldKnowledgeNodes:
+		case problem.FieldKnowledgeNodes:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field knowledge_nodes", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -163,12 +155,19 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field knowledge_nodes: %w", err)
 				}
 			}
-		case task.FieldDoneDateTime:
+		case problem.FieldDoneDateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field done_date_time", values[i])
 			} else if value.Valid {
 				_m.DoneDateTime = new(time.Time)
 				*_m.DoneDateTime = value.Time
+			}
+		case problem.FieldSolution:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field solution", values[i])
+			} else if value.Valid {
+				_m.Solution = new(string)
+				*_m.Solution = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -177,43 +176,40 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the Task.
+// Value returns the ent.Value that was dynamically selected and assigned to the Problem.
 // This includes values selected through modifiers, order, etc.
-func (_m *Task) Value(name string) (ent.Value, error) {
+func (_m *Problem) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// Update returns a builder for updating this Task.
-// Note that you need to call Task.Unwrap() before calling this method if this Task
+// Update returns a builder for updating this Problem.
+// Note that you need to call Problem.Unwrap() before calling this method if this Problem
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *Task) Update() *TaskUpdateOne {
-	return NewTaskClient(_m.config).UpdateOne(_m)
+func (_m *Problem) Update() *ProblemUpdateOne {
+	return NewProblemClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the Task entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Problem entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *Task) Unwrap() *Task {
+func (_m *Problem) Unwrap() *Problem {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: Task is not a transactional entity")
+		panic("ent: Problem is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *Task) String() string {
+func (_m *Problem) String() string {
 	var builder strings.Builder
-	builder.WriteString("Task(")
+	builder.WriteString("Problem(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("tags=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Tags))
-	builder.WriteString(", ")
-	builder.WriteString("done=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Done))
 	builder.WriteString(", ")
 	builder.WriteString("notes=")
 	builder.WriteString(_m.Notes)
@@ -243,9 +239,14 @@ func (_m *Task) String() string {
 		builder.WriteString("done_date_time=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	if v := _m.Solution; v != nil {
+		builder.WriteString("solution=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// Tasks is a parsable slice of Task.
-type Tasks []*Task
+// Problems is a parsable slice of Problem.
+type Problems []*Problem

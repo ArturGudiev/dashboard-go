@@ -5,7 +5,6 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/schema"
-	"arturgudiev/dashboard/ent/task"
 	"context"
 	"errors"
 	"fmt"
@@ -77,16 +76,6 @@ func (_c *ContainerChildCreate) SetNillableParentOrder(v *int) *ContainerChildCr
 func (_c *ContainerChildCreate) SetID(v int) *ContainerChildCreate {
 	_c.mutation.SetID(v)
 	return _c
-}
-
-// SetParent sets the "parent" edge to the Task entity.
-func (_c *ContainerChildCreate) SetParent(v *Task) *ContainerChildCreate {
-	return _c.SetParentID(v.ID)
-}
-
-// SetChild sets the "child" edge to the Task entity.
-func (_c *ContainerChildCreate) SetChild(v *Task) *ContainerChildCreate {
-	return _c.SetChildID(v.ID)
 }
 
 // Mutation returns the ContainerChildMutation object of the builder.
@@ -189,12 +178,6 @@ func (_c *ContainerChildCreate) check() error {
 			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "ContainerChild.id": %w`, err)}
 		}
 	}
-	if len(_c.mutation.ParentIDs()) == 0 {
-		return &ValidationError{Name: "parent", err: errors.New(`ent: missing required edge "ContainerChild.parent"`)}
-	}
-	if len(_c.mutation.ChildIDs()) == 0 {
-		return &ValidationError{Name: "child", err: errors.New(`ent: missing required edge "ContainerChild.child"`)}
-	}
 	return nil
 }
 
@@ -231,9 +214,17 @@ func (_c *ContainerChildCreate) createSpec() (*ContainerChild, *sqlgraph.CreateS
 		_spec.SetField(containerchild.FieldParentType, field.TypeEnum, value)
 		_node.ParentType = value
 	}
+	if value, ok := _c.mutation.ParentID(); ok {
+		_spec.SetField(containerchild.FieldParentID, field.TypeInt, value)
+		_node.ParentID = value
+	}
 	if value, ok := _c.mutation.ChildType(); ok {
 		_spec.SetField(containerchild.FieldChildType, field.TypeEnum, value)
 		_node.ChildType = value
+	}
+	if value, ok := _c.mutation.ChildID(); ok {
+		_spec.SetField(containerchild.FieldChildID, field.TypeInt, value)
+		_node.ChildID = value
 	}
 	if value, ok := _c.mutation.ChildOrder(); ok {
 		_spec.SetField(containerchild.FieldChildOrder, field.TypeInt, value)
@@ -242,40 +233,6 @@ func (_c *ContainerChildCreate) createSpec() (*ContainerChild, *sqlgraph.CreateS
 	if value, ok := _c.mutation.ParentOrder(); ok {
 		_spec.SetField(containerchild.FieldParentOrder, field.TypeInt, value)
 		_node.ParentOrder = value
-	}
-	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ParentTable,
-			Columns: []string{containerchild.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.ParentID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.ChildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   containerchild.ChildTable,
-			Columns: []string{containerchild.ChildColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.ChildID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

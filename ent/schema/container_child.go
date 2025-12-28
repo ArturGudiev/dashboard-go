@@ -4,7 +4,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 )
@@ -45,16 +44,10 @@ func (ContainerChild) Fields() []ent.Field {
 
 // Edges of the ContainerChild.
 func (ContainerChild) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("parent", Task.Type).
-			Unique().
-			Required().
-			Field("parent_id"),
-		edge.To("child", Task.Type).
-			Unique().
-			Required().
-			Field("child_id"),
-	}
+	// No edges - ContainerChild is polymorphic and can reference multiple entity types
+	// (tasks, problems, etc.) based on parent_type/child_type enums
+	// Foreign keys are not used to maintain referential integrity across different tables
+	return []ent.Edge{}
 }
 
 // Indexes of the ContainerChild.

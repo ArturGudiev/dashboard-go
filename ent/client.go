@@ -19,7 +19,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -336,38 +335,6 @@ func (c *ContainerChildClient) GetX(ctx context.Context, id int) *ContainerChild
 	return obj
 }
 
-// QueryParent queries the parent edge of a ContainerChild.
-func (c *ContainerChildClient) QueryParent(_m *ContainerChild) *TaskQuery {
-	query := (&TaskClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(containerchild.Table, containerchild.FieldID, id),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, containerchild.ParentTable, containerchild.ParentColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryChild queries the child edge of a ContainerChild.
-func (c *ContainerChildClient) QueryChild(_m *ContainerChild) *TaskQuery {
-	query := (&TaskClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(containerchild.Table, containerchild.FieldID, id),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, containerchild.ChildTable, containerchild.ChildColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *ContainerChildClient) Hooks() []Hook {
 	return c.hooks.ContainerChild
@@ -632,38 +599,6 @@ func (c *TaskClient) GetX(ctx context.Context, id int) *Task {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryChildren queries the children edge of a Task.
-func (c *TaskClient) QueryChildren(_m *Task) *ContainerChildQuery {
-	query := (&ContainerChildClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(task.Table, task.FieldID, id),
-			sqlgraph.To(containerchild.Table, containerchild.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, task.ChildrenTable, task.ChildrenColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryParents queries the parents edge of a Task.
-func (c *TaskClient) QueryParents(_m *Task) *ContainerChildQuery {
-	query := (&ContainerChildClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(task.Table, task.FieldID, id),
-			sqlgraph.To(containerchild.Table, containerchild.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, task.ParentsTable, task.ParentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // Hooks returns the client hooks.

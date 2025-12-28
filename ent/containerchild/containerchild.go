@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -27,26 +26,8 @@ const (
 	FieldChildOrder = "child_order"
 	// FieldParentOrder holds the string denoting the parent_order field in the database.
 	FieldParentOrder = "parent_order"
-	// EdgeParent holds the string denoting the parent edge name in mutations.
-	EdgeParent = "parent"
-	// EdgeChild holds the string denoting the child edge name in mutations.
-	EdgeChild = "child"
 	// Table holds the table name of the containerchild in the database.
 	Table = "container_children"
-	// ParentTable is the table that holds the parent relation/edge.
-	ParentTable = "container_children"
-	// ParentInverseTable is the table name for the Task entity.
-	// It exists in this package in order to avoid circular dependency with the "task" package.
-	ParentInverseTable = "tasks"
-	// ParentColumn is the table column denoting the parent relation/edge.
-	ParentColumn = "parent_id"
-	// ChildTable is the table that holds the child relation/edge.
-	ChildTable = "container_children"
-	// ChildInverseTable is the table name for the Task entity.
-	// It exists in this package in order to avoid circular dependency with the "task" package.
-	ChildInverseTable = "tasks"
-	// ChildColumn is the table column denoting the child relation/edge.
-	ChildColumn = "child_id"
 )
 
 // Columns holds all SQL columns for containerchild fields.
@@ -143,32 +124,4 @@ func ByChildOrder(opts ...sql.OrderTermOption) OrderOption {
 // ByParentOrder orders the results by the parent_order field.
 func ByParentOrder(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldParentOrder, opts...).ToFunc()
-}
-
-// ByParentField orders the results by parent field.
-func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByChildField orders the results by child field.
-func ByChildField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newChildStep(), sql.OrderByField(field, opts...))
-	}
-}
-func newParentStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ParentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ParentTable, ParentColumn),
-	)
-}
-func newChildStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ChildInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ChildTable, ChildColumn),
-	)
 }

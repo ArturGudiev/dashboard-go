@@ -865,76 +865,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "ent.ContainerChild": {
-            "type": "object",
-            "properties": {
-                "child_id": {
-                    "description": "ChildID holds the value of the \"child_id\" field.",
-                    "type": "integer"
-                },
-                "child_order": {
-                    "description": "ChildOrder holds the value of the \"child_order\" field.",
-                    "type": "integer"
-                },
-                "child_type": {
-                    "description": "ChildType holds the value of the \"child_type\" field.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/schema.ContainerType"
-                        }
-                    ]
-                },
-                "edges": {
-                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the ContainerChildQuery when eager-loading is set.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/ent.ContainerChildEdges"
-                        }
-                    ]
-                },
-                "id": {
-                    "description": "ID of the ent.",
-                    "type": "integer"
-                },
-                "parent_id": {
-                    "description": "ParentID holds the value of the \"parent_id\" field.",
-                    "type": "integer"
-                },
-                "parent_order": {
-                    "description": "ParentOrder holds the value of the \"parent_order\" field.",
-                    "type": "integer"
-                },
-                "parent_type": {
-                    "description": "ParentType holds the value of the \"parent_type\" field.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/schema.ContainerType"
-                        }
-                    ]
-                }
-            }
-        },
-        "ent.ContainerChildEdges": {
-            "type": "object",
-            "properties": {
-                "child": {
-                    "description": "Child holds the value of the child edge.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/ent.Task"
-                        }
-                    ]
-                },
-                "parent": {
-                    "description": "Parent holds the value of the parent edge.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/ent.Task"
-                        }
-                    ]
-                }
-            }
-        },
         "ent.Task": {
             "type": "object",
             "properties": {
@@ -963,14 +893,6 @@ const docTemplate = `{
                 "done_date_time": {
                     "description": "DoneDateTime holds the value of the \"done_date_time\" field.",
                     "type": "string"
-                },
-                "edges": {
-                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the TaskQuery when eager-loading is set.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/ent.TaskEdges"
-                        }
-                    ]
                 },
                 "id": {
                     "description": "ID of the ent.",
@@ -1021,25 +943,6 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "type": "string"
-                    }
-                }
-            }
-        },
-        "ent.TaskEdges": {
-            "type": "object",
-            "properties": {
-                "children": {
-                    "description": "Children holds the value of the children edge.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ent.ContainerChild"
-                    }
-                },
-                "parents": {
-                    "description": "Parents holds the value of the parents edge.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ent.ContainerChild"
                     }
                 }
             }
@@ -1343,9 +1246,6 @@ const docTemplate = `{
                 "done_date_time": {
                     "type": "string"
                 },
-                "edges": {
-                    "$ref": "#/definitions/ent.TaskEdges"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -1545,35 +1445,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "schema.ContainerType": {
-            "type": "string",
-            "enum": [
-                "epic",
-                "story",
-                "task",
-                "question",
-                "problem",
-                "knowledge-node",
-                "knowledge-bit",
-                "definition",
-                "action",
-                "scheduled-task",
-                "state"
-            ],
-            "x-enum-varnames": [
-                "ContainerTypeEpic",
-                "ContainerTypeStory",
-                "ContainerTypeTask",
-                "ContainerTypeQuestion",
-                "ContainerTypeProblem",
-                "ContainerTypeKnowledgeNode",
-                "ContainerTypeKnowledgeBit",
-                "ContainerTypeDefinition",
-                "ContainerTypeAction",
-                "ContainerTypeScheduledTask",
-                "ContainerTypeState"
-            ]
         }
     }
 }`

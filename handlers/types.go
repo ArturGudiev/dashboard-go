@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"arturgudiev/dashboard/ent"
 	"time"
 )
 
@@ -80,7 +79,6 @@ type TaskResponse struct {
 	ParentContainers [][]interface{} `json:"parent_containers"`
 	KnowledgeNodes   []int           `json:"knowledge_nodes"`
 	DoneDateTime     *time.Time      `json:"done_date_time"`
-	Edges            ent.TaskEdges   `json:"edges"`
 }
 
 // ProblemRequest represents a full problem request (used in new-problem endpoint)

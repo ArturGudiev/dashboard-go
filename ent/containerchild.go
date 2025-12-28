@@ -5,7 +5,6 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/schema"
-	"arturgudiev/dashboard/ent/task"
 	"fmt"
 	"strings"
 
@@ -29,44 +28,8 @@ type ContainerChild struct {
 	// ChildOrder holds the value of the "child_order" field.
 	ChildOrder int `json:"child_order,omitempty"`
 	// ParentOrder holds the value of the "parent_order" field.
-	ParentOrder int `json:"parent_order,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the ContainerChildQuery when eager-loading is set.
-	Edges        ContainerChildEdges `json:"edges"`
+	ParentOrder  int `json:"parent_order,omitempty"`
 	selectValues sql.SelectValues
-}
-
-// ContainerChildEdges holds the relations/edges for other nodes in the graph.
-type ContainerChildEdges struct {
-	// Parent holds the value of the parent edge.
-	Parent *Task `json:"parent,omitempty"`
-	// Child holds the value of the child edge.
-	Child *Task `json:"child,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// ParentOrErr returns the Parent value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ContainerChildEdges) ParentOrErr() (*Task, error) {
-	if e.Parent != nil {
-		return e.Parent, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: task.Label}
-	}
-	return nil, &NotLoadedError{edge: "parent"}
-}
-
-// ChildOrErr returns the Child value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ContainerChildEdges) ChildOrErr() (*Task, error) {
-	if e.Child != nil {
-		return e.Child, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: task.Label}
-	}
-	return nil, &NotLoadedError{edge: "child"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -146,16 +109,6 @@ func (_m *ContainerChild) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *ContainerChild) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
-}
-
-// QueryParent queries the "parent" edge of the ContainerChild entity.
-func (_m *ContainerChild) QueryParent() *TaskQuery {
-	return NewContainerChildClient(_m.config).QueryParent(_m)
-}
-
-// QueryChild queries the "child" edge of the ContainerChild entity.
-func (_m *ContainerChild) QueryChild() *TaskQuery {
-	return NewContainerChildClient(_m.config).QueryChild(_m)
 }
 
 // Update returns a builder for updating this ContainerChild.

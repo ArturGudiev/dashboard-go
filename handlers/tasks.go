@@ -61,7 +61,6 @@ func (h *Handler) GetTaskByID(c *gin.Context) {
 		ParentContainers: task.ParentContainers,
 		KnowledgeNodes:   task.KnowledgeNodes,
 		DoneDateTime:     task.DoneDateTime,
-		Edges:            task.Edges,
 	}
 
 	c.JSON(200, response)
@@ -108,7 +107,6 @@ func (h *Handler) GetTasksByIDs(c *gin.Context) {
 			ParentContainers: t.ParentContainers,
 			KnowledgeNodes:   t.KnowledgeNodes,
 			DoneDateTime:     t.DoneDateTime,
-			Edges:            t.Edges,
 		}
 	}
 
@@ -156,7 +154,6 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 		ParentContainers: newTask.ParentContainers,
 		KnowledgeNodes:   newTask.KnowledgeNodes,
 		DoneDateTime:     newTask.DoneDateTime,
-		Edges:            newTask.Edges,
 	}
 
 	c.JSON(200, response)
@@ -246,7 +243,6 @@ func (h *Handler) FinishTask(c *gin.Context) {
 		ParentContainers: updatedTask.ParentContainers,
 		KnowledgeNodes:   updatedTask.KnowledgeNodes,
 		DoneDateTime:     updatedTask.DoneDateTime,
-		Edges:            updatedTask.Edges,
 	}
 
 	c.JSON(200, response)
@@ -556,7 +552,6 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 		ParentContainers: updatedTask.ParentContainers,
 		KnowledgeNodes:   updatedTask.KnowledgeNodes,
 		DoneDateTime:     updatedTask.DoneDateTime,
-		Edges:            updatedTask.Edges,
 	}
 
 	c.JSON(200, response)

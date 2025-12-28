@@ -1,48 +1,5 @@
 basePath: /
 definitions:
-  ent.ContainerChild:
-    properties:
-      child_id:
-        description: ChildID holds the value of the "child_id" field.
-        type: integer
-      child_order:
-        description: ChildOrder holds the value of the "child_order" field.
-        type: integer
-      child_type:
-        allOf:
-        - $ref: '#/definitions/schema.ContainerType'
-        description: ChildType holds the value of the "child_type" field.
-      edges:
-        allOf:
-        - $ref: '#/definitions/ent.ContainerChildEdges'
-        description: |-
-          Edges holds the relations/edges for other nodes in the graph.
-          The values are being populated by the ContainerChildQuery when eager-loading is set.
-      id:
-        description: ID of the ent.
-        type: integer
-      parent_id:
-        description: ParentID holds the value of the "parent_id" field.
-        type: integer
-      parent_order:
-        description: ParentOrder holds the value of the "parent_order" field.
-        type: integer
-      parent_type:
-        allOf:
-        - $ref: '#/definitions/schema.ContainerType'
-        description: ParentType holds the value of the "parent_type" field.
-    type: object
-  ent.ContainerChildEdges:
-    properties:
-      child:
-        allOf:
-        - $ref: '#/definitions/ent.Task'
-        description: Child holds the value of the child edge.
-      parent:
-        allOf:
-        - $ref: '#/definitions/ent.Task'
-        description: Parent holds the value of the parent edge.
-    type: object
   ent.Task:
     properties:
       actions:
@@ -64,12 +21,6 @@ definitions:
       done_date_time:
         description: DoneDateTime holds the value of the "done_date_time" field.
         type: string
-      edges:
-        allOf:
-        - $ref: '#/definitions/ent.TaskEdges'
-        description: |-
-          Edges holds the relations/edges for other nodes in the graph.
-          The values are being populated by the TaskQuery when eager-loading is set.
       id:
         description: ID of the ent.
         type: integer
@@ -106,19 +57,6 @@ definitions:
         description: Tags holds the value of the "tags" field.
         items:
           type: string
-        type: array
-    type: object
-  ent.TaskEdges:
-    properties:
-      children:
-        description: Children holds the value of the children edge.
-        items:
-          $ref: '#/definitions/ent.ContainerChild'
-        type: array
-      parents:
-        description: Parents holds the value of the parents edge.
-        items:
-          $ref: '#/definitions/ent.ContainerChild'
         type: array
     type: object
   handlers.IDsRequest:
@@ -318,8 +256,6 @@ definitions:
         type: boolean
       done_date_time:
         type: string
-      edges:
-        $ref: '#/definitions/ent.TaskEdges'
       id:
         type: integer
       knowledge_bits:
@@ -453,32 +389,6 @@ definitions:
           type: string
         type: array
     type: object
-  schema.ContainerType:
-    enum:
-    - epic
-    - story
-    - task
-    - question
-    - problem
-    - knowledge-node
-    - knowledge-bit
-    - definition
-    - action
-    - scheduled-task
-    - state
-    type: string
-    x-enum-varnames:
-    - ContainerTypeEpic
-    - ContainerTypeStory
-    - ContainerTypeTask
-    - ContainerTypeQuestion
-    - ContainerTypeProblem
-    - ContainerTypeKnowledgeNode
-    - ContainerTypeKnowledgeBit
-    - ContainerTypeDefinition
-    - ContainerTypeAction
-    - ContainerTypeScheduledTask
-    - ContainerTypeState
 host: localhost:8080
 info:
   contact:

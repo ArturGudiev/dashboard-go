@@ -41,16 +41,16 @@ type ContainerChildMutation struct {
 	typ             string
 	id              *int
 	parent_type     *schema.ContainerType
+	parent_id       *int
+	addparent_id    *int
 	child_type      *schema.ContainerType
+	child_id        *int
+	addchild_id     *int
 	child_order     *int
 	addchild_order  *int
 	parent_order    *int
 	addparent_order *int
 	clearedFields   map[string]struct{}
-	parent          *int
-	clearedparent   bool
-	child           *int
-	clearedchild    bool
 	done            bool
 	oldValue        func(context.Context) (*ContainerChild, error)
 	predicates      []predicate.ContainerChild
@@ -198,12 +198,13 @@ func (m *ContainerChildMutation) ResetParentType() {
 
 // SetParentID sets the "parent_id" field.
 func (m *ContainerChildMutation) SetParentID(i int) {
-	m.parent = &i
+	m.parent_id = &i
+	m.addparent_id = nil
 }
 
 // ParentID returns the value of the "parent_id" field in the mutation.
 func (m *ContainerChildMutation) ParentID() (r int, exists bool) {
-	v := m.parent
+	v := m.parent_id
 	if v == nil {
 		return
 	}
@@ -227,9 +228,28 @@ func (m *ContainerChildMutation) OldParentID(ctx context.Context) (v int, err er
 	return oldValue.ParentID, nil
 }
 
+// AddParentID adds i to the "parent_id" field.
+func (m *ContainerChildMutation) AddParentID(i int) {
+	if m.addparent_id != nil {
+		*m.addparent_id += i
+	} else {
+		m.addparent_id = &i
+	}
+}
+
+// AddedParentID returns the value that was added to the "parent_id" field in this mutation.
+func (m *ContainerChildMutation) AddedParentID() (r int, exists bool) {
+	v := m.addparent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ResetParentID resets all changes to the "parent_id" field.
 func (m *ContainerChildMutation) ResetParentID() {
-	m.parent = nil
+	m.parent_id = nil
+	m.addparent_id = nil
 }
 
 // SetChildType sets the "child_type" field.
@@ -270,12 +290,13 @@ func (m *ContainerChildMutation) ResetChildType() {
 
 // SetChildID sets the "child_id" field.
 func (m *ContainerChildMutation) SetChildID(i int) {
-	m.child = &i
+	m.child_id = &i
+	m.addchild_id = nil
 }
 
 // ChildID returns the value of the "child_id" field in the mutation.
 func (m *ContainerChildMutation) ChildID() (r int, exists bool) {
-	v := m.child
+	v := m.child_id
 	if v == nil {
 		return
 	}
@@ -299,9 +320,28 @@ func (m *ContainerChildMutation) OldChildID(ctx context.Context) (v int, err err
 	return oldValue.ChildID, nil
 }
 
+// AddChildID adds i to the "child_id" field.
+func (m *ContainerChildMutation) AddChildID(i int) {
+	if m.addchild_id != nil {
+		*m.addchild_id += i
+	} else {
+		m.addchild_id = &i
+	}
+}
+
+// AddedChildID returns the value that was added to the "child_id" field in this mutation.
+func (m *ContainerChildMutation) AddedChildID() (r int, exists bool) {
+	v := m.addchild_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ResetChildID resets all changes to the "child_id" field.
 func (m *ContainerChildMutation) ResetChildID() {
-	m.child = nil
+	m.child_id = nil
+	m.addchild_id = nil
 }
 
 // SetChildOrder sets the "child_order" field.
@@ -416,60 +456,6 @@ func (m *ContainerChildMutation) ResetParentOrder() {
 	m.addparent_order = nil
 }
 
-// ClearParent clears the "parent" edge to the Task entity.
-func (m *ContainerChildMutation) ClearParent() {
-	m.clearedparent = true
-	m.clearedFields[containerchild.FieldParentID] = struct{}{}
-}
-
-// ParentCleared reports if the "parent" edge to the Task entity was cleared.
-func (m *ContainerChildMutation) ParentCleared() bool {
-	return m.clearedparent
-}
-
-// ParentIDs returns the "parent" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ParentID instead. It exists only for internal usage by the builders.
-func (m *ContainerChildMutation) ParentIDs() (ids []int) {
-	if id := m.parent; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetParent resets all changes to the "parent" edge.
-func (m *ContainerChildMutation) ResetParent() {
-	m.parent = nil
-	m.clearedparent = false
-}
-
-// ClearChild clears the "child" edge to the Task entity.
-func (m *ContainerChildMutation) ClearChild() {
-	m.clearedchild = true
-	m.clearedFields[containerchild.FieldChildID] = struct{}{}
-}
-
-// ChildCleared reports if the "child" edge to the Task entity was cleared.
-func (m *ContainerChildMutation) ChildCleared() bool {
-	return m.clearedchild
-}
-
-// ChildIDs returns the "child" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ChildID instead. It exists only for internal usage by the builders.
-func (m *ContainerChildMutation) ChildIDs() (ids []int) {
-	if id := m.child; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetChild resets all changes to the "child" edge.
-func (m *ContainerChildMutation) ResetChild() {
-	m.child = nil
-	m.clearedchild = false
-}
-
 // Where appends a list predicates to the ContainerChildMutation builder.
 func (m *ContainerChildMutation) Where(ps ...predicate.ContainerChild) {
 	m.predicates = append(m.predicates, ps...)
@@ -508,13 +494,13 @@ func (m *ContainerChildMutation) Fields() []string {
 	if m.parent_type != nil {
 		fields = append(fields, containerchild.FieldParentType)
 	}
-	if m.parent != nil {
+	if m.parent_id != nil {
 		fields = append(fields, containerchild.FieldParentID)
 	}
 	if m.child_type != nil {
 		fields = append(fields, containerchild.FieldChildType)
 	}
-	if m.child != nil {
+	if m.child_id != nil {
 		fields = append(fields, containerchild.FieldChildID)
 	}
 	if m.child_order != nil {
@@ -623,6 +609,12 @@ func (m *ContainerChildMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *ContainerChildMutation) AddedFields() []string {
 	var fields []string
+	if m.addparent_id != nil {
+		fields = append(fields, containerchild.FieldParentID)
+	}
+	if m.addchild_id != nil {
+		fields = append(fields, containerchild.FieldChildID)
+	}
 	if m.addchild_order != nil {
 		fields = append(fields, containerchild.FieldChildOrder)
 	}
@@ -637,6 +629,10 @@ func (m *ContainerChildMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *ContainerChildMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case containerchild.FieldParentID:
+		return m.AddedParentID()
+	case containerchild.FieldChildID:
+		return m.AddedChildID()
 	case containerchild.FieldChildOrder:
 		return m.AddedChildOrder()
 	case containerchild.FieldParentOrder:
@@ -650,6 +646,20 @@ func (m *ContainerChildMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ContainerChildMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case containerchild.FieldParentID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParentID(v)
+		return nil
+	case containerchild.FieldChildID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChildID(v)
+		return nil
 	case containerchild.FieldChildOrder:
 		v, ok := value.(int)
 		if !ok {
@@ -715,35 +725,19 @@ func (m *ContainerChildMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ContainerChildMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.parent != nil {
-		edges = append(edges, containerchild.EdgeParent)
-	}
-	if m.child != nil {
-		edges = append(edges, containerchild.EdgeChild)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ContainerChildMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case containerchild.EdgeParent:
-		if id := m.parent; id != nil {
-			return []ent.Value{*id}
-		}
-	case containerchild.EdgeChild:
-		if id := m.child; id != nil {
-			return []ent.Value{*id}
-		}
-	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ContainerChildMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 0)
 	return edges
 }
 
@@ -755,53 +749,25 @@ func (m *ContainerChildMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ContainerChildMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedparent {
-		edges = append(edges, containerchild.EdgeParent)
-	}
-	if m.clearedchild {
-		edges = append(edges, containerchild.EdgeChild)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ContainerChildMutation) EdgeCleared(name string) bool {
-	switch name {
-	case containerchild.EdgeParent:
-		return m.clearedparent
-	case containerchild.EdgeChild:
-		return m.clearedchild
-	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ContainerChildMutation) ClearEdge(name string) error {
-	switch name {
-	case containerchild.EdgeParent:
-		m.ClearParent()
-		return nil
-	case containerchild.EdgeChild:
-		m.ClearChild()
-		return nil
-	}
 	return fmt.Errorf("unknown ContainerChild unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ContainerChildMutation) ResetEdge(name string) error {
-	switch name {
-	case containerchild.EdgeParent:
-		m.ResetParent()
-		return nil
-	case containerchild.EdgeChild:
-		m.ResetChild()
-		return nil
-	}
 	return fmt.Errorf("unknown ContainerChild edge %s", name)
 }
 
@@ -2106,12 +2072,6 @@ type TaskMutation struct {
 	appendknowledge_nodes   []int
 	done_date_time          *time.Time
 	clearedFields           map[string]struct{}
-	children                map[int]struct{}
-	removedchildren         map[int]struct{}
-	clearedchildren         bool
-	parents                 map[int]struct{}
-	removedparents          map[int]struct{}
-	clearedparents          bool
 	done                    bool
 	oldValue                func(context.Context) (*Task, error)
 	predicates              []predicate.Task
@@ -2911,114 +2871,6 @@ func (m *TaskMutation) ResetDoneDateTime() {
 	delete(m.clearedFields, task.FieldDoneDateTime)
 }
 
-// AddChildIDs adds the "children" edge to the ContainerChild entity by ids.
-func (m *TaskMutation) AddChildIDs(ids ...int) {
-	if m.children == nil {
-		m.children = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.children[ids[i]] = struct{}{}
-	}
-}
-
-// ClearChildren clears the "children" edge to the ContainerChild entity.
-func (m *TaskMutation) ClearChildren() {
-	m.clearedchildren = true
-}
-
-// ChildrenCleared reports if the "children" edge to the ContainerChild entity was cleared.
-func (m *TaskMutation) ChildrenCleared() bool {
-	return m.clearedchildren
-}
-
-// RemoveChildIDs removes the "children" edge to the ContainerChild entity by IDs.
-func (m *TaskMutation) RemoveChildIDs(ids ...int) {
-	if m.removedchildren == nil {
-		m.removedchildren = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.children, ids[i])
-		m.removedchildren[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedChildren returns the removed IDs of the "children" edge to the ContainerChild entity.
-func (m *TaskMutation) RemovedChildrenIDs() (ids []int) {
-	for id := range m.removedchildren {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ChildrenIDs returns the "children" edge IDs in the mutation.
-func (m *TaskMutation) ChildrenIDs() (ids []int) {
-	for id := range m.children {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetChildren resets all changes to the "children" edge.
-func (m *TaskMutation) ResetChildren() {
-	m.children = nil
-	m.clearedchildren = false
-	m.removedchildren = nil
-}
-
-// AddParentIDs adds the "parents" edge to the ContainerChild entity by ids.
-func (m *TaskMutation) AddParentIDs(ids ...int) {
-	if m.parents == nil {
-		m.parents = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.parents[ids[i]] = struct{}{}
-	}
-}
-
-// ClearParents clears the "parents" edge to the ContainerChild entity.
-func (m *TaskMutation) ClearParents() {
-	m.clearedparents = true
-}
-
-// ParentsCleared reports if the "parents" edge to the ContainerChild entity was cleared.
-func (m *TaskMutation) ParentsCleared() bool {
-	return m.clearedparents
-}
-
-// RemoveParentIDs removes the "parents" edge to the ContainerChild entity by IDs.
-func (m *TaskMutation) RemoveParentIDs(ids ...int) {
-	if m.removedparents == nil {
-		m.removedparents = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.parents, ids[i])
-		m.removedparents[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedParents returns the removed IDs of the "parents" edge to the ContainerChild entity.
-func (m *TaskMutation) RemovedParentsIDs() (ids []int) {
-	for id := range m.removedparents {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ParentsIDs returns the "parents" edge IDs in the mutation.
-func (m *TaskMutation) ParentsIDs() (ids []int) {
-	for id := range m.parents {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetParents resets all changes to the "parents" edge.
-func (m *TaskMutation) ResetParents() {
-	m.parents = nil
-	m.clearedparents = false
-	m.removedparents = nil
-}
-
 // Where appends a list predicates to the TaskMutation builder.
 func (m *TaskMutation) Where(ps ...predicate.Task) {
 	m.predicates = append(m.predicates, ps...)
@@ -3402,111 +3254,49 @@ func (m *TaskMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TaskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.children != nil {
-		edges = append(edges, task.EdgeChildren)
-	}
-	if m.parents != nil {
-		edges = append(edges, task.EdgeParents)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TaskMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case task.EdgeChildren:
-		ids := make([]ent.Value, 0, len(m.children))
-		for id := range m.children {
-			ids = append(ids, id)
-		}
-		return ids
-	case task.EdgeParents:
-		ids := make([]ent.Value, 0, len(m.parents))
-		for id := range m.parents {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TaskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedchildren != nil {
-		edges = append(edges, task.EdgeChildren)
-	}
-	if m.removedparents != nil {
-		edges = append(edges, task.EdgeParents)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case task.EdgeChildren:
-		ids := make([]ent.Value, 0, len(m.removedchildren))
-		for id := range m.removedchildren {
-			ids = append(ids, id)
-		}
-		return ids
-	case task.EdgeParents:
-		ids := make([]ent.Value, 0, len(m.removedparents))
-		for id := range m.removedparents {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TaskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedchildren {
-		edges = append(edges, task.EdgeChildren)
-	}
-	if m.clearedparents {
-		edges = append(edges, task.EdgeParents)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TaskMutation) EdgeCleared(name string) bool {
-	switch name {
-	case task.EdgeChildren:
-		return m.clearedchildren
-	case task.EdgeParents:
-		return m.clearedparents
-	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TaskMutation) ClearEdge(name string) error {
-	switch name {
-	}
 	return fmt.Errorf("unknown Task unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TaskMutation) ResetEdge(name string) error {
-	switch name {
-	case task.EdgeChildren:
-		m.ResetChildren()
-		return nil
-	case task.EdgeParents:
-		m.ResetParents()
-		return nil
-	}
 	return fmt.Errorf("unknown Task edge %s", name)
 }
 

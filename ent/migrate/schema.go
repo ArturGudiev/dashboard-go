@@ -13,56 +13,42 @@ var (
 	ContainerChildrenColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "parent_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state"}},
+		{Name: "parent_id", Type: field.TypeInt},
 		{Name: "child_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state"}},
+		{Name: "child_id", Type: field.TypeInt},
 		{Name: "child_order", Type: field.TypeInt, Default: 0},
 		{Name: "parent_order", Type: field.TypeInt, Default: 0},
-		{Name: "parent_id", Type: field.TypeInt},
-		{Name: "child_id", Type: field.TypeInt},
 	}
 	// ContainerChildrenTable holds the schema information for the "container_children" table.
 	ContainerChildrenTable = &schema.Table{
 		Name:       "container_children",
 		Columns:    ContainerChildrenColumns,
 		PrimaryKey: []*schema.Column{ContainerChildrenColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "container_children_tasks_parent",
-				Columns:    []*schema.Column{ContainerChildrenColumns[5]},
-				RefColumns: []*schema.Column{TasksColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "container_children_tasks_child",
-				Columns:    []*schema.Column{ContainerChildrenColumns[6]},
-				RefColumns: []*schema.Column{TasksColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "containerchild_parent_type_parent_id_child_type_child_id",
 				Unique:  true,
-				Columns: []*schema.Column{ContainerChildrenColumns[1], ContainerChildrenColumns[5], ContainerChildrenColumns[2], ContainerChildrenColumns[6]},
+				Columns: []*schema.Column{ContainerChildrenColumns[1], ContainerChildrenColumns[2], ContainerChildrenColumns[3], ContainerChildrenColumns[4]},
 			},
 			{
 				Name:    "containerchild_parent_id_child_order",
 				Unique:  false,
-				Columns: []*schema.Column{ContainerChildrenColumns[5], ContainerChildrenColumns[3]},
+				Columns: []*schema.Column{ContainerChildrenColumns[2], ContainerChildrenColumns[5]},
 			},
 			{
 				Name:    "containerchild_child_id_parent_order",
 				Unique:  false,
-				Columns: []*schema.Column{ContainerChildrenColumns[6], ContainerChildrenColumns[4]},
+				Columns: []*schema.Column{ContainerChildrenColumns[4], ContainerChildrenColumns[6]},
 			},
 			{
 				Name:    "containerchild_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{ContainerChildrenColumns[5]},
+				Columns: []*schema.Column{ContainerChildrenColumns[2]},
 			},
 			{
 				Name:    "containerchild_child_id",
 				Unique:  false,
-				Columns: []*schema.Column{ContainerChildrenColumns[6]},
+				Columns: []*schema.Column{ContainerChildrenColumns[4]},
 			},
 		},
 	}
@@ -132,8 +118,6 @@ var (
 )
 
 func init() {
-	ContainerChildrenTable.ForeignKeys[0].RefTable = TasksTable
-	ContainerChildrenTable.ForeignKeys[1].RefTable = TasksTable
 	ContainerChildrenTable.Annotation = &entsql.Annotation{
 		Table: "container_children",
 	}

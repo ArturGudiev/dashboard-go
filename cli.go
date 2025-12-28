@@ -194,7 +194,7 @@ func clearScreen() {
 }
 
 // printTaskInfo prints task information in a formatted way
-func printTaskInfo(ctx context.Context, application *app.App, t *ent.Task) {
+func printTaskInfo(ctx context.Context, application *app.App, t *ent.Task, subtasks []*ent.Task, problems []*ent.Problem) {
 
 	// Build and print parents path as a tree
 	parentsPath := application.TaskService.GetParentsPath(ctx, t)
@@ -223,6 +223,8 @@ func printTaskInfo(ctx context.Context, application *app.App, t *ent.Task) {
 		fmt.Println()
 	}
 
+	printParentsPath(ctx, application, schema.ContainerTypeTask, t.ID)
+
 	fmt.Println(strings.Repeat("=", 80))
 	color.Cyan("\tTask ID: %d\n", t.ID)
 	fmt.Printf("\tDescription: %s\n", t.Description)
@@ -238,78 +240,127 @@ func printTaskInfo(ctx context.Context, application *app.App, t *ent.Task) {
 	}
 	fmt.Println(strings.Repeat("=", 80))
 
-	// Get and display child tasks
-	childRelations, err := application.Client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-			containerchild.ParentID(t.ID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-		).
-		Order(containerchild.ByChildOrder()).
-		WithChild().
-		All(ctx)
-
-	if err == nil && len(childRelations) > 0 {
-		// Filter to only open tasks
-		openTasks := []*ent.Task{}
-		for _, relation := range childRelations {
-			childTask := relation.Edges.Child
-			if childTask != nil && !childTask.Done {
-				openTasks = append(openTasks, childTask)
-			}
-		}
-
-		if len(openTasks) > 0 {
-			fmt.Println("\nChild Tasks:")
-			for i, childTask := range openTasks {
-				fmt.Printf("  %d. [ID: %d] Open - %s\n", i+1, childTask.ID, childTask.Description)
-			}
+	if len(subtasks) > 0 {
+		fmt.Println("\nChild Tasks:")
+		for i, childTask := range subtasks {
+			fmt.Printf("  %d. [ID: %d] Open - %s\n", i+1, childTask.ID, childTask.Description)
 		}
 	}
 
-	// Get and display child problems
-	childProblemRelations, err := application.Client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-			containerchild.ParentID(t.ID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
-		).
-		Order(containerchild.ByChildOrder()).
-		All(ctx)
-
-	if err == nil && len(childProblemRelations) > 0 {
-		// Load problems manually since edges don't support Problem
-		openProblems := []*ent.Problem{}
-		for _, relation := range childProblemRelations {
-			childProblem, err := application.Client.Problem.Get(ctx, relation.ChildID)
-			if err != nil {
-				continue
+	if len(problems) > 0 {
+		fmt.Println("\nChild Problems:")
+		for i, childProblem := range problems {
+			status := "Open"
+			if childProblem.Solution != nil {
+				status = "Solved"
 			}
-			// Filter to only open problems (solution is null)
-			if childProblem.Solution == nil {
-				openProblems = append(openProblems, childProblem)
-			}
-		}
-
-		if len(openProblems) > 0 {
-			fmt.Println("\nChild Problems:")
-			for i, childProblem := range openProblems {
-				status := "Open"
-				if childProblem.Solution != nil {
-					status = "Solved"
-				}
-				fmt.Printf("  %d. [ID: %d] %s - %s\n", i+1, childProblem.ID, status, childProblem.Description)
-			}
+			fmt.Printf("  %d. [ID: %d] %s - %s\n", i+1, childProblem.ID, status, childProblem.Description)
 		}
 	}
 
 	fmt.Println("\nCommands: q/quit/exit - quit, r/refresh - refresh task, t+ <description> - add subtask, p+ <description> - add problem")
 }
 
+func printParentsPath(ctx context.Context, application *app.App, containerType schema.ContainerType, ID int) {
+	parentsPath := application.ContainerService.GetParentsPathDescriptions(ctx, containerType, ID)
+	if len(parentsPath) > 0 {
+		for i, j := 0, len(parentsPath)-1; i < j; i, j = i+1, j-1 {
+			parentsPath[i], parentsPath[j] = parentsPath[j], parentsPath[i]
+		}
+
+		// Build tree structure
+		root := gtree.NewRoot(parentsPath[0])
+		currentNode := root
+
+		// Add intermediate parents
+		for i := 1; i < len(parentsPath); i++ {
+			currentNode = currentNode.Add(parentsPath[i])
+		}
+
+		res, err := application.ContainerService.GetDescription(ctx, containerType, ID)
+		if err != nil && res != nil {
+			currentNode.Add(*res)
+		}
+
+		// Print the tree
+		if err := gtree.OutputFromRoot(os.Stdout, root); err != nil {
+			fmt.Printf("Error printing tree: %v\n", err)
+		}
+		fmt.Println()
+	}
+}
+
+func printProblemInfo(ctx context.Context, application *app.App, p *ent.Problem, subtasks []*ent.Task, problems []*ent.Problem) {
+	parentsPath := application.ContainerService.GetParentsPathDescriptions(ctx, schema.ContainerTypeProblem, p.ID)
+	print(parentsPath)
+
+	//if len(parentsPath) > 0 {
+	//	// Reverse the path to go from root to immediate parent
+	//	for i, j := 0, len(parentsPath)-1; i < j; i, j = i+1, j-1 {
+	//		parentsPath[i], parentsPath[j] = parentsPath[j], parentsPath[i]
+	//	}
+	//
+	//	// Build tree structure
+	//	root := gtree.NewRoot(parentsPath[0].Description)
+	//	currentNode := root
+	//
+	//	// Add intermediate parents
+	//	for i := 1; i < len(parentsPath); i++ {
+	//		currentNode = currentNode.Add(parentsPath[i].Description)
+	//	}
+	//
+	//	// Add current task as the final child
+	//	currentNode.Add(t.Description)
+	//
+	//	// Print the tree
+	//	if err := gtree.OutputFromRoot(os.Stdout, root); err != nil {
+	//		fmt.Printf("Error printing tree: %v\n", err)
+	//	}
+	//	fmt.Println()
+	//}
+	//
+	//fmt.Println(strings.Repeat("=", 80))
+	//color.Cyan("\tTask ID: %d\n", t.ID)
+	//fmt.Printf("\tDescription: %s\n", t.Description)
+	//fmt.Printf("\tStatus: %s\n", map[bool]string{true: "Done", false: "Open"}[t.Done])
+	//if t.Notes != "" {
+	//	fmt.Printf("Notes: %s\n", t.Notes)
+	//}
+	//if len(t.Tags) > 0 {
+	//	fmt.Printf("Tags: %s\n", strings.Join(t.Tags, ", "))
+	//}
+	//if t.DoneDateTime != nil {
+	//	fmt.Printf("Done Date: %s\n", t.DoneDateTime.Format("2006-01-02 15:04:05"))
+	//}
+	//fmt.Println(strings.Repeat("=", 80))
+	//
+	//if len(subtasks) > 0 {
+	//	fmt.Println("\nChild Tasks:")
+	//	for i, childTask := range subtasks {
+	//		fmt.Printf("  %d. [ID: %d] Open - %s\n", i+1, childTask.ID, childTask.Description)
+	//	}
+	//}
+	//
+	//if len(problems) > 0 {
+	//	fmt.Println("\nChild Problems:")
+	//	for i, childProblem := range problems {
+	//		status := "Open"
+	//		if childProblem.Solution != nil {
+	//			status = "Solved"
+	//		}
+	//		fmt.Printf("  %d. [ID: %d] %s - %s\n", i+1, childProblem.ID, status, childProblem.Description)
+	//	}
+	//}
+	//
+	//fmt.Println("\nCommands: q/quit/exit - quit, r/refresh - refresh task, t+ <description> - add subtask, p+ <description> - add problem")
+}
+
 // viewTaskInteractive shows task details and allows interactive commands
 func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 	scanner := bufio.NewScanner(os.Stdin)
 	currentID := id // Track current task ID
+	subtasks, _ := application.ContainerService.GetSubtasks(ctx, schema.ContainerTypeTask, currentID)
+	problems, _ := application.ContainerService.GetProblems(ctx, schema.ContainerTypeTask, currentID)
 
 	for {
 		// Clear screen before printing
@@ -327,7 +378,7 @@ func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 		}
 
 		// Print task information
-		printTaskInfo(ctx, application, t)
+		printTaskInfo(ctx, application, t, subtasks, problems)
 
 		// Wait for user input
 		fmt.Print("> ")
@@ -345,7 +396,7 @@ func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 				utils.WaitForUserInput()
 				continue
 			}
-			if err := addSubtask(ctx, application, currentID, description); err != nil {
+			if _, err := application.AddSubtask(schema.ContainerTypeTask, id, description); err != nil {
 				fmt.Printf("Error adding subtask: %v\n", err)
 				utils.WaitForUserInput()
 				continue
@@ -371,30 +422,23 @@ func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 			continue
 		}
 
-		if utils.IsInteger(line) {
-			index, err := strconv.Atoi(line)
-			if err != nil {
-				continue
+		if strings.HasPrefix(line, "p ") {
+			if index, err := strconv.Atoi(line); err == nil {
+				selectedProblem := problems[index]
+				viewProblemInteractive(ctx, application, selectedProblem.ID)
 			}
+		}
 
-			// Get all child subtasks from current task
-			childTasks, err := application.GetChildSubtasks(currentID)
-			if err != nil {
-				fmt.Printf("Error getting child tasks: %v\n", err)
-				utils.WaitForUserInput()
-				continue
-			}
-
+		if index, err := strconv.Atoi(line); err == nil {
 			// Validate index
-			if index < 1 || index > len(childTasks) {
-				fmt.Printf("Invalid index. Please enter a number between 1 and %d.\n", len(childTasks))
-				utils.WaitForUserInput()
+			if index < 1 || index > len(subtasks) {
+				utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(subtasks)))
 				continue
 			}
 
-			// Navigate to child task by updating currentID and continuing loop
-			currentID = childTasks[index-1].ID
-			continue // Loop will restart with new currentID
+			childTaskID := subtasks[index-1].ID
+			viewTaskInteractive(ctx, application, childTaskID)
+			continue
 		}
 
 		if line == "u" {
@@ -405,8 +449,8 @@ func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 				continue
 			}
 			// Navigate to parent task by updating currentID and continuing loop
-			currentID = parent.ID
-			continue // Loop will restart with new currentID
+			viewTaskInteractive(ctx, application, parent.ID)
+			continue
 		}
 
 		if strings.HasPrefix(line, "ft ") {
@@ -434,6 +478,7 @@ func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 		lineLower := strings.ToLower(line)
 		switch lineLower {
 		case "q", "quit", "exit":
+			os.Exit(0)
 			return
 		case "r", "refresh":
 			// Continue loop to refresh (screen will be cleared at start of loop)
@@ -446,6 +491,129 @@ func viewTaskInteractive(ctx context.Context, application *app.App, id int) {
 			utils.WaitForUserInput()
 		}
 	}
+}
+
+func viewProblemInteractive(ctx context.Context, application *app.App, id int) {
+	scanner := bufio.NewScanner(os.Stdin)
+	currentID := id
+	problem, _ := application.Client.Problem.Get(ctx, currentID)
+	subtasks, _ := application.ContainerService.GetSubtasks(ctx, schema.ContainerTypeProblem, currentID)
+	problems, _ := application.ContainerService.GetProblems(ctx, schema.ContainerTypeProblem, currentID)
+
+	for {
+		// Clear screen before printing
+		clearScreen()
+		printProblemInfo(ctx, application, problem, subtasks, problems)
+
+		line := GetUserInput(scanner)
+		if line == "" {
+			continue
+		}
+
+		// Check for t+ command (case-sensitive for the +)
+		if strings.HasPrefix(line, "t+ ") {
+			description := strings.TrimSpace(line[3:])
+			if description == "" {
+				fmt.Println("Error: Description required. Usage: t+ <description>")
+				utils.WaitForUserInput()
+				continue
+			}
+			if _, err := application.AddSubtask(schema.ContainerTypeProblem, currentID, description); err != nil {
+				fmt.Printf("Error adding subtask: %v\n", err)
+				utils.WaitForUserInput()
+				continue
+			}
+			// Continue loop to refresh and show the new subtask
+			continue
+		}
+
+		// Check for p+ command (case-sensitive for the +)
+		if strings.HasPrefix(line, "p+ ") {
+			description := strings.TrimSpace(line[3:])
+			if description == "" {
+				fmt.Println("Error: Description required. Usage: p+ <description>")
+				utils.WaitForUserInput()
+				continue
+			}
+			if err := addSubproblem(ctx, application, currentID, description); err != nil {
+				fmt.Printf("Error adding problem: %v\n", err)
+				utils.WaitForUserInput()
+				continue
+			}
+			// Continue loop to refresh and show the new problem
+			continue
+		}
+
+		if strings.HasPrefix(line, "p ") {
+			if index, err := strconv.Atoi(line); err == nil {
+				selectedProblem := problems[index]
+				viewProblemInteractive(ctx, application, selectedProblem.ID)
+			}
+		}
+
+		if index, err := strconv.Atoi(line); err == nil {
+			// Validate index
+			if index < 1 || index > len(subtasks) {
+				utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(subtasks)))
+				continue
+			}
+
+			childTaskID := subtasks[index-1].ID
+			viewTaskInteractive(ctx, application, childTaskID)
+			continue
+		}
+
+		if line == "u" {
+			continue
+		}
+
+		if strings.HasPrefix(line, "ft ") {
+			indexStr := strings.TrimSpace(line[3:])
+			if indexStr == "" {
+				fmt.Println("Error: index required. Usage: ft <id>")
+				utils.WaitForUserInput()
+				continue
+			}
+
+			tasks, _ := application.TaskService.GetChildSubtasks(ctx, id)
+			var taskDescriptions []string
+			mapper := func(el *ent.Task) string { return el.Description }
+			for _, el := range tasks {
+				taskDescriptions = append(taskDescriptions, mapper(el))
+			}
+
+			fmt.Println(strings.Join(taskDescriptions, ", "))
+
+			utils.WaitForUserInput()
+			// Continue loop to refresh and show the new subtask
+			continue
+		}
+
+		lineLower := strings.ToLower(line)
+		switch lineLower {
+		case "q", "quit", "exit":
+			os.Exit(0)
+			return
+		case "r", "refresh":
+			// Continue loop to refresh (screen will be cleared at start of loop)
+			continue
+		case "":
+			// Empty input, refresh
+			continue
+		default:
+			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, or 'p+ <description>' to add problem.\n", line)
+			utils.WaitForUserInput()
+		}
+	}
+}
+
+func GetUserInput(scanner *bufio.Scanner) string {
+	fmt.Print("> ")
+	if !scanner.Scan() {
+		return ""
+	}
+	line := strings.TrimSpace(scanner.Text())
+	return line
 }
 
 func getTask(ctx context.Context, application *app.App, args []string) {
@@ -626,8 +794,8 @@ func deleteTask(ctx context.Context, application *app.App, args []string) {
 }
 
 // addSubtask creates a new subtask for the given parent task
-func addSubtask(ctx context.Context, application *app.App, parentID int, description string) error {
-	newTask, err := application.AddSubtask(parentID, description)
+func addSubtask(ctx context.Context, application *app.App, parentType schema.ContainerType, parentID int, description string) error {
+	newTask, err := application.AddSubtask(parentType, parentID, description)
 	if err != nil {
 		return err
 	}

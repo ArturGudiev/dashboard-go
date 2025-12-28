@@ -31,17 +31,16 @@ func (s *TaskService) GetOpenDescendantTasks(ctx context.Context, parentTask *en
 			containerchild.ParentID(parentTask.ID),
 			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
-		WithChild().
 		All(ctx)
 
 	if err != nil {
 		return result
 	}
 
-	// Process each child
+	// Process each child - load tasks manually since edges don't exist
 	for _, relation := range childRelations {
-		childTask := relation.Edges.Child
-		if childTask == nil {
+		childTask, err := s.client.Task.Get(ctx, relation.ChildID)
+		if err != nil {
 			continue
 		}
 
@@ -66,40 +65,20 @@ func (s *TaskService) GetParent(ctx context.Context, task *ent.Task) *ent.Task {
 			containerchild.ChildID(task.ID),
 			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
-		WithParent().
 		All(ctx)
 
 	if err != nil || len(parentRelations) == 0 {
 		return nil
 	}
 
-	// Get the parent task from the first relation
-	parentTask := parentRelations[0].Edges.Parent
-	if parentTask != nil {
-		return parentTask
-	}
-
-	// If parent wasn't loaded via edge, get it by ID
+	// Load parent task manually since edges don't exist
 	parentID := parentRelations[0].ParentID
-	parentTask, err = s.client.Task.Get(ctx, parentID)
+	parentTask, err := s.client.Task.Get(ctx, parentID)
 	if err != nil {
 		return nil
 	}
 
 	return parentTask
-}
-
-func (s *TaskService) GetParentsPathDescriptions(ctx context.Context, task *ent.Task) []string {
-	parentsPath := s.GetParentsPath(ctx, task)
-	var descriptions []string
-	if parentsPath == nil {
-		return descriptions
-	}
-	mapper := func(el *ent.Task) string { return el.Description }
-	for _, el := range parentsPath {
-		descriptions = append(descriptions, mapper(el))
-	}
-	return descriptions
 }
 
 func (s *TaskService) GetParentsPath(ctx context.Context, task *ent.Task) []*ent.Task {
@@ -164,7 +143,6 @@ func (s *TaskService) GetChildSubtasks(ctx context.Context, parentID int) ([]*en
 			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
 		Order(containerchild.ByChildOrder()).
-		WithChild().
 		All(ctx)
 
 	if err != nil {
@@ -173,16 +151,18 @@ func (s *TaskService) GetChildSubtasks(ctx context.Context, parentID int) ([]*en
 
 	var childTasks []*ent.Task
 	for _, relation := range childRelations {
-		if relation.Edges.Child != nil {
-			childTasks = append(childTasks, relation.Edges.Child)
+		childTask, err := s.client.Task.Get(ctx, relation.ChildID)
+		if err != nil || childTask.Done {
+			continue
 		}
+		childTasks = append(childTasks, childTask)
 	}
 
 	return childTasks, nil
 }
 
 // AddSubtask creates a new subtask for the given parent task
-func (s *TaskService) AddSubtask(ctx context.Context, parentID int, description string) (*ent.Task, error) {
+func (s *TaskService) AddSubtask(ctx context.Context, parentType schema.ContainerType, parentID int, description string) (*ent.Task, error) {
 	// Create the new task
 	newTask, err := s.client.Task.Create().
 		SetDescription(description).
@@ -197,7 +177,7 @@ func (s *TaskService) AddSubtask(ctx context.Context, parentID int, description 
 	// Get the count of existing children to set child_order
 	childCount, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
+			containerchild.ParentTypeEQ(parentType),
 			containerchild.ParentID(parentID),
 			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
@@ -209,7 +189,7 @@ func (s *TaskService) AddSubtask(ctx context.Context, parentID int, description 
 	// Get the count of existing parents to set parent_order
 	parentCount, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
+			containerchild.ChildTypeEQ(parentType),
 			containerchild.ChildID(newTask.ID),
 			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 		).
@@ -220,7 +200,7 @@ func (s *TaskService) AddSubtask(ctx context.Context, parentID int, description 
 
 	// Create the parent-child relationship
 	_, err = s.client.ContainerChild.Create().
-		SetParentType(schema.ContainerTypeTask).
+		SetParentType(parentType).
 		SetParentID(parentID).
 		SetChildType(schema.ContainerTypeTask).
 		SetChildID(newTask.ID).
@@ -250,7 +230,6 @@ func (s *TaskService) GetTaskFull(ctx context.Context, taskID int) (*models.Task
 			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
 		).
 		Order(containerchild.ByChildOrder()).
-		WithChild().
 		All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get children: %v", err)
@@ -258,9 +237,11 @@ func (s *TaskService) GetTaskFull(ctx context.Context, taskID int) (*models.Task
 
 	tasks := make([]*ent.Task, 0, len(childRelations))
 	for _, relation := range childRelations {
-		if relation.Edges.Child != nil {
-			tasks = append(tasks, relation.Edges.Child)
+		childTask, err := s.client.Task.Get(ctx, relation.ChildID)
+		if err != nil {
+			continue
 		}
+		tasks = append(tasks, childTask)
 	}
 
 	// Build TaskFull from Task

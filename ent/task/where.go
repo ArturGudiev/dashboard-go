@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -353,52 +352,6 @@ func DoneDateTimeIsNil() predicate.Task {
 // DoneDateTimeNotNil applies the NotNil predicate on the "done_date_time" field.
 func DoneDateTimeNotNil() predicate.Task {
 	return predicate.Task(sql.FieldNotNull(FieldDoneDateTime))
-}
-
-// HasChildren applies the HasEdge predicate on the "children" edge.
-func HasChildren() predicate.Task {
-	return predicate.Task(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ChildrenTable, ChildrenColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasChildrenWith applies the HasEdge predicate on the "children" edge with a given conditions (other predicates).
-func HasChildrenWith(preds ...predicate.ContainerChild) predicate.Task {
-	return predicate.Task(func(s *sql.Selector) {
-		step := newChildrenStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasParents applies the HasEdge predicate on the "parents" edge.
-func HasParents() predicate.Task {
-	return predicate.Task(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ParentsTable, ParentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasParentsWith applies the HasEdge predicate on the "parents" edge with a given conditions (other predicates).
-func HasParentsWith(preds ...predicate.ContainerChild) predicate.Task {
-	return predicate.Task(func(s *sql.Selector) {
-		step := newParentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // And groups predicates with the AND operator between them.
