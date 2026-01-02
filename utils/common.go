@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // isInteger checks if a string represents a valid integer
@@ -22,4 +23,19 @@ func WaitForUserInput() {
 func PrintAndWait(message string) {
 	fmt.Println(message)
 	WaitForUserInput()
+}
+
+// ClearScreen clears the terminal screen (cross-platform)
+func ClearScreen() {
+	// ANSI escape codes work on modern terminals (Windows 10+, Unix/Linux/Mac)
+	fmt.Print("\033[2J\033[H")
+}
+
+func GetUserInput(scanner *bufio.Scanner) string {
+	fmt.Print("> ")
+	if !scanner.Scan() {
+		return ""
+	}
+	line := strings.TrimSpace(scanner.Text())
+	return line
 }

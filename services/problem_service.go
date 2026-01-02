@@ -11,12 +11,13 @@ import (
 
 // ProblemService handles problem-related business logic
 type ProblemService struct {
-	client *ent.Client
+	client           *ent.Client
+	containerService *ContainerService
 }
 
 // NewProblemService creates a new ProblemService
-func NewProblemService(client *ent.Client) *ProblemService {
-	return &ProblemService{client: client}
+func NewProblemService(client *ent.Client, containerService *ContainerService) *ProblemService {
+	return &ProblemService{client: client, containerService: containerService}
 }
 
 // GetOpenDescendantProblems recursively gets all descendant problems that are not done

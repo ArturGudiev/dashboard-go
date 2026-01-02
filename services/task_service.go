@@ -12,12 +12,14 @@ import (
 
 // TaskService handles task-related business logic
 type TaskService struct {
-	client *ent.Client
+	client           *ent.Client
+	containerService *ContainerService
+	problemService   *ProblemService
 }
 
 // NewTaskService creates a new TaskService
-func NewTaskService(client *ent.Client) *TaskService {
-	return &TaskService{client: client}
+func NewTaskService(client *ent.Client, containerService *ContainerService, problemService *ProblemService) *TaskService {
+	return &TaskService{client: client, containerService: containerService, problemService: problemService}
 }
 
 // GetOpenDescendantTasks recursively gets all descendant tasks that are not done
@@ -159,59 +161,6 @@ func (s *TaskService) GetChildSubtasks(ctx context.Context, parentID int) ([]*en
 	}
 
 	return childTasks, nil
-}
-
-// AddSubtask creates a new subtask for the given parent task
-func (s *TaskService) AddSubtask(ctx context.Context, parentType schema.ContainerType, parentID int, description string) (*ent.Task, error) {
-	// Create the new task
-	newTask, err := s.client.Task.Create().
-		SetDescription(description).
-		SetDone(false).
-		SetTags([]string{}).
-		SetNotes("").
-		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create task: %v", err)
-	}
-
-	// Get the count of existing children to set child_order
-	childCount, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(parentType),
-			containerchild.ParentID(parentID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-		).
-		Count(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to count children: %v", err)
-	}
-
-	// Get the count of existing parents to set parent_order
-	parentCount, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ChildTypeEQ(parentType),
-			containerchild.ChildID(newTask.ID),
-			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-		).
-		Count(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to count parents: %v", err)
-	}
-
-	// Create the parent-child relationship
-	_, err = s.client.ContainerChild.Create().
-		SetParentType(parentType).
-		SetParentID(parentID).
-		SetChildType(schema.ContainerTypeTask).
-		SetChildID(newTask.ID).
-		SetChildOrder(childCount).
-		SetParentOrder(parentCount).
-		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create relationship: %v", err)
-	}
-
-	return newTask, nil
 }
 
 // GetTaskFull returns a task with all fields plus children tasks at the top level
