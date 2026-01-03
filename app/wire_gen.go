@@ -30,8 +30,9 @@ func InitializeApp() (*App, error) {
 	containerService := services.NewContainerService(client)
 	problemService := services.NewProblemService(client, containerService)
 	taskService := services.NewTaskService(client, containerService, problemService)
-	cliService := services.NewCLIService(client, containerService)
-	app := provideApp(client, taskService, problemService, containerService, cliService)
+	problemsRepository := services.NewProblemsRepository(client)
+	cliService := services.NewCLIService(client, containerService, problemsRepository)
+	app := provideApp(client, taskService, problemService, containerService, cliService, problemsRepository)
 	return app, nil
 }
 
@@ -75,13 +76,15 @@ func provideApp(
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
+	problemsRepository *services.ProblemsRepository,
 ) *App {
 	return &App{
-		Client:           client,
-		TaskService:      taskService,
-		ProblemService:   problemService,
-		ContainerService: containerService,
-		CLIService:       cliService,
-		ctx:              context.Background(),
+		Client:             client,
+		TaskService:        taskService,
+		ProblemService:     problemService,
+		ContainerService:   containerService,
+		CLIService:         cliService,
+		ProblemsRepository: problemsRepository,
+		ctx:                context.Background(),
 	}
 }

@@ -197,7 +197,7 @@ func (s *ContainerService) PrintProblems(problems []*ent.Problem) {
 	}
 }
 
-func (s *ContainerService) AddSubproblem(ctx context.Context, parentTaskID int, description string) error {
+func (s *ContainerService) AddSubproblem(ctx context.Context, parentType schema.ContainerType, parentID int, description string) error {
 	// Create the new problem (not done - solution is null by default)
 	newProblem, err := s.client.Problem.Create().
 		SetDescription(description).
@@ -211,8 +211,8 @@ func (s *ContainerService) AddSubproblem(ctx context.Context, parentTaskID int, 
 	// Get the count of existing children to set child_order
 	childCount, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-			containerchild.ParentID(parentTaskID),
+			containerchild.ParentTypeEQ(parentType),
+			containerchild.ParentID(parentID),
 			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
 		).
 		Count(ctx)
@@ -223,8 +223,8 @@ func (s *ContainerService) AddSubproblem(ctx context.Context, parentTaskID int, 
 	// Get the count of existing parents to set parent_order
 	parentCount, err := s.client.ContainerChild.Query().
 		Where(
-			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
-			containerchild.ChildID(newProblem.ID),
+			containerchild.ChildTypeEQ(parentType),
+			containerchild.ChildID(parentID),
 			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
 		).
 		Count(ctx)
@@ -234,8 +234,8 @@ func (s *ContainerService) AddSubproblem(ctx context.Context, parentTaskID int, 
 
 	// Create the parent-child relationship
 	_, err = s.client.ContainerChild.Create().
-		SetParentType(schema.ContainerTypeTask).
-		SetParentID(parentTaskID).
+		SetParentType(parentType).
+		SetParentID(parentID).
 		SetChildType(schema.ContainerTypeProblem).
 		SetChildID(newProblem.ID).
 		SetChildOrder(childCount).

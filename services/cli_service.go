@@ -16,14 +16,16 @@ import (
 )
 
 type CLIService struct {
-	client           *ent.Client
-	containerService *ContainerService
+	client             *ent.Client
+	containerService   *ContainerService
+	problemsRepository *ProblemsRepository
 }
 
-func NewCLIService(client *ent.Client, containerService *ContainerService) *CLIService {
+func NewCLIService(client *ent.Client, containerService *ContainerService, problemsRepository *ProblemsRepository) *CLIService {
 	return &CLIService{
-		client:           client,
-		containerService: containerService,
+		client:             client,
+		containerService:   containerService,
+		problemsRepository: problemsRepository,
 	}
 }
 
@@ -53,8 +55,6 @@ func (s *CLIService) printTaskInfo(ctx context.Context, t *ent.Task, subtasks []
 func (s *CLIService) ViewTaskInteractive(ctx context.Context, id int) {
 	scanner := bufio.NewScanner(os.Stdin)
 	currentID := id // Track current task ID
-	subtasks, _ := s.containerService.GetSubtasks(ctx, schema.ContainerTypeTask, currentID)
-	problems, _ := s.containerService.GetProblems(ctx, schema.ContainerTypeTask, currentID)
 
 	for {
 		// Clear screen before printing
@@ -62,6 +62,9 @@ func (s *CLIService) ViewTaskInteractive(ctx context.Context, id int) {
 
 		// Get task
 		t, err := s.client.Task.Get(ctx, currentID)
+		subtasks, _ := s.containerService.GetSubtasks(ctx, schema.ContainerTypeTask, currentID)
+		problems, _ := s.containerService.GetProblems(ctx, schema.ContainerTypeTask, currentID)
+
 		if err != nil {
 			if ent.IsNotFound(err) {
 				fmt.Printf("Task %d not found.\n", currentID)
@@ -99,41 +102,19 @@ func (s *CLIService) ViewTaskInteractive(ctx context.Context, id int) {
 			continue
 		}
 
-		// Check for p+ command (case-sensitive for the +)
-		if strings.HasPrefix(line, "p+ ") {
-			description := strings.TrimSpace(line[3:])
-			if description == "" {
-				fmt.Println("Error: Description required. Usage: p+ <description>")
-				utils.WaitForUserInput()
-				continue
-			}
-			if err := s.containerService.AddSubproblem(ctx, currentID, description); err != nil {
-				fmt.Printf("Error adding problem: %v\n", err)
-				utils.WaitForUserInput()
-				continue
-			}
-			// Continue loop to refresh and show the new problem
+		if goToNextIteration := s.checkAddTaskCommand(ctx, line, schema.ContainerTypeTask, id); goToNextIteration {
 			continue
 		}
 
-		if strings.HasPrefix(line, "p ") {
-			indexPart := strings.TrimSpace(line[2:])
-			if index, err := strconv.Atoi(indexPart); err == nil {
-				selectedProblem := problems[index-1]
-				s.ViewProblemInteractive(ctx, selectedProblem.ID)
-				continue
-			}
+		if goToNextIteration := s.checkAddProblemCommand(ctx, line, schema.ContainerTypeTask, id); goToNextIteration {
+			continue
 		}
 
-		if index, err := strconv.Atoi(line); err == nil {
-			// Validate index
-			if index < 1 || index > len(subtasks) {
-				utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(subtasks)))
-				continue
-			}
+		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
+			continue
+		}
 
-			childTaskID := subtasks[index-1].ID
-			s.ViewTaskInteractive(ctx, childTaskID)
+		if wasIt := s.checkSelectProblemCommand(ctx, line, problems); wasIt {
 			continue
 		}
 
@@ -184,6 +165,71 @@ func (s *CLIService) ViewTaskInteractive(ctx context.Context, id int) {
 	}
 }
 
+func (s *CLIService) checkAddTaskCommand(ctx context.Context, line string, containerType schema.ContainerType, id int) bool {
+	if strings.HasPrefix(line, "t+ ") {
+		description := strings.TrimSpace(line[3:])
+		if description == "" {
+			fmt.Println("Error: Description required. Usage: t+ <description>")
+			utils.WaitForUserInput()
+			return true
+		}
+		if _, err := s.containerService.AddSubtask(ctx, containerType, id, description); err != nil {
+			fmt.Printf("Error adding subtask: %v\n", err)
+			utils.WaitForUserInput()
+			return true
+		}
+		// Continue loop to refresh and show the new subtask
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) checkAddProblemCommand(ctx context.Context, line string, containerType schema.ContainerType, id int) bool {
+	if strings.HasPrefix(line, "p+ ") {
+		description := strings.TrimSpace(line[3:])
+		if description == "" {
+			fmt.Println("Error: Description required. Usage: p+ <description>")
+			utils.WaitForUserInput()
+			return true
+		}
+		if err := s.containerService.AddSubproblem(ctx, containerType, id, description); err != nil {
+			fmt.Printf("Error adding problem: %v\n", err)
+			utils.WaitForUserInput()
+			return true
+		}
+		// Continue loop to refresh and show the new problem
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) checkSelectTaskCommand(ctx context.Context, line string, tasks []*ent.Task) bool {
+	if index, err := strconv.Atoi(line); err == nil {
+		// Validate index
+		if index < 1 || index > len(tasks) {
+			utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(tasks)))
+			return false
+		}
+
+		childTaskID := tasks[index-1].ID
+		s.ViewTaskInteractive(ctx, childTaskID)
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) checkSelectProblemCommand(ctx context.Context, line string, problems []*ent.Problem) bool {
+	if strings.HasPrefix(line, "p ") {
+		indexPart := strings.TrimSpace(line[2:])
+		if index, err := strconv.Atoi(indexPart); err == nil {
+			selectedProblem := problems[index-1]
+			s.ViewProblemInteractive(ctx, selectedProblem.ID)
+			return true
+		}
+	}
+	return false
+}
+
 func (s *CLIService) PrintProblemInfo(ctx context.Context, p *ent.Problem, subtasks []*ent.Task, problems []*ent.Problem) {
 	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeProblem, p.ID)
 
@@ -211,13 +257,14 @@ func (s *CLIService) PrintProblemInfo(ctx context.Context, p *ent.Problem, subta
 func (s *CLIService) ViewProblemInteractive(ctx context.Context, id int) {
 	scanner := bufio.NewScanner(os.Stdin)
 	currentID := id
-	problem, _ := s.client.Problem.Get(ctx, currentID)
-	subtasks, _ := s.containerService.GetSubtasks(ctx, schema.ContainerTypeProblem, currentID)
-	problems, _ := s.containerService.GetProblems(ctx, schema.ContainerTypeProblem, currentID)
 
 	for {
 		// Clear screen before printing
 		utils.ClearScreen()
+		problem, _ := s.client.Problem.Get(ctx, currentID)
+		subtasks, _ := s.containerService.GetSubtasks(ctx, schema.ContainerTypeProblem, currentID)
+		problems, _ := s.containerService.GetProblems(ctx, schema.ContainerTypeProblem, currentID)
+
 		s.PrintProblemInfo(ctx, problem, subtasks, problems)
 
 		line := utils.GetUserInput(scanner)
@@ -225,57 +272,33 @@ func (s *CLIService) ViewProblemInteractive(ctx context.Context, id int) {
 			continue
 		}
 
-		// Check for t+ command (case-sensitive for the +)
-		if strings.HasPrefix(line, "t+ ") {
-			description := strings.TrimSpace(line[3:])
-			if description == "" {
-				fmt.Println("Error: Description required. Usage: t+ <description>")
-				utils.WaitForUserInput()
-				continue
-			}
-			if _, err := s.containerService.AddSubtask(ctx, schema.ContainerTypeProblem, currentID, description); err != nil {
-				fmt.Printf("Error adding subtask: %v\n", err)
-				utils.WaitForUserInput()
-				continue
-			}
-			// Continue loop to refresh and show the new subtask
+		if goToNextIteration := s.checkAddTaskCommand(ctx, line, schema.ContainerTypeProblem, id); goToNextIteration {
 			continue
 		}
 
-		// Check for p+ command (case-sensitive for the +)
-		if strings.HasPrefix(line, "p+ ") {
-			//description := strings.TrimSpace(line[3:])
-			//if description == "" {
-			//	fmt.Println("Error: Description required. Usage: p+ <description>")
-			//	utils.WaitForUserInput()
-			//	continue
-			//}
-			//if err := s.containerService.addSubproblem(ctx, application, currentID, description); err != nil {
-			//	fmt.Printf("Error adding problem: %v\n", err)
-			//	utils.WaitForUserInput()
-			//	continue
-			//}
-			// Continue loop to refresh and show the new problem
+		if goToNextIteration := s.checkAddProblemCommand(ctx, line, schema.ContainerTypeProblem, id); goToNextIteration {
 			continue
 		}
 
-		if strings.HasPrefix(line, "p ") {
-			if index, err := strconv.Atoi(line); err == nil {
-				selectedProblem := problems[index]
-				s.ViewProblemInteractive(ctx, selectedProblem.ID)
-			}
+		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
+			continue
 		}
 
-		if index, err := strconv.Atoi(line); err == nil {
-			// Validate index
-			if index < 1 || index > len(subtasks) {
-				utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(subtasks)))
-				continue
-			}
-
-			childTaskID := subtasks[index-1].ID
-			s.ViewTaskInteractive(ctx, childTaskID)
+		if wasIt := s.checkSelectProblemCommand(ctx, line, problems); wasIt {
 			continue
+		}
+
+		if line == "res" {
+			fmt.Print("Enter solution> ")
+			solution := utils.GetUserInput(scanner)
+			err := s.problemsRepository.AddSolution(ctx, currentID, solution)
+			if err != nil {
+				fmt.Printf("Error adding solution: %v\n", err)
+			}
+			navigationError := s.NavigateToParent(ctx, schema.ContainerTypeProblem, currentID)
+			if navigationError != nil {
+				fmt.Printf("Error navigating to parent: %v\n", navigationError)
+			}
 		}
 
 		if line == "u" {
