@@ -12,51 +12,58 @@ import (
 )
 
 type ContainerService struct {
-	client *ent.Client
+	client                   *ent.Client
+	childContainerRepository *ChildContainerRepository
 }
 
-func NewContainerService(client *ent.Client) *ContainerService {
+func NewContainerService(client *ent.Client, childContainerRepository *ChildContainerRepository) *ContainerService {
 	return &ContainerService{
-		client: client,
+		client:                   client,
+		childContainerRepository: childContainerRepository,
 	}
 }
 
-func (s *ContainerService) GetSubtasks(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Task, error) {
-	openTasks := []*ent.Task{}
-	childRelations, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(containerType),
-			containerchild.ParentID(ID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-		).
-		Order(containerchild.ByChildOrder()).
-		All(ctx)
+func (s *ContainerService) GetOpenSubtasksIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	openTasksIDs := []int{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeTask)
+	if err != nil {
+		return nil, err
+	}
 
-	if err == nil && len(childRelations) > 0 {
-		// Filter to only open tasks - load tasks manually since edges don't exist
-		for _, relation := range childRelations {
-			childTask, err := s.client.Task.Get(ctx, relation.ChildID)
-			if err != nil {
-				continue
-			}
-			if !childTask.Done {
-				openTasks = append(openTasks, childTask)
-			}
+	for _, relation := range childRelations {
+		childTask, err := s.client.Task.Get(ctx, relation.ChildID)
+		if err != nil {
+			continue
+		}
+		if !childTask.Done {
+			openTasksIDs = append(openTasksIDs, childTask.ID)
+		}
+	}
+	return openTasksIDs, nil
+}
+
+func (s *ContainerService) GetOpenSubtasks(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Task, error) {
+	openTasks := []*ent.Task{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeTask)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, relation := range childRelations {
+		childTask, err := s.client.Task.Get(ctx, relation.ChildID)
+		if err != nil {
+			continue
+		}
+		if !childTask.Done {
+			openTasks = append(openTasks, childTask)
 		}
 	}
 	return openTasks, nil
 }
 
-func (s *ContainerService) GetProblems(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Problem, error) {
-	openProblems := []*ent.Problem{}
-	childRelations, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(containerType),
-			containerchild.ParentID(ID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
-		).
-		Order(containerchild.ByChildOrder()).
-		All(ctx)
+func (s *ContainerService) GetOpenProblems(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Problem, error) {
+	var openProblems []*ent.Problem
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeProblem)
 
 	if err == nil && len(childRelations) > 0 {
 		// Filter to only open problems - load problems manually since edges don't exist
@@ -68,6 +75,26 @@ func (s *ContainerService) GetProblems(ctx context.Context, containerType schema
 			// Only include problems that don't have a solution (open problems)
 			if childProblem.Solution == nil {
 				openProblems = append(openProblems, childProblem)
+			}
+		}
+	}
+	return openProblems, nil
+}
+
+func (s *ContainerService) GetOpenProblemsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	var openProblems []int
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeProblem)
+
+	if err == nil && len(childRelations) > 0 {
+		// Filter to only open problems - load problems manually since edges don't exist
+		for _, relation := range childRelations {
+			childProblem, err := s.client.Problem.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+			// Only include problems that don't have a solution (open problems)
+			if childProblem.Solution == nil {
+				openProblems = append(openProblems, childProblem.ID)
 			}
 		}
 	}

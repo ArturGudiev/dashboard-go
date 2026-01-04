@@ -4,7 +4,6 @@ import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/schema"
-	"arturgudiev/dashboard/models"
 	"context"
 	"fmt"
 	"time"
@@ -59,42 +58,6 @@ func (s *TaskService) GetOpenDescendantTasks(ctx context.Context, parentTask *en
 	return result
 }
 
-func (s *TaskService) GetParent(ctx context.Context, task *ent.Task) *ent.Task {
-	// Get all parent relationships where this task is the child
-	parentRelations, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-			containerchild.ChildID(task.ID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-		).
-		All(ctx)
-
-	if err != nil || len(parentRelations) == 0 {
-		return nil
-	}
-
-	// Load parent task manually since edges don't exist
-	parentID := parentRelations[0].ParentID
-	parentTask, err := s.client.Task.Get(ctx, parentID)
-	if err != nil {
-		return nil
-	}
-
-	return parentTask
-}
-
-func (s *TaskService) GetParentsPath(ctx context.Context, task *ent.Task) []*ent.Task {
-	var items []*ent.Task
-	parent := s.GetParent(ctx, task)
-
-	for parent != nil {
-		items = append(items, parent)
-		parent = s.GetParent(ctx, parent)
-	}
-
-	return items
-}
-
 // FinishTaskRecursively finishes all open descendant tasks of the given task
 func (s *TaskService) FinishTaskRecursively(ctx context.Context, task *ent.Task) error {
 	// Recursively get all descendant tasks that are not done
@@ -134,82 +97,4 @@ func (s *TaskService) FinishTaskById(ctx context.Context, taskID int) (*ent.Task
 	}
 
 	return updatedTask, nil
-}
-
-// GetChildSubtasks returns all child tasks for a given parent task ID
-func (s *TaskService) GetChildSubtasks(ctx context.Context, parentID int) ([]*ent.Task, error) {
-	childRelations, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-			containerchild.ParentID(parentID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-		).
-		Order(containerchild.ByChildOrder()).
-		All(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var childTasks []*ent.Task
-	for _, relation := range childRelations {
-		childTask, err := s.client.Task.Get(ctx, relation.ChildID)
-		if err != nil || childTask.Done {
-			continue
-		}
-		childTasks = append(childTasks, childTask)
-	}
-
-	return childTasks, nil
-}
-
-// GetTaskFull returns a task with all fields plus children tasks at the top level
-func (s *TaskService) GetTaskFull(ctx context.Context, taskID int) (*models.TaskFull, error) {
-	// Get the task
-	task, err := s.client.Task.Get(ctx, taskID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get children tasks (tasks where this task is the parent)
-	childRelations, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-			containerchild.ParentID(taskID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-		).
-		Order(containerchild.ByChildOrder()).
-		All(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get children: %v", err)
-	}
-
-	tasks := make([]*ent.Task, 0, len(childRelations))
-	for _, relation := range childRelations {
-		childTask, err := s.client.Task.Get(ctx, relation.ChildID)
-		if err != nil {
-			continue
-		}
-		tasks = append(tasks, childTask)
-	}
-
-	// Build TaskFull from Task
-	taskFull := &models.TaskFull{
-		ID:               task.ID,
-		Description:      task.Description,
-		Tags:             task.Tags,
-		Done:             task.Done,
-		Notes:            task.Notes,
-		Problems:         task.Problems,
-		Questions:        task.Questions,
-		Actions:          task.Actions,
-		Definitions:      task.Definitions,
-		KnowledgeBits:    task.KnowledgeBits,
-		ParentContainers: task.ParentContainers,
-		KnowledgeNodes:   task.KnowledgeNodes,
-		DoneDateTime:     task.DoneDateTime,
-		Tasks:            tasks,
-	}
-
-	return taskFull, nil
 }

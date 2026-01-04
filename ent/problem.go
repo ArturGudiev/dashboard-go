@@ -24,20 +24,6 @@ type Problem struct {
 	Tags []string `json:"tags,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes string `json:"notes,omitempty"`
-	// Problems holds the value of the "problems" field.
-	Problems []int `json:"problems,omitempty"`
-	// Questions holds the value of the "questions" field.
-	Questions []int `json:"questions,omitempty"`
-	// Actions holds the value of the "actions" field.
-	Actions []int `json:"actions,omitempty"`
-	// Definitions holds the value of the "definitions" field.
-	Definitions []int `json:"definitions,omitempty"`
-	// KnowledgeBits holds the value of the "knowledge_bits" field.
-	KnowledgeBits []int `json:"knowledge_bits,omitempty"`
-	// ParentContainers holds the value of the "parent_containers" field.
-	ParentContainers [][]interface{} `json:"parent_containers,omitempty"`
-	// KnowledgeNodes holds the value of the "knowledge_nodes" field.
-	KnowledgeNodes []int `json:"knowledge_nodes,omitempty"`
 	// DoneDateTime holds the value of the "done_date_time" field.
 	DoneDateTime *time.Time `json:"done_date_time,omitempty"`
 	// Solution holds the value of the "solution" field.
@@ -50,7 +36,7 @@ func (*Problem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case problem.FieldTags, problem.FieldProblems, problem.FieldQuestions, problem.FieldActions, problem.FieldDefinitions, problem.FieldKnowledgeBits, problem.FieldParentContainers, problem.FieldKnowledgeNodes:
+		case problem.FieldTags:
 			values[i] = new([]byte)
 		case problem.FieldID:
 			values[i] = new(sql.NullInt64)
@@ -98,62 +84,6 @@ func (_m *Problem) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
 			} else if value.Valid {
 				_m.Notes = value.String
-			}
-		case problem.FieldProblems:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field problems", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Problems); err != nil {
-					return fmt.Errorf("unmarshal field problems: %w", err)
-				}
-			}
-		case problem.FieldQuestions:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field questions", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Questions); err != nil {
-					return fmt.Errorf("unmarshal field questions: %w", err)
-				}
-			}
-		case problem.FieldActions:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field actions", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Actions); err != nil {
-					return fmt.Errorf("unmarshal field actions: %w", err)
-				}
-			}
-		case problem.FieldDefinitions:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field definitions", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Definitions); err != nil {
-					return fmt.Errorf("unmarshal field definitions: %w", err)
-				}
-			}
-		case problem.FieldKnowledgeBits:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field knowledge_bits", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.KnowledgeBits); err != nil {
-					return fmt.Errorf("unmarshal field knowledge_bits: %w", err)
-				}
-			}
-		case problem.FieldParentContainers:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field parent_containers", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.ParentContainers); err != nil {
-					return fmt.Errorf("unmarshal field parent_containers: %w", err)
-				}
-			}
-		case problem.FieldKnowledgeNodes:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field knowledge_nodes", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.KnowledgeNodes); err != nil {
-					return fmt.Errorf("unmarshal field knowledge_nodes: %w", err)
-				}
 			}
 		case problem.FieldDoneDateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -213,27 +143,6 @@ func (_m *Problem) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("notes=")
 	builder.WriteString(_m.Notes)
-	builder.WriteString(", ")
-	builder.WriteString("problems=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Problems))
-	builder.WriteString(", ")
-	builder.WriteString("questions=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Questions))
-	builder.WriteString(", ")
-	builder.WriteString("actions=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Actions))
-	builder.WriteString(", ")
-	builder.WriteString("definitions=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Definitions))
-	builder.WriteString(", ")
-	builder.WriteString("knowledge_bits=")
-	builder.WriteString(fmt.Sprintf("%v", _m.KnowledgeBits))
-	builder.WriteString(", ")
-	builder.WriteString("parent_containers=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ParentContainers))
-	builder.WriteString(", ")
-	builder.WriteString("knowledge_nodes=")
-	builder.WriteString(fmt.Sprintf("%v", _m.KnowledgeNodes))
 	builder.WriteString(", ")
 	if v := _m.DoneDateTime; v != nil {
 		builder.WriteString("done_date_time=")

@@ -54,34 +54,6 @@ func init() {
 	problemDescNotes := problemFields[3].Descriptor()
 	// problem.DefaultNotes holds the default value on creation for the notes field.
 	problem.DefaultNotes = problemDescNotes.Default.(string)
-	// problemDescProblems is the schema descriptor for problems field.
-	problemDescProblems := problemFields[4].Descriptor()
-	// problem.DefaultProblems holds the default value on creation for the problems field.
-	problem.DefaultProblems = problemDescProblems.Default.([]int)
-	// problemDescQuestions is the schema descriptor for questions field.
-	problemDescQuestions := problemFields[5].Descriptor()
-	// problem.DefaultQuestions holds the default value on creation for the questions field.
-	problem.DefaultQuestions = problemDescQuestions.Default.([]int)
-	// problemDescActions is the schema descriptor for actions field.
-	problemDescActions := problemFields[6].Descriptor()
-	// problem.DefaultActions holds the default value on creation for the actions field.
-	problem.DefaultActions = problemDescActions.Default.([]int)
-	// problemDescDefinitions is the schema descriptor for definitions field.
-	problemDescDefinitions := problemFields[7].Descriptor()
-	// problem.DefaultDefinitions holds the default value on creation for the definitions field.
-	problem.DefaultDefinitions = problemDescDefinitions.Default.([]int)
-	// problemDescKnowledgeBits is the schema descriptor for knowledge_bits field.
-	problemDescKnowledgeBits := problemFields[8].Descriptor()
-	// problem.DefaultKnowledgeBits holds the default value on creation for the knowledge_bits field.
-	problem.DefaultKnowledgeBits = problemDescKnowledgeBits.Default.([]int)
-	// problemDescParentContainers is the schema descriptor for parent_containers field.
-	problemDescParentContainers := problemFields[9].Descriptor()
-	// problem.DefaultParentContainers holds the default value on creation for the parent_containers field.
-	problem.DefaultParentContainers = problemDescParentContainers.Default.([][]interface{})
-	// problemDescKnowledgeNodes is the schema descriptor for knowledge_nodes field.
-	problemDescKnowledgeNodes := problemFields[10].Descriptor()
-	// problem.DefaultKnowledgeNodes holds the default value on creation for the knowledge_nodes field.
-	problem.DefaultKnowledgeNodes = problemDescKnowledgeNodes.Default.([]int)
 	// problemDescID is the schema descriptor for id field.
 	problemDescID := problemFields[0].Descriptor()
 	// problem.IDValidator is a validator for the "id" field. It is called by the builders before save.
@@ -104,34 +76,6 @@ func init() {
 	taskDescNotes := taskFields[4].Descriptor()
 	// task.DefaultNotes holds the default value on creation for the notes field.
 	task.DefaultNotes = taskDescNotes.Default.(string)
-	// taskDescProblems is the schema descriptor for problems field.
-	taskDescProblems := taskFields[5].Descriptor()
-	// task.DefaultProblems holds the default value on creation for the problems field.
-	task.DefaultProblems = taskDescProblems.Default.([]int)
-	// taskDescQuestions is the schema descriptor for questions field.
-	taskDescQuestions := taskFields[6].Descriptor()
-	// task.DefaultQuestions holds the default value on creation for the questions field.
-	task.DefaultQuestions = taskDescQuestions.Default.([]int)
-	// taskDescActions is the schema descriptor for actions field.
-	taskDescActions := taskFields[7].Descriptor()
-	// task.DefaultActions holds the default value on creation for the actions field.
-	task.DefaultActions = taskDescActions.Default.([]int)
-	// taskDescDefinitions is the schema descriptor for definitions field.
-	taskDescDefinitions := taskFields[8].Descriptor()
-	// task.DefaultDefinitions holds the default value on creation for the definitions field.
-	task.DefaultDefinitions = taskDescDefinitions.Default.([]int)
-	// taskDescKnowledgeBits is the schema descriptor for knowledge_bits field.
-	taskDescKnowledgeBits := taskFields[9].Descriptor()
-	// task.DefaultKnowledgeBits holds the default value on creation for the knowledge_bits field.
-	task.DefaultKnowledgeBits = taskDescKnowledgeBits.Default.([]int)
-	// taskDescParentContainers is the schema descriptor for parent_containers field.
-	taskDescParentContainers := taskFields[10].Descriptor()
-	// task.DefaultParentContainers holds the default value on creation for the parent_containers field.
-	task.DefaultParentContainers = taskDescParentContainers.Default.([][]interface{})
-	// taskDescKnowledgeNodes is the schema descriptor for knowledge_nodes field.
-	taskDescKnowledgeNodes := taskFields[11].Descriptor()
-	// task.DefaultKnowledgeNodes holds the default value on creation for the knowledge_nodes field.
-	task.DefaultKnowledgeNodes = taskDescKnowledgeNodes.Default.([]int)
 	// taskDescID is the schema descriptor for id field.
 	taskDescID := taskFields[0].Descriptor()
 	// task.IDValidator is a validator for the "id" field. It is called by the builders before save.

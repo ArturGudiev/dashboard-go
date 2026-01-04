@@ -5,6 +5,7 @@ package app
 
 import (
 	"arturgudiev/dashboard/ent"
+	"arturgudiev/dashboard/ent/migrate"
 	"arturgudiev/dashboard/services"
 	"context"
 	"log"
@@ -26,6 +27,7 @@ func InitializeApp() (*App, error) {
 		services.NewContainerService,
 		services.NewCLIService,
 		services.NewProblemsRepository,
+		services.NewChildContainerRepository,
 		// App provider
 		provideApp,
 	)
@@ -46,9 +48,9 @@ func provideEntClient() (*ent.Client, error) {
 		return nil, err
 	}
 
-	// Run the auto migration tool
+	// Run the auto migration tool with DropColumn option
 	ctx := context.Background()
-	if err := client.Schema.Create(ctx); err != nil {
+	if err := client.Schema.Create(ctx, migrate.WithDropColumn(true)); err != nil {
 		// Check if the error is because table already exists, permission issue, or schema mismatch
 		errMsg := strings.ToLower(err.Error())
 		if strings.Contains(errMsg, "already exists") ||
@@ -76,14 +78,16 @@ func provideApp(
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
 	problemsRepository *services.ProblemsRepository,
+	childContainerRepository *services.ChildContainerRepository,
 ) *App {
 	return &App{
-		Client:             client,
-		TaskService:        taskService,
-		ProblemService:     problemService,
-		ContainerService:   containerService,
-		CLIService:         cliService,
-		ProblemsRepository: problemsRepository,
-		ctx:                context.Background(), // Default context for CLI
+		Client:                   client,
+		TaskService:              taskService,
+		ProblemService:           problemService,
+		ContainerService:         containerService,
+		CLIService:               cliService,
+		ProblemsRepository:       problemsRepository,
+		ChildContainerRepository: childContainerRepository,
+		ctx:                      context.Background(), // Default context for CLI
 	}
 }

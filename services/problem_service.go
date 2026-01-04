@@ -4,20 +4,24 @@ import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/models"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 )
 
 // ProblemService handles problem-related business logic
 type ProblemService struct {
-	client           *ent.Client
-	containerService *ContainerService
+	client                   *ent.Client
+	containerService         *ContainerService
+	problemsRepository       *ProblemsRepository
+	childContainerRepository *ChildContainerRepository
 }
 
 // NewProblemService creates a new ProblemService
-func NewProblemService(client *ent.Client, containerService *ContainerService) *ProblemService {
-	return &ProblemService{client: client, containerService: containerService}
+func NewProblemService(client *ent.Client, containerService *ContainerService, problemsRepository *ProblemsRepository, childContainerRepository *ChildContainerRepository) *ProblemService {
+	return &ProblemService{client: client, containerService: containerService, problemsRepository: problemsRepository, childContainerRepository: childContainerRepository}
 }
 
 // GetOpenDescendantProblems recursively gets all descendant problems that are not done
@@ -133,81 +137,33 @@ func (s *ProblemService) FinishProblemById(ctx context.Context, problemID int) (
 	return updatedProblem, nil
 }
 
-// GetChildSubproblems returns all child problems for a given parent problem ID
-func (s *ProblemService) GetChildSubproblems(ctx context.Context, parentID int) ([]*ent.Problem, error) {
-	childRelations, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeProblem),
-			containerchild.ParentID(parentID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
-		).
-		Order(containerchild.ByChildOrder()).
-		All(ctx)
-
-	if err != nil {
-		return nil, err
+func (s *ProblemService) GetProblemFull(ctx context.Context, ID int) (*models.ProblemFull, error) {
+	problem, errProblem := s.problemsRepository.GetProblem(ctx, ID)
+	if errProblem != nil {
+		return nil, errProblem
+	}
+	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeProblem, ID)
+	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeProblem, ID)
+	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeProblem, ID)
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil {
+		return nil, errors.New("problem not found")
+	}
+	ProblemFull := &models.ProblemFull{
+		ID:               ID,
+		Description:      problem.Description,
+		Tags:             problem.Tags,
+		Notes:            problem.Notes,
+		Solution:         problem.Solution,
+		Tasks:            subtasks,
+		Problems:         subproblems,
+		Questions:        []int{},
+		Actions:          []int{},
+		Definitions:      []int{},
+		KnowledgeBits:    []int{},
+		ParentContainers: parentContainers,
+		KnowledgeNodes:   []int{},
+		DoneDateTime:     problem.DoneDateTime,
 	}
 
-	var childProblems []*ent.Problem
-	for _, relation := range childRelations {
-		childProblem, err := s.client.Problem.Get(ctx, relation.ChildID)
-		if err != nil {
-			continue
-		}
-		childProblems = append(childProblems, childProblem)
-	}
-
-	return childProblems, nil
-}
-
-// AddSubproblem creates a new subproblem for the given parent problem
-func (s *ProblemService) AddSubproblem(ctx context.Context, parentID int, description string) (*ent.Problem, error) {
-	// Create the new problem (not done - solution is null by default)
-	newProblem, err := s.client.Problem.Create().
-		SetDescription(description).
-		SetTags([]string{}).
-		SetNotes("").
-		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create problem: %v", err)
-	}
-
-	// Get the count of existing children to set child_order
-	childCount, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ParentTypeEQ(schema.ContainerTypeProblem),
-			containerchild.ParentID(parentID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
-		).
-		Count(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to count children: %v", err)
-	}
-
-	// Get the count of existing parents to set parent_order
-	parentCount, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
-			containerchild.ChildID(newProblem.ID),
-			containerchild.ParentTypeEQ(schema.ContainerTypeProblem),
-		).
-		Count(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to count parents: %v", err)
-	}
-
-	// Create the parent-child relationship
-	_, err = s.client.ContainerChild.Create().
-		SetParentType(schema.ContainerTypeProblem).
-		SetParentID(parentID).
-		SetChildType(schema.ContainerTypeProblem).
-		SetChildID(newProblem.ID).
-		SetChildOrder(childCount).
-		SetParentOrder(parentCount).
-		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create relationship: %v", err)
-	}
-
-	return newProblem, nil
+	return ProblemFull, nil
 }

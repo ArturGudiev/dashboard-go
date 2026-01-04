@@ -774,33 +774,19 @@ func (m *ContainerChildMutation) ResetEdge(name string) error {
 // ProblemMutation represents an operation that mutates the Problem nodes in the graph.
 type ProblemMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *int
-	description             *string
-	tags                    *[]string
-	appendtags              []string
-	notes                   *string
-	problems                *[]int
-	appendproblems          []int
-	questions               *[]int
-	appendquestions         []int
-	actions                 *[]int
-	appendactions           []int
-	definitions             *[]int
-	appenddefinitions       []int
-	knowledge_bits          *[]int
-	appendknowledge_bits    []int
-	parent_containers       *[][]interface{}
-	appendparent_containers [][]interface{}
-	knowledge_nodes         *[]int
-	appendknowledge_nodes   []int
-	done_date_time          *time.Time
-	solution                *string
-	clearedFields           map[string]struct{}
-	done                    bool
-	oldValue                func(context.Context) (*Problem, error)
-	predicates              []predicate.Problem
+	op             Op
+	typ            string
+	id             *int
+	description    *string
+	tags           *[]string
+	appendtags     []string
+	notes          *string
+	done_date_time *time.Time
+	solution       *string
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*Problem, error)
+	predicates     []predicate.Problem
 }
 
 var _ ent.Mutation = (*ProblemMutation)(nil)
@@ -988,24 +974,10 @@ func (m *ProblemMutation) AppendedTags() ([]string, bool) {
 	return m.appendtags, true
 }
 
-// ClearTags clears the value of the "tags" field.
-func (m *ProblemMutation) ClearTags() {
-	m.tags = nil
-	m.appendtags = nil
-	m.clearedFields[problem.FieldTags] = struct{}{}
-}
-
-// TagsCleared returns if the "tags" field was cleared in this mutation.
-func (m *ProblemMutation) TagsCleared() bool {
-	_, ok := m.clearedFields[problem.FieldTags]
-	return ok
-}
-
 // ResetTags resets all changes to the "tags" field.
 func (m *ProblemMutation) ResetTags() {
 	m.tags = nil
 	m.appendtags = nil
-	delete(m.clearedFields, problem.FieldTags)
 }
 
 // SetNotes sets the "notes" field.
@@ -1039,477 +1011,9 @@ func (m *ProblemMutation) OldNotes(ctx context.Context) (v string, err error) {
 	return oldValue.Notes, nil
 }
 
-// ClearNotes clears the value of the "notes" field.
-func (m *ProblemMutation) ClearNotes() {
-	m.notes = nil
-	m.clearedFields[problem.FieldNotes] = struct{}{}
-}
-
-// NotesCleared returns if the "notes" field was cleared in this mutation.
-func (m *ProblemMutation) NotesCleared() bool {
-	_, ok := m.clearedFields[problem.FieldNotes]
-	return ok
-}
-
 // ResetNotes resets all changes to the "notes" field.
 func (m *ProblemMutation) ResetNotes() {
 	m.notes = nil
-	delete(m.clearedFields, problem.FieldNotes)
-}
-
-// SetProblems sets the "problems" field.
-func (m *ProblemMutation) SetProblems(i []int) {
-	m.problems = &i
-	m.appendproblems = nil
-}
-
-// Problems returns the value of the "problems" field in the mutation.
-func (m *ProblemMutation) Problems() (r []int, exists bool) {
-	v := m.problems
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProblems returns the old "problems" field's value of the Problem entity.
-// If the Problem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProblemMutation) OldProblems(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProblems is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProblems requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProblems: %w", err)
-	}
-	return oldValue.Problems, nil
-}
-
-// AppendProblems adds i to the "problems" field.
-func (m *ProblemMutation) AppendProblems(i []int) {
-	m.appendproblems = append(m.appendproblems, i...)
-}
-
-// AppendedProblems returns the list of values that were appended to the "problems" field in this mutation.
-func (m *ProblemMutation) AppendedProblems() ([]int, bool) {
-	if len(m.appendproblems) == 0 {
-		return nil, false
-	}
-	return m.appendproblems, true
-}
-
-// ClearProblems clears the value of the "problems" field.
-func (m *ProblemMutation) ClearProblems() {
-	m.problems = nil
-	m.appendproblems = nil
-	m.clearedFields[problem.FieldProblems] = struct{}{}
-}
-
-// ProblemsCleared returns if the "problems" field was cleared in this mutation.
-func (m *ProblemMutation) ProblemsCleared() bool {
-	_, ok := m.clearedFields[problem.FieldProblems]
-	return ok
-}
-
-// ResetProblems resets all changes to the "problems" field.
-func (m *ProblemMutation) ResetProblems() {
-	m.problems = nil
-	m.appendproblems = nil
-	delete(m.clearedFields, problem.FieldProblems)
-}
-
-// SetQuestions sets the "questions" field.
-func (m *ProblemMutation) SetQuestions(i []int) {
-	m.questions = &i
-	m.appendquestions = nil
-}
-
-// Questions returns the value of the "questions" field in the mutation.
-func (m *ProblemMutation) Questions() (r []int, exists bool) {
-	v := m.questions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldQuestions returns the old "questions" field's value of the Problem entity.
-// If the Problem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProblemMutation) OldQuestions(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldQuestions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldQuestions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldQuestions: %w", err)
-	}
-	return oldValue.Questions, nil
-}
-
-// AppendQuestions adds i to the "questions" field.
-func (m *ProblemMutation) AppendQuestions(i []int) {
-	m.appendquestions = append(m.appendquestions, i...)
-}
-
-// AppendedQuestions returns the list of values that were appended to the "questions" field in this mutation.
-func (m *ProblemMutation) AppendedQuestions() ([]int, bool) {
-	if len(m.appendquestions) == 0 {
-		return nil, false
-	}
-	return m.appendquestions, true
-}
-
-// ClearQuestions clears the value of the "questions" field.
-func (m *ProblemMutation) ClearQuestions() {
-	m.questions = nil
-	m.appendquestions = nil
-	m.clearedFields[problem.FieldQuestions] = struct{}{}
-}
-
-// QuestionsCleared returns if the "questions" field was cleared in this mutation.
-func (m *ProblemMutation) QuestionsCleared() bool {
-	_, ok := m.clearedFields[problem.FieldQuestions]
-	return ok
-}
-
-// ResetQuestions resets all changes to the "questions" field.
-func (m *ProblemMutation) ResetQuestions() {
-	m.questions = nil
-	m.appendquestions = nil
-	delete(m.clearedFields, problem.FieldQuestions)
-}
-
-// SetActions sets the "actions" field.
-func (m *ProblemMutation) SetActions(i []int) {
-	m.actions = &i
-	m.appendactions = nil
-}
-
-// Actions returns the value of the "actions" field in the mutation.
-func (m *ProblemMutation) Actions() (r []int, exists bool) {
-	v := m.actions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldActions returns the old "actions" field's value of the Problem entity.
-// If the Problem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProblemMutation) OldActions(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActions: %w", err)
-	}
-	return oldValue.Actions, nil
-}
-
-// AppendActions adds i to the "actions" field.
-func (m *ProblemMutation) AppendActions(i []int) {
-	m.appendactions = append(m.appendactions, i...)
-}
-
-// AppendedActions returns the list of values that were appended to the "actions" field in this mutation.
-func (m *ProblemMutation) AppendedActions() ([]int, bool) {
-	if len(m.appendactions) == 0 {
-		return nil, false
-	}
-	return m.appendactions, true
-}
-
-// ClearActions clears the value of the "actions" field.
-func (m *ProblemMutation) ClearActions() {
-	m.actions = nil
-	m.appendactions = nil
-	m.clearedFields[problem.FieldActions] = struct{}{}
-}
-
-// ActionsCleared returns if the "actions" field was cleared in this mutation.
-func (m *ProblemMutation) ActionsCleared() bool {
-	_, ok := m.clearedFields[problem.FieldActions]
-	return ok
-}
-
-// ResetActions resets all changes to the "actions" field.
-func (m *ProblemMutation) ResetActions() {
-	m.actions = nil
-	m.appendactions = nil
-	delete(m.clearedFields, problem.FieldActions)
-}
-
-// SetDefinitions sets the "definitions" field.
-func (m *ProblemMutation) SetDefinitions(i []int) {
-	m.definitions = &i
-	m.appenddefinitions = nil
-}
-
-// Definitions returns the value of the "definitions" field in the mutation.
-func (m *ProblemMutation) Definitions() (r []int, exists bool) {
-	v := m.definitions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDefinitions returns the old "definitions" field's value of the Problem entity.
-// If the Problem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProblemMutation) OldDefinitions(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDefinitions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDefinitions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDefinitions: %w", err)
-	}
-	return oldValue.Definitions, nil
-}
-
-// AppendDefinitions adds i to the "definitions" field.
-func (m *ProblemMutation) AppendDefinitions(i []int) {
-	m.appenddefinitions = append(m.appenddefinitions, i...)
-}
-
-// AppendedDefinitions returns the list of values that were appended to the "definitions" field in this mutation.
-func (m *ProblemMutation) AppendedDefinitions() ([]int, bool) {
-	if len(m.appenddefinitions) == 0 {
-		return nil, false
-	}
-	return m.appenddefinitions, true
-}
-
-// ClearDefinitions clears the value of the "definitions" field.
-func (m *ProblemMutation) ClearDefinitions() {
-	m.definitions = nil
-	m.appenddefinitions = nil
-	m.clearedFields[problem.FieldDefinitions] = struct{}{}
-}
-
-// DefinitionsCleared returns if the "definitions" field was cleared in this mutation.
-func (m *ProblemMutation) DefinitionsCleared() bool {
-	_, ok := m.clearedFields[problem.FieldDefinitions]
-	return ok
-}
-
-// ResetDefinitions resets all changes to the "definitions" field.
-func (m *ProblemMutation) ResetDefinitions() {
-	m.definitions = nil
-	m.appenddefinitions = nil
-	delete(m.clearedFields, problem.FieldDefinitions)
-}
-
-// SetKnowledgeBits sets the "knowledge_bits" field.
-func (m *ProblemMutation) SetKnowledgeBits(i []int) {
-	m.knowledge_bits = &i
-	m.appendknowledge_bits = nil
-}
-
-// KnowledgeBits returns the value of the "knowledge_bits" field in the mutation.
-func (m *ProblemMutation) KnowledgeBits() (r []int, exists bool) {
-	v := m.knowledge_bits
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeBits returns the old "knowledge_bits" field's value of the Problem entity.
-// If the Problem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProblemMutation) OldKnowledgeBits(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeBits is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeBits requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeBits: %w", err)
-	}
-	return oldValue.KnowledgeBits, nil
-}
-
-// AppendKnowledgeBits adds i to the "knowledge_bits" field.
-func (m *ProblemMutation) AppendKnowledgeBits(i []int) {
-	m.appendknowledge_bits = append(m.appendknowledge_bits, i...)
-}
-
-// AppendedKnowledgeBits returns the list of values that were appended to the "knowledge_bits" field in this mutation.
-func (m *ProblemMutation) AppendedKnowledgeBits() ([]int, bool) {
-	if len(m.appendknowledge_bits) == 0 {
-		return nil, false
-	}
-	return m.appendknowledge_bits, true
-}
-
-// ClearKnowledgeBits clears the value of the "knowledge_bits" field.
-func (m *ProblemMutation) ClearKnowledgeBits() {
-	m.knowledge_bits = nil
-	m.appendknowledge_bits = nil
-	m.clearedFields[problem.FieldKnowledgeBits] = struct{}{}
-}
-
-// KnowledgeBitsCleared returns if the "knowledge_bits" field was cleared in this mutation.
-func (m *ProblemMutation) KnowledgeBitsCleared() bool {
-	_, ok := m.clearedFields[problem.FieldKnowledgeBits]
-	return ok
-}
-
-// ResetKnowledgeBits resets all changes to the "knowledge_bits" field.
-func (m *ProblemMutation) ResetKnowledgeBits() {
-	m.knowledge_bits = nil
-	m.appendknowledge_bits = nil
-	delete(m.clearedFields, problem.FieldKnowledgeBits)
-}
-
-// SetParentContainers sets the "parent_containers" field.
-func (m *ProblemMutation) SetParentContainers(i [][]interface{}) {
-	m.parent_containers = &i
-	m.appendparent_containers = nil
-}
-
-// ParentContainers returns the value of the "parent_containers" field in the mutation.
-func (m *ProblemMutation) ParentContainers() (r [][]interface{}, exists bool) {
-	v := m.parent_containers
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldParentContainers returns the old "parent_containers" field's value of the Problem entity.
-// If the Problem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProblemMutation) OldParentContainers(ctx context.Context) (v [][]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldParentContainers is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldParentContainers requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldParentContainers: %w", err)
-	}
-	return oldValue.ParentContainers, nil
-}
-
-// AppendParentContainers adds i to the "parent_containers" field.
-func (m *ProblemMutation) AppendParentContainers(i [][]interface{}) {
-	m.appendparent_containers = append(m.appendparent_containers, i...)
-}
-
-// AppendedParentContainers returns the list of values that were appended to the "parent_containers" field in this mutation.
-func (m *ProblemMutation) AppendedParentContainers() ([][]interface{}, bool) {
-	if len(m.appendparent_containers) == 0 {
-		return nil, false
-	}
-	return m.appendparent_containers, true
-}
-
-// ClearParentContainers clears the value of the "parent_containers" field.
-func (m *ProblemMutation) ClearParentContainers() {
-	m.parent_containers = nil
-	m.appendparent_containers = nil
-	m.clearedFields[problem.FieldParentContainers] = struct{}{}
-}
-
-// ParentContainersCleared returns if the "parent_containers" field was cleared in this mutation.
-func (m *ProblemMutation) ParentContainersCleared() bool {
-	_, ok := m.clearedFields[problem.FieldParentContainers]
-	return ok
-}
-
-// ResetParentContainers resets all changes to the "parent_containers" field.
-func (m *ProblemMutation) ResetParentContainers() {
-	m.parent_containers = nil
-	m.appendparent_containers = nil
-	delete(m.clearedFields, problem.FieldParentContainers)
-}
-
-// SetKnowledgeNodes sets the "knowledge_nodes" field.
-func (m *ProblemMutation) SetKnowledgeNodes(i []int) {
-	m.knowledge_nodes = &i
-	m.appendknowledge_nodes = nil
-}
-
-// KnowledgeNodes returns the value of the "knowledge_nodes" field in the mutation.
-func (m *ProblemMutation) KnowledgeNodes() (r []int, exists bool) {
-	v := m.knowledge_nodes
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeNodes returns the old "knowledge_nodes" field's value of the Problem entity.
-// If the Problem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProblemMutation) OldKnowledgeNodes(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeNodes is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeNodes requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeNodes: %w", err)
-	}
-	return oldValue.KnowledgeNodes, nil
-}
-
-// AppendKnowledgeNodes adds i to the "knowledge_nodes" field.
-func (m *ProblemMutation) AppendKnowledgeNodes(i []int) {
-	m.appendknowledge_nodes = append(m.appendknowledge_nodes, i...)
-}
-
-// AppendedKnowledgeNodes returns the list of values that were appended to the "knowledge_nodes" field in this mutation.
-func (m *ProblemMutation) AppendedKnowledgeNodes() ([]int, bool) {
-	if len(m.appendknowledge_nodes) == 0 {
-		return nil, false
-	}
-	return m.appendknowledge_nodes, true
-}
-
-// ClearKnowledgeNodes clears the value of the "knowledge_nodes" field.
-func (m *ProblemMutation) ClearKnowledgeNodes() {
-	m.knowledge_nodes = nil
-	m.appendknowledge_nodes = nil
-	m.clearedFields[problem.FieldKnowledgeNodes] = struct{}{}
-}
-
-// KnowledgeNodesCleared returns if the "knowledge_nodes" field was cleared in this mutation.
-func (m *ProblemMutation) KnowledgeNodesCleared() bool {
-	_, ok := m.clearedFields[problem.FieldKnowledgeNodes]
-	return ok
-}
-
-// ResetKnowledgeNodes resets all changes to the "knowledge_nodes" field.
-func (m *ProblemMutation) ResetKnowledgeNodes() {
-	m.knowledge_nodes = nil
-	m.appendknowledge_nodes = nil
-	delete(m.clearedFields, problem.FieldKnowledgeNodes)
 }
 
 // SetDoneDateTime sets the "done_date_time" field.
@@ -1644,7 +1148,7 @@ func (m *ProblemMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProblemMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 5)
 	if m.description != nil {
 		fields = append(fields, problem.FieldDescription)
 	}
@@ -1653,27 +1157,6 @@ func (m *ProblemMutation) Fields() []string {
 	}
 	if m.notes != nil {
 		fields = append(fields, problem.FieldNotes)
-	}
-	if m.problems != nil {
-		fields = append(fields, problem.FieldProblems)
-	}
-	if m.questions != nil {
-		fields = append(fields, problem.FieldQuestions)
-	}
-	if m.actions != nil {
-		fields = append(fields, problem.FieldActions)
-	}
-	if m.definitions != nil {
-		fields = append(fields, problem.FieldDefinitions)
-	}
-	if m.knowledge_bits != nil {
-		fields = append(fields, problem.FieldKnowledgeBits)
-	}
-	if m.parent_containers != nil {
-		fields = append(fields, problem.FieldParentContainers)
-	}
-	if m.knowledge_nodes != nil {
-		fields = append(fields, problem.FieldKnowledgeNodes)
 	}
 	if m.done_date_time != nil {
 		fields = append(fields, problem.FieldDoneDateTime)
@@ -1695,20 +1178,6 @@ func (m *ProblemMutation) Field(name string) (ent.Value, bool) {
 		return m.Tags()
 	case problem.FieldNotes:
 		return m.Notes()
-	case problem.FieldProblems:
-		return m.Problems()
-	case problem.FieldQuestions:
-		return m.Questions()
-	case problem.FieldActions:
-		return m.Actions()
-	case problem.FieldDefinitions:
-		return m.Definitions()
-	case problem.FieldKnowledgeBits:
-		return m.KnowledgeBits()
-	case problem.FieldParentContainers:
-		return m.ParentContainers()
-	case problem.FieldKnowledgeNodes:
-		return m.KnowledgeNodes()
 	case problem.FieldDoneDateTime:
 		return m.DoneDateTime()
 	case problem.FieldSolution:
@@ -1728,20 +1197,6 @@ func (m *ProblemMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldTags(ctx)
 	case problem.FieldNotes:
 		return m.OldNotes(ctx)
-	case problem.FieldProblems:
-		return m.OldProblems(ctx)
-	case problem.FieldQuestions:
-		return m.OldQuestions(ctx)
-	case problem.FieldActions:
-		return m.OldActions(ctx)
-	case problem.FieldDefinitions:
-		return m.OldDefinitions(ctx)
-	case problem.FieldKnowledgeBits:
-		return m.OldKnowledgeBits(ctx)
-	case problem.FieldParentContainers:
-		return m.OldParentContainers(ctx)
-	case problem.FieldKnowledgeNodes:
-		return m.OldKnowledgeNodes(ctx)
 	case problem.FieldDoneDateTime:
 		return m.OldDoneDateTime(ctx)
 	case problem.FieldSolution:
@@ -1775,55 +1230,6 @@ func (m *ProblemMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNotes(v)
-		return nil
-	case problem.FieldProblems:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProblems(v)
-		return nil
-	case problem.FieldQuestions:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetQuestions(v)
-		return nil
-	case problem.FieldActions:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetActions(v)
-		return nil
-	case problem.FieldDefinitions:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDefinitions(v)
-		return nil
-	case problem.FieldKnowledgeBits:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeBits(v)
-		return nil
-	case problem.FieldParentContainers:
-		v, ok := value.([][]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetParentContainers(v)
-		return nil
-	case problem.FieldKnowledgeNodes:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeNodes(v)
 		return nil
 	case problem.FieldDoneDateTime:
 		v, ok := value.(time.Time)
@@ -1869,33 +1275,6 @@ func (m *ProblemMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ProblemMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(problem.FieldTags) {
-		fields = append(fields, problem.FieldTags)
-	}
-	if m.FieldCleared(problem.FieldNotes) {
-		fields = append(fields, problem.FieldNotes)
-	}
-	if m.FieldCleared(problem.FieldProblems) {
-		fields = append(fields, problem.FieldProblems)
-	}
-	if m.FieldCleared(problem.FieldQuestions) {
-		fields = append(fields, problem.FieldQuestions)
-	}
-	if m.FieldCleared(problem.FieldActions) {
-		fields = append(fields, problem.FieldActions)
-	}
-	if m.FieldCleared(problem.FieldDefinitions) {
-		fields = append(fields, problem.FieldDefinitions)
-	}
-	if m.FieldCleared(problem.FieldKnowledgeBits) {
-		fields = append(fields, problem.FieldKnowledgeBits)
-	}
-	if m.FieldCleared(problem.FieldParentContainers) {
-		fields = append(fields, problem.FieldParentContainers)
-	}
-	if m.FieldCleared(problem.FieldKnowledgeNodes) {
-		fields = append(fields, problem.FieldKnowledgeNodes)
-	}
 	if m.FieldCleared(problem.FieldDoneDateTime) {
 		fields = append(fields, problem.FieldDoneDateTime)
 	}
@@ -1916,33 +1295,6 @@ func (m *ProblemMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ProblemMutation) ClearField(name string) error {
 	switch name {
-	case problem.FieldTags:
-		m.ClearTags()
-		return nil
-	case problem.FieldNotes:
-		m.ClearNotes()
-		return nil
-	case problem.FieldProblems:
-		m.ClearProblems()
-		return nil
-	case problem.FieldQuestions:
-		m.ClearQuestions()
-		return nil
-	case problem.FieldActions:
-		m.ClearActions()
-		return nil
-	case problem.FieldDefinitions:
-		m.ClearDefinitions()
-		return nil
-	case problem.FieldKnowledgeBits:
-		m.ClearKnowledgeBits()
-		return nil
-	case problem.FieldParentContainers:
-		m.ClearParentContainers()
-		return nil
-	case problem.FieldKnowledgeNodes:
-		m.ClearKnowledgeNodes()
-		return nil
 	case problem.FieldDoneDateTime:
 		m.ClearDoneDateTime()
 		return nil
@@ -1965,27 +1317,6 @@ func (m *ProblemMutation) ResetField(name string) error {
 		return nil
 	case problem.FieldNotes:
 		m.ResetNotes()
-		return nil
-	case problem.FieldProblems:
-		m.ResetProblems()
-		return nil
-	case problem.FieldQuestions:
-		m.ResetQuestions()
-		return nil
-	case problem.FieldActions:
-		m.ResetActions()
-		return nil
-	case problem.FieldDefinitions:
-		m.ResetDefinitions()
-		return nil
-	case problem.FieldKnowledgeBits:
-		m.ResetKnowledgeBits()
-		return nil
-	case problem.FieldParentContainers:
-		m.ResetParentContainers()
-		return nil
-	case problem.FieldKnowledgeNodes:
-		m.ResetKnowledgeNodes()
 		return nil
 	case problem.FieldDoneDateTime:
 		m.ResetDoneDateTime()
@@ -2048,33 +1379,19 @@ func (m *ProblemMutation) ResetEdge(name string) error {
 // TaskMutation represents an operation that mutates the Task nodes in the graph.
 type TaskMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *int
-	description             *string
-	tags                    *[]string
-	appendtags              []string
-	_done                   *bool
-	notes                   *string
-	problems                *[]int
-	appendproblems          []int
-	questions               *[]int
-	appendquestions         []int
-	actions                 *[]int
-	appendactions           []int
-	definitions             *[]int
-	appenddefinitions       []int
-	knowledge_bits          *[]int
-	appendknowledge_bits    []int
-	parent_containers       *[][]interface{}
-	appendparent_containers [][]interface{}
-	knowledge_nodes         *[]int
-	appendknowledge_nodes   []int
-	done_date_time          *time.Time
-	clearedFields           map[string]struct{}
-	done                    bool
-	oldValue                func(context.Context) (*Task, error)
-	predicates              []predicate.Task
+	op             Op
+	typ            string
+	id             *int
+	description    *string
+	tags           *[]string
+	appendtags     []string
+	_done          *bool
+	notes          *string
+	done_date_time *time.Time
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*Task, error)
+	predicates     []predicate.Task
 }
 
 var _ ent.Mutation = (*TaskMutation)(nil)
@@ -2262,24 +1579,10 @@ func (m *TaskMutation) AppendedTags() ([]string, bool) {
 	return m.appendtags, true
 }
 
-// ClearTags clears the value of the "tags" field.
-func (m *TaskMutation) ClearTags() {
-	m.tags = nil
-	m.appendtags = nil
-	m.clearedFields[task.FieldTags] = struct{}{}
-}
-
-// TagsCleared returns if the "tags" field was cleared in this mutation.
-func (m *TaskMutation) TagsCleared() bool {
-	_, ok := m.clearedFields[task.FieldTags]
-	return ok
-}
-
 // ResetTags resets all changes to the "tags" field.
 func (m *TaskMutation) ResetTags() {
 	m.tags = nil
 	m.appendtags = nil
-	delete(m.clearedFields, task.FieldTags)
 }
 
 // SetDone sets the "done" field.
@@ -2349,477 +1652,9 @@ func (m *TaskMutation) OldNotes(ctx context.Context) (v string, err error) {
 	return oldValue.Notes, nil
 }
 
-// ClearNotes clears the value of the "notes" field.
-func (m *TaskMutation) ClearNotes() {
-	m.notes = nil
-	m.clearedFields[task.FieldNotes] = struct{}{}
-}
-
-// NotesCleared returns if the "notes" field was cleared in this mutation.
-func (m *TaskMutation) NotesCleared() bool {
-	_, ok := m.clearedFields[task.FieldNotes]
-	return ok
-}
-
 // ResetNotes resets all changes to the "notes" field.
 func (m *TaskMutation) ResetNotes() {
 	m.notes = nil
-	delete(m.clearedFields, task.FieldNotes)
-}
-
-// SetProblems sets the "problems" field.
-func (m *TaskMutation) SetProblems(i []int) {
-	m.problems = &i
-	m.appendproblems = nil
-}
-
-// Problems returns the value of the "problems" field in the mutation.
-func (m *TaskMutation) Problems() (r []int, exists bool) {
-	v := m.problems
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProblems returns the old "problems" field's value of the Task entity.
-// If the Task object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldProblems(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProblems is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProblems requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProblems: %w", err)
-	}
-	return oldValue.Problems, nil
-}
-
-// AppendProblems adds i to the "problems" field.
-func (m *TaskMutation) AppendProblems(i []int) {
-	m.appendproblems = append(m.appendproblems, i...)
-}
-
-// AppendedProblems returns the list of values that were appended to the "problems" field in this mutation.
-func (m *TaskMutation) AppendedProblems() ([]int, bool) {
-	if len(m.appendproblems) == 0 {
-		return nil, false
-	}
-	return m.appendproblems, true
-}
-
-// ClearProblems clears the value of the "problems" field.
-func (m *TaskMutation) ClearProblems() {
-	m.problems = nil
-	m.appendproblems = nil
-	m.clearedFields[task.FieldProblems] = struct{}{}
-}
-
-// ProblemsCleared returns if the "problems" field was cleared in this mutation.
-func (m *TaskMutation) ProblemsCleared() bool {
-	_, ok := m.clearedFields[task.FieldProblems]
-	return ok
-}
-
-// ResetProblems resets all changes to the "problems" field.
-func (m *TaskMutation) ResetProblems() {
-	m.problems = nil
-	m.appendproblems = nil
-	delete(m.clearedFields, task.FieldProblems)
-}
-
-// SetQuestions sets the "questions" field.
-func (m *TaskMutation) SetQuestions(i []int) {
-	m.questions = &i
-	m.appendquestions = nil
-}
-
-// Questions returns the value of the "questions" field in the mutation.
-func (m *TaskMutation) Questions() (r []int, exists bool) {
-	v := m.questions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldQuestions returns the old "questions" field's value of the Task entity.
-// If the Task object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldQuestions(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldQuestions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldQuestions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldQuestions: %w", err)
-	}
-	return oldValue.Questions, nil
-}
-
-// AppendQuestions adds i to the "questions" field.
-func (m *TaskMutation) AppendQuestions(i []int) {
-	m.appendquestions = append(m.appendquestions, i...)
-}
-
-// AppendedQuestions returns the list of values that were appended to the "questions" field in this mutation.
-func (m *TaskMutation) AppendedQuestions() ([]int, bool) {
-	if len(m.appendquestions) == 0 {
-		return nil, false
-	}
-	return m.appendquestions, true
-}
-
-// ClearQuestions clears the value of the "questions" field.
-func (m *TaskMutation) ClearQuestions() {
-	m.questions = nil
-	m.appendquestions = nil
-	m.clearedFields[task.FieldQuestions] = struct{}{}
-}
-
-// QuestionsCleared returns if the "questions" field was cleared in this mutation.
-func (m *TaskMutation) QuestionsCleared() bool {
-	_, ok := m.clearedFields[task.FieldQuestions]
-	return ok
-}
-
-// ResetQuestions resets all changes to the "questions" field.
-func (m *TaskMutation) ResetQuestions() {
-	m.questions = nil
-	m.appendquestions = nil
-	delete(m.clearedFields, task.FieldQuestions)
-}
-
-// SetActions sets the "actions" field.
-func (m *TaskMutation) SetActions(i []int) {
-	m.actions = &i
-	m.appendactions = nil
-}
-
-// Actions returns the value of the "actions" field in the mutation.
-func (m *TaskMutation) Actions() (r []int, exists bool) {
-	v := m.actions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldActions returns the old "actions" field's value of the Task entity.
-// If the Task object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldActions(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActions: %w", err)
-	}
-	return oldValue.Actions, nil
-}
-
-// AppendActions adds i to the "actions" field.
-func (m *TaskMutation) AppendActions(i []int) {
-	m.appendactions = append(m.appendactions, i...)
-}
-
-// AppendedActions returns the list of values that were appended to the "actions" field in this mutation.
-func (m *TaskMutation) AppendedActions() ([]int, bool) {
-	if len(m.appendactions) == 0 {
-		return nil, false
-	}
-	return m.appendactions, true
-}
-
-// ClearActions clears the value of the "actions" field.
-func (m *TaskMutation) ClearActions() {
-	m.actions = nil
-	m.appendactions = nil
-	m.clearedFields[task.FieldActions] = struct{}{}
-}
-
-// ActionsCleared returns if the "actions" field was cleared in this mutation.
-func (m *TaskMutation) ActionsCleared() bool {
-	_, ok := m.clearedFields[task.FieldActions]
-	return ok
-}
-
-// ResetActions resets all changes to the "actions" field.
-func (m *TaskMutation) ResetActions() {
-	m.actions = nil
-	m.appendactions = nil
-	delete(m.clearedFields, task.FieldActions)
-}
-
-// SetDefinitions sets the "definitions" field.
-func (m *TaskMutation) SetDefinitions(i []int) {
-	m.definitions = &i
-	m.appenddefinitions = nil
-}
-
-// Definitions returns the value of the "definitions" field in the mutation.
-func (m *TaskMutation) Definitions() (r []int, exists bool) {
-	v := m.definitions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDefinitions returns the old "definitions" field's value of the Task entity.
-// If the Task object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldDefinitions(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDefinitions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDefinitions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDefinitions: %w", err)
-	}
-	return oldValue.Definitions, nil
-}
-
-// AppendDefinitions adds i to the "definitions" field.
-func (m *TaskMutation) AppendDefinitions(i []int) {
-	m.appenddefinitions = append(m.appenddefinitions, i...)
-}
-
-// AppendedDefinitions returns the list of values that were appended to the "definitions" field in this mutation.
-func (m *TaskMutation) AppendedDefinitions() ([]int, bool) {
-	if len(m.appenddefinitions) == 0 {
-		return nil, false
-	}
-	return m.appenddefinitions, true
-}
-
-// ClearDefinitions clears the value of the "definitions" field.
-func (m *TaskMutation) ClearDefinitions() {
-	m.definitions = nil
-	m.appenddefinitions = nil
-	m.clearedFields[task.FieldDefinitions] = struct{}{}
-}
-
-// DefinitionsCleared returns if the "definitions" field was cleared in this mutation.
-func (m *TaskMutation) DefinitionsCleared() bool {
-	_, ok := m.clearedFields[task.FieldDefinitions]
-	return ok
-}
-
-// ResetDefinitions resets all changes to the "definitions" field.
-func (m *TaskMutation) ResetDefinitions() {
-	m.definitions = nil
-	m.appenddefinitions = nil
-	delete(m.clearedFields, task.FieldDefinitions)
-}
-
-// SetKnowledgeBits sets the "knowledge_bits" field.
-func (m *TaskMutation) SetKnowledgeBits(i []int) {
-	m.knowledge_bits = &i
-	m.appendknowledge_bits = nil
-}
-
-// KnowledgeBits returns the value of the "knowledge_bits" field in the mutation.
-func (m *TaskMutation) KnowledgeBits() (r []int, exists bool) {
-	v := m.knowledge_bits
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeBits returns the old "knowledge_bits" field's value of the Task entity.
-// If the Task object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldKnowledgeBits(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeBits is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeBits requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeBits: %w", err)
-	}
-	return oldValue.KnowledgeBits, nil
-}
-
-// AppendKnowledgeBits adds i to the "knowledge_bits" field.
-func (m *TaskMutation) AppendKnowledgeBits(i []int) {
-	m.appendknowledge_bits = append(m.appendknowledge_bits, i...)
-}
-
-// AppendedKnowledgeBits returns the list of values that were appended to the "knowledge_bits" field in this mutation.
-func (m *TaskMutation) AppendedKnowledgeBits() ([]int, bool) {
-	if len(m.appendknowledge_bits) == 0 {
-		return nil, false
-	}
-	return m.appendknowledge_bits, true
-}
-
-// ClearKnowledgeBits clears the value of the "knowledge_bits" field.
-func (m *TaskMutation) ClearKnowledgeBits() {
-	m.knowledge_bits = nil
-	m.appendknowledge_bits = nil
-	m.clearedFields[task.FieldKnowledgeBits] = struct{}{}
-}
-
-// KnowledgeBitsCleared returns if the "knowledge_bits" field was cleared in this mutation.
-func (m *TaskMutation) KnowledgeBitsCleared() bool {
-	_, ok := m.clearedFields[task.FieldKnowledgeBits]
-	return ok
-}
-
-// ResetKnowledgeBits resets all changes to the "knowledge_bits" field.
-func (m *TaskMutation) ResetKnowledgeBits() {
-	m.knowledge_bits = nil
-	m.appendknowledge_bits = nil
-	delete(m.clearedFields, task.FieldKnowledgeBits)
-}
-
-// SetParentContainers sets the "parent_containers" field.
-func (m *TaskMutation) SetParentContainers(i [][]interface{}) {
-	m.parent_containers = &i
-	m.appendparent_containers = nil
-}
-
-// ParentContainers returns the value of the "parent_containers" field in the mutation.
-func (m *TaskMutation) ParentContainers() (r [][]interface{}, exists bool) {
-	v := m.parent_containers
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldParentContainers returns the old "parent_containers" field's value of the Task entity.
-// If the Task object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldParentContainers(ctx context.Context) (v [][]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldParentContainers is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldParentContainers requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldParentContainers: %w", err)
-	}
-	return oldValue.ParentContainers, nil
-}
-
-// AppendParentContainers adds i to the "parent_containers" field.
-func (m *TaskMutation) AppendParentContainers(i [][]interface{}) {
-	m.appendparent_containers = append(m.appendparent_containers, i...)
-}
-
-// AppendedParentContainers returns the list of values that were appended to the "parent_containers" field in this mutation.
-func (m *TaskMutation) AppendedParentContainers() ([][]interface{}, bool) {
-	if len(m.appendparent_containers) == 0 {
-		return nil, false
-	}
-	return m.appendparent_containers, true
-}
-
-// ClearParentContainers clears the value of the "parent_containers" field.
-func (m *TaskMutation) ClearParentContainers() {
-	m.parent_containers = nil
-	m.appendparent_containers = nil
-	m.clearedFields[task.FieldParentContainers] = struct{}{}
-}
-
-// ParentContainersCleared returns if the "parent_containers" field was cleared in this mutation.
-func (m *TaskMutation) ParentContainersCleared() bool {
-	_, ok := m.clearedFields[task.FieldParentContainers]
-	return ok
-}
-
-// ResetParentContainers resets all changes to the "parent_containers" field.
-func (m *TaskMutation) ResetParentContainers() {
-	m.parent_containers = nil
-	m.appendparent_containers = nil
-	delete(m.clearedFields, task.FieldParentContainers)
-}
-
-// SetKnowledgeNodes sets the "knowledge_nodes" field.
-func (m *TaskMutation) SetKnowledgeNodes(i []int) {
-	m.knowledge_nodes = &i
-	m.appendknowledge_nodes = nil
-}
-
-// KnowledgeNodes returns the value of the "knowledge_nodes" field in the mutation.
-func (m *TaskMutation) KnowledgeNodes() (r []int, exists bool) {
-	v := m.knowledge_nodes
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeNodes returns the old "knowledge_nodes" field's value of the Task entity.
-// If the Task object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldKnowledgeNodes(ctx context.Context) (v []int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeNodes is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeNodes requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeNodes: %w", err)
-	}
-	return oldValue.KnowledgeNodes, nil
-}
-
-// AppendKnowledgeNodes adds i to the "knowledge_nodes" field.
-func (m *TaskMutation) AppendKnowledgeNodes(i []int) {
-	m.appendknowledge_nodes = append(m.appendknowledge_nodes, i...)
-}
-
-// AppendedKnowledgeNodes returns the list of values that were appended to the "knowledge_nodes" field in this mutation.
-func (m *TaskMutation) AppendedKnowledgeNodes() ([]int, bool) {
-	if len(m.appendknowledge_nodes) == 0 {
-		return nil, false
-	}
-	return m.appendknowledge_nodes, true
-}
-
-// ClearKnowledgeNodes clears the value of the "knowledge_nodes" field.
-func (m *TaskMutation) ClearKnowledgeNodes() {
-	m.knowledge_nodes = nil
-	m.appendknowledge_nodes = nil
-	m.clearedFields[task.FieldKnowledgeNodes] = struct{}{}
-}
-
-// KnowledgeNodesCleared returns if the "knowledge_nodes" field was cleared in this mutation.
-func (m *TaskMutation) KnowledgeNodesCleared() bool {
-	_, ok := m.clearedFields[task.FieldKnowledgeNodes]
-	return ok
-}
-
-// ResetKnowledgeNodes resets all changes to the "knowledge_nodes" field.
-func (m *TaskMutation) ResetKnowledgeNodes() {
-	m.knowledge_nodes = nil
-	m.appendknowledge_nodes = nil
-	delete(m.clearedFields, task.FieldKnowledgeNodes)
 }
 
 // SetDoneDateTime sets the "done_date_time" field.
@@ -2905,7 +1740,7 @@ func (m *TaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 5)
 	if m.description != nil {
 		fields = append(fields, task.FieldDescription)
 	}
@@ -2917,27 +1752,6 @@ func (m *TaskMutation) Fields() []string {
 	}
 	if m.notes != nil {
 		fields = append(fields, task.FieldNotes)
-	}
-	if m.problems != nil {
-		fields = append(fields, task.FieldProblems)
-	}
-	if m.questions != nil {
-		fields = append(fields, task.FieldQuestions)
-	}
-	if m.actions != nil {
-		fields = append(fields, task.FieldActions)
-	}
-	if m.definitions != nil {
-		fields = append(fields, task.FieldDefinitions)
-	}
-	if m.knowledge_bits != nil {
-		fields = append(fields, task.FieldKnowledgeBits)
-	}
-	if m.parent_containers != nil {
-		fields = append(fields, task.FieldParentContainers)
-	}
-	if m.knowledge_nodes != nil {
-		fields = append(fields, task.FieldKnowledgeNodes)
 	}
 	if m.done_date_time != nil {
 		fields = append(fields, task.FieldDoneDateTime)
@@ -2958,20 +1772,6 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 		return m.Done()
 	case task.FieldNotes:
 		return m.Notes()
-	case task.FieldProblems:
-		return m.Problems()
-	case task.FieldQuestions:
-		return m.Questions()
-	case task.FieldActions:
-		return m.Actions()
-	case task.FieldDefinitions:
-		return m.Definitions()
-	case task.FieldKnowledgeBits:
-		return m.KnowledgeBits()
-	case task.FieldParentContainers:
-		return m.ParentContainers()
-	case task.FieldKnowledgeNodes:
-		return m.KnowledgeNodes()
 	case task.FieldDoneDateTime:
 		return m.DoneDateTime()
 	}
@@ -2991,20 +1791,6 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDone(ctx)
 	case task.FieldNotes:
 		return m.OldNotes(ctx)
-	case task.FieldProblems:
-		return m.OldProblems(ctx)
-	case task.FieldQuestions:
-		return m.OldQuestions(ctx)
-	case task.FieldActions:
-		return m.OldActions(ctx)
-	case task.FieldDefinitions:
-		return m.OldDefinitions(ctx)
-	case task.FieldKnowledgeBits:
-		return m.OldKnowledgeBits(ctx)
-	case task.FieldParentContainers:
-		return m.OldParentContainers(ctx)
-	case task.FieldKnowledgeNodes:
-		return m.OldKnowledgeNodes(ctx)
 	case task.FieldDoneDateTime:
 		return m.OldDoneDateTime(ctx)
 	}
@@ -3044,55 +1830,6 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetNotes(v)
 		return nil
-	case task.FieldProblems:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProblems(v)
-		return nil
-	case task.FieldQuestions:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetQuestions(v)
-		return nil
-	case task.FieldActions:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetActions(v)
-		return nil
-	case task.FieldDefinitions:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDefinitions(v)
-		return nil
-	case task.FieldKnowledgeBits:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeBits(v)
-		return nil
-	case task.FieldParentContainers:
-		v, ok := value.([][]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetParentContainers(v)
-		return nil
-	case task.FieldKnowledgeNodes:
-		v, ok := value.([]int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeNodes(v)
-		return nil
 	case task.FieldDoneDateTime:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -3130,33 +1867,6 @@ func (m *TaskMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TaskMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(task.FieldTags) {
-		fields = append(fields, task.FieldTags)
-	}
-	if m.FieldCleared(task.FieldNotes) {
-		fields = append(fields, task.FieldNotes)
-	}
-	if m.FieldCleared(task.FieldProblems) {
-		fields = append(fields, task.FieldProblems)
-	}
-	if m.FieldCleared(task.FieldQuestions) {
-		fields = append(fields, task.FieldQuestions)
-	}
-	if m.FieldCleared(task.FieldActions) {
-		fields = append(fields, task.FieldActions)
-	}
-	if m.FieldCleared(task.FieldDefinitions) {
-		fields = append(fields, task.FieldDefinitions)
-	}
-	if m.FieldCleared(task.FieldKnowledgeBits) {
-		fields = append(fields, task.FieldKnowledgeBits)
-	}
-	if m.FieldCleared(task.FieldParentContainers) {
-		fields = append(fields, task.FieldParentContainers)
-	}
-	if m.FieldCleared(task.FieldKnowledgeNodes) {
-		fields = append(fields, task.FieldKnowledgeNodes)
-	}
 	if m.FieldCleared(task.FieldDoneDateTime) {
 		fields = append(fields, task.FieldDoneDateTime)
 	}
@@ -3174,33 +1884,6 @@ func (m *TaskMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TaskMutation) ClearField(name string) error {
 	switch name {
-	case task.FieldTags:
-		m.ClearTags()
-		return nil
-	case task.FieldNotes:
-		m.ClearNotes()
-		return nil
-	case task.FieldProblems:
-		m.ClearProblems()
-		return nil
-	case task.FieldQuestions:
-		m.ClearQuestions()
-		return nil
-	case task.FieldActions:
-		m.ClearActions()
-		return nil
-	case task.FieldDefinitions:
-		m.ClearDefinitions()
-		return nil
-	case task.FieldKnowledgeBits:
-		m.ClearKnowledgeBits()
-		return nil
-	case task.FieldParentContainers:
-		m.ClearParentContainers()
-		return nil
-	case task.FieldKnowledgeNodes:
-		m.ClearKnowledgeNodes()
-		return nil
 	case task.FieldDoneDateTime:
 		m.ClearDoneDateTime()
 		return nil
@@ -3223,27 +1906,6 @@ func (m *TaskMutation) ResetField(name string) error {
 		return nil
 	case task.FieldNotes:
 		m.ResetNotes()
-		return nil
-	case task.FieldProblems:
-		m.ResetProblems()
-		return nil
-	case task.FieldQuestions:
-		m.ResetQuestions()
-		return nil
-	case task.FieldActions:
-		m.ResetActions()
-		return nil
-	case task.FieldDefinitions:
-		m.ResetDefinitions()
-		return nil
-	case task.FieldKnowledgeBits:
-		m.ResetKnowledgeBits()
-		return nil
-	case task.FieldParentContainers:
-		m.ResetParentContainers()
-		return nil
-	case task.FieldKnowledgeNodes:
-		m.ResetKnowledgeNodes()
 		return nil
 	case task.FieldDoneDateTime:
 		m.ResetDoneDateTime()

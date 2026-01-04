@@ -8,6 +8,7 @@ package app
 
 import (
 	"arturgudiev/dashboard/ent"
+	"arturgudiev/dashboard/ent/migrate"
 	"arturgudiev/dashboard/services"
 	"context"
 	"log"
@@ -27,12 +28,13 @@ func InitializeApp() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	containerService := services.NewContainerService(client)
-	problemService := services.NewProblemService(client, containerService)
-	taskService := services.NewTaskService(client, containerService, problemService)
+	childContainerRepository := services.NewChildContainerRepository(client)
+	containerService := services.NewContainerService(client, childContainerRepository)
 	problemsRepository := services.NewProblemsRepository(client)
+	problemService := services.NewProblemService(client, containerService, problemsRepository, childContainerRepository)
+	taskService := services.NewTaskService(client, containerService, problemService)
 	cliService := services.NewCLIService(client, containerService, problemsRepository)
-	app := provideApp(client, taskService, problemService, containerService, cliService, problemsRepository)
+	app := provideApp(client, taskService, problemService, containerService, cliService, problemsRepository, childContainerRepository)
 	return app, nil
 }
 
@@ -52,7 +54,7 @@ func provideEntClient() (*ent.Client, error) {
 	}
 
 	ctx := context.Background()
-	if err := client.Schema.Create(ctx); err != nil {
+	if err := client.Schema.Create(ctx, migrate.WithDropColumn(true)); err != nil {
 
 		errMsg := strings.ToLower(err.Error())
 		if strings.Contains(errMsg, "already exists") || strings.Contains(errMsg, "permission denied") || strings.Contains(errMsg, "unexpected attribute change") || strings.Contains(errMsg, "expect identity") {
@@ -77,14 +79,16 @@ func provideApp(
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
 	problemsRepository *services.ProblemsRepository,
+	childContainerRepository *services.ChildContainerRepository,
 ) *App {
 	return &App{
-		Client:             client,
-		TaskService:        taskService,
-		ProblemService:     problemService,
-		ContainerService:   containerService,
-		CLIService:         cliService,
-		ProblemsRepository: problemsRepository,
-		ctx:                context.Background(),
+		Client:                   client,
+		TaskService:              taskService,
+		ProblemService:           problemService,
+		ContainerService:         containerService,
+		CLIService:               cliService,
+		ProblemsRepository:       problemsRepository,
+		ChildContainerRepository: childContainerRepository,
+		ctx:                      context.Background(),
 	}
 }

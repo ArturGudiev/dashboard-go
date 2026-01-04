@@ -56,15 +56,8 @@ var (
 	ProblemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "description", Type: field.TypeString},
-		{Name: "tags", Type: field.TypeJSON, Nullable: true},
-		{Name: "notes", Type: field.TypeString, Nullable: true, Default: ""},
-		{Name: "problems", Type: field.TypeJSON, Nullable: true},
-		{Name: "questions", Type: field.TypeJSON, Nullable: true},
-		{Name: "actions", Type: field.TypeJSON, Nullable: true},
-		{Name: "definitions", Type: field.TypeJSON, Nullable: true},
-		{Name: "knowledge_bits", Type: field.TypeJSON, Nullable: true},
-		{Name: "parent_containers", Type: field.TypeJSON, Nullable: true},
-		{Name: "knowledge_nodes", Type: field.TypeJSON, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "notes", Type: field.TypeString, Default: ""},
 		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
 		{Name: "solution", Type: field.TypeString, Nullable: true},
 	}
@@ -78,16 +71,9 @@ var (
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "description", Type: field.TypeString},
-		{Name: "tags", Type: field.TypeJSON, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
 		{Name: "done", Type: field.TypeBool, Default: false},
-		{Name: "notes", Type: field.TypeString, Nullable: true, Default: ""},
-		{Name: "problems", Type: field.TypeJSON, Nullable: true},
-		{Name: "questions", Type: field.TypeJSON, Nullable: true},
-		{Name: "actions", Type: field.TypeJSON, Nullable: true},
-		{Name: "definitions", Type: field.TypeJSON, Nullable: true},
-		{Name: "knowledge_bits", Type: field.TypeJSON, Nullable: true},
-		{Name: "parent_containers", Type: field.TypeJSON, Nullable: true},
-		{Name: "knowledge_nodes", Type: field.TypeJSON, Nullable: true},
+		{Name: "notes", Type: field.TypeString, Default: ""},
 		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
 	}
 	// TasksTable holds the schema information for the "tasks" table.

@@ -55,12 +55,6 @@ func (_u *TaskUpdate) AppendTags(v []string) *TaskUpdate {
 	return _u
 }
 
-// ClearTags clears the value of the "tags" field.
-func (_u *TaskUpdate) ClearTags() *TaskUpdate {
-	_u.mutation.ClearTags()
-	return _u
-}
-
 // SetDone sets the "done" field.
 func (_u *TaskUpdate) SetDone(v bool) *TaskUpdate {
 	_u.mutation.SetDone(v)
@@ -86,138 +80,6 @@ func (_u *TaskUpdate) SetNillableNotes(v *string) *TaskUpdate {
 	if v != nil {
 		_u.SetNotes(*v)
 	}
-	return _u
-}
-
-// ClearNotes clears the value of the "notes" field.
-func (_u *TaskUpdate) ClearNotes() *TaskUpdate {
-	_u.mutation.ClearNotes()
-	return _u
-}
-
-// SetProblems sets the "problems" field.
-func (_u *TaskUpdate) SetProblems(v []int) *TaskUpdate {
-	_u.mutation.SetProblems(v)
-	return _u
-}
-
-// AppendProblems appends value to the "problems" field.
-func (_u *TaskUpdate) AppendProblems(v []int) *TaskUpdate {
-	_u.mutation.AppendProblems(v)
-	return _u
-}
-
-// ClearProblems clears the value of the "problems" field.
-func (_u *TaskUpdate) ClearProblems() *TaskUpdate {
-	_u.mutation.ClearProblems()
-	return _u
-}
-
-// SetQuestions sets the "questions" field.
-func (_u *TaskUpdate) SetQuestions(v []int) *TaskUpdate {
-	_u.mutation.SetQuestions(v)
-	return _u
-}
-
-// AppendQuestions appends value to the "questions" field.
-func (_u *TaskUpdate) AppendQuestions(v []int) *TaskUpdate {
-	_u.mutation.AppendQuestions(v)
-	return _u
-}
-
-// ClearQuestions clears the value of the "questions" field.
-func (_u *TaskUpdate) ClearQuestions() *TaskUpdate {
-	_u.mutation.ClearQuestions()
-	return _u
-}
-
-// SetActions sets the "actions" field.
-func (_u *TaskUpdate) SetActions(v []int) *TaskUpdate {
-	_u.mutation.SetActions(v)
-	return _u
-}
-
-// AppendActions appends value to the "actions" field.
-func (_u *TaskUpdate) AppendActions(v []int) *TaskUpdate {
-	_u.mutation.AppendActions(v)
-	return _u
-}
-
-// ClearActions clears the value of the "actions" field.
-func (_u *TaskUpdate) ClearActions() *TaskUpdate {
-	_u.mutation.ClearActions()
-	return _u
-}
-
-// SetDefinitions sets the "definitions" field.
-func (_u *TaskUpdate) SetDefinitions(v []int) *TaskUpdate {
-	_u.mutation.SetDefinitions(v)
-	return _u
-}
-
-// AppendDefinitions appends value to the "definitions" field.
-func (_u *TaskUpdate) AppendDefinitions(v []int) *TaskUpdate {
-	_u.mutation.AppendDefinitions(v)
-	return _u
-}
-
-// ClearDefinitions clears the value of the "definitions" field.
-func (_u *TaskUpdate) ClearDefinitions() *TaskUpdate {
-	_u.mutation.ClearDefinitions()
-	return _u
-}
-
-// SetKnowledgeBits sets the "knowledge_bits" field.
-func (_u *TaskUpdate) SetKnowledgeBits(v []int) *TaskUpdate {
-	_u.mutation.SetKnowledgeBits(v)
-	return _u
-}
-
-// AppendKnowledgeBits appends value to the "knowledge_bits" field.
-func (_u *TaskUpdate) AppendKnowledgeBits(v []int) *TaskUpdate {
-	_u.mutation.AppendKnowledgeBits(v)
-	return _u
-}
-
-// ClearKnowledgeBits clears the value of the "knowledge_bits" field.
-func (_u *TaskUpdate) ClearKnowledgeBits() *TaskUpdate {
-	_u.mutation.ClearKnowledgeBits()
-	return _u
-}
-
-// SetParentContainers sets the "parent_containers" field.
-func (_u *TaskUpdate) SetParentContainers(v [][]interface{}) *TaskUpdate {
-	_u.mutation.SetParentContainers(v)
-	return _u
-}
-
-// AppendParentContainers appends value to the "parent_containers" field.
-func (_u *TaskUpdate) AppendParentContainers(v [][]interface{}) *TaskUpdate {
-	_u.mutation.AppendParentContainers(v)
-	return _u
-}
-
-// ClearParentContainers clears the value of the "parent_containers" field.
-func (_u *TaskUpdate) ClearParentContainers() *TaskUpdate {
-	_u.mutation.ClearParentContainers()
-	return _u
-}
-
-// SetKnowledgeNodes sets the "knowledge_nodes" field.
-func (_u *TaskUpdate) SetKnowledgeNodes(v []int) *TaskUpdate {
-	_u.mutation.SetKnowledgeNodes(v)
-	return _u
-}
-
-// AppendKnowledgeNodes appends value to the "knowledge_nodes" field.
-func (_u *TaskUpdate) AppendKnowledgeNodes(v []int) *TaskUpdate {
-	_u.mutation.AppendKnowledgeNodes(v)
-	return _u
-}
-
-// ClearKnowledgeNodes clears the value of the "knowledge_nodes" field.
-func (_u *TaskUpdate) ClearKnowledgeNodes() *TaskUpdate {
-	_u.mutation.ClearKnowledgeNodes()
 	return _u
 }
 
@@ -306,94 +168,11 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			sqljson.Append(u, task.FieldTags, value)
 		})
 	}
-	if _u.mutation.TagsCleared() {
-		_spec.ClearField(task.FieldTags, field.TypeJSON)
-	}
 	if value, ok := _u.mutation.Done(); ok {
 		_spec.SetField(task.FieldDone, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Notes(); ok {
 		_spec.SetField(task.FieldNotes, field.TypeString, value)
-	}
-	if _u.mutation.NotesCleared() {
-		_spec.ClearField(task.FieldNotes, field.TypeString)
-	}
-	if value, ok := _u.mutation.Problems(); ok {
-		_spec.SetField(task.FieldProblems, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedProblems(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldProblems, value)
-		})
-	}
-	if _u.mutation.ProblemsCleared() {
-		_spec.ClearField(task.FieldProblems, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Questions(); ok {
-		_spec.SetField(task.FieldQuestions, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedQuestions(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldQuestions, value)
-		})
-	}
-	if _u.mutation.QuestionsCleared() {
-		_spec.ClearField(task.FieldQuestions, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Actions(); ok {
-		_spec.SetField(task.FieldActions, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedActions(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldActions, value)
-		})
-	}
-	if _u.mutation.ActionsCleared() {
-		_spec.ClearField(task.FieldActions, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Definitions(); ok {
-		_spec.SetField(task.FieldDefinitions, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedDefinitions(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldDefinitions, value)
-		})
-	}
-	if _u.mutation.DefinitionsCleared() {
-		_spec.ClearField(task.FieldDefinitions, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.KnowledgeBits(); ok {
-		_spec.SetField(task.FieldKnowledgeBits, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedKnowledgeBits(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldKnowledgeBits, value)
-		})
-	}
-	if _u.mutation.KnowledgeBitsCleared() {
-		_spec.ClearField(task.FieldKnowledgeBits, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.ParentContainers(); ok {
-		_spec.SetField(task.FieldParentContainers, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedParentContainers(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldParentContainers, value)
-		})
-	}
-	if _u.mutation.ParentContainersCleared() {
-		_spec.ClearField(task.FieldParentContainers, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.KnowledgeNodes(); ok {
-		_spec.SetField(task.FieldKnowledgeNodes, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedKnowledgeNodes(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldKnowledgeNodes, value)
-		})
-	}
-	if _u.mutation.KnowledgeNodesCleared() {
-		_spec.ClearField(task.FieldKnowledgeNodes, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.DoneDateTime(); ok {
 		_spec.SetField(task.FieldDoneDateTime, field.TypeTime, value)
@@ -447,12 +226,6 @@ func (_u *TaskUpdateOne) AppendTags(v []string) *TaskUpdateOne {
 	return _u
 }
 
-// ClearTags clears the value of the "tags" field.
-func (_u *TaskUpdateOne) ClearTags() *TaskUpdateOne {
-	_u.mutation.ClearTags()
-	return _u
-}
-
 // SetDone sets the "done" field.
 func (_u *TaskUpdateOne) SetDone(v bool) *TaskUpdateOne {
 	_u.mutation.SetDone(v)
@@ -478,138 +251,6 @@ func (_u *TaskUpdateOne) SetNillableNotes(v *string) *TaskUpdateOne {
 	if v != nil {
 		_u.SetNotes(*v)
 	}
-	return _u
-}
-
-// ClearNotes clears the value of the "notes" field.
-func (_u *TaskUpdateOne) ClearNotes() *TaskUpdateOne {
-	_u.mutation.ClearNotes()
-	return _u
-}
-
-// SetProblems sets the "problems" field.
-func (_u *TaskUpdateOne) SetProblems(v []int) *TaskUpdateOne {
-	_u.mutation.SetProblems(v)
-	return _u
-}
-
-// AppendProblems appends value to the "problems" field.
-func (_u *TaskUpdateOne) AppendProblems(v []int) *TaskUpdateOne {
-	_u.mutation.AppendProblems(v)
-	return _u
-}
-
-// ClearProblems clears the value of the "problems" field.
-func (_u *TaskUpdateOne) ClearProblems() *TaskUpdateOne {
-	_u.mutation.ClearProblems()
-	return _u
-}
-
-// SetQuestions sets the "questions" field.
-func (_u *TaskUpdateOne) SetQuestions(v []int) *TaskUpdateOne {
-	_u.mutation.SetQuestions(v)
-	return _u
-}
-
-// AppendQuestions appends value to the "questions" field.
-func (_u *TaskUpdateOne) AppendQuestions(v []int) *TaskUpdateOne {
-	_u.mutation.AppendQuestions(v)
-	return _u
-}
-
-// ClearQuestions clears the value of the "questions" field.
-func (_u *TaskUpdateOne) ClearQuestions() *TaskUpdateOne {
-	_u.mutation.ClearQuestions()
-	return _u
-}
-
-// SetActions sets the "actions" field.
-func (_u *TaskUpdateOne) SetActions(v []int) *TaskUpdateOne {
-	_u.mutation.SetActions(v)
-	return _u
-}
-
-// AppendActions appends value to the "actions" field.
-func (_u *TaskUpdateOne) AppendActions(v []int) *TaskUpdateOne {
-	_u.mutation.AppendActions(v)
-	return _u
-}
-
-// ClearActions clears the value of the "actions" field.
-func (_u *TaskUpdateOne) ClearActions() *TaskUpdateOne {
-	_u.mutation.ClearActions()
-	return _u
-}
-
-// SetDefinitions sets the "definitions" field.
-func (_u *TaskUpdateOne) SetDefinitions(v []int) *TaskUpdateOne {
-	_u.mutation.SetDefinitions(v)
-	return _u
-}
-
-// AppendDefinitions appends value to the "definitions" field.
-func (_u *TaskUpdateOne) AppendDefinitions(v []int) *TaskUpdateOne {
-	_u.mutation.AppendDefinitions(v)
-	return _u
-}
-
-// ClearDefinitions clears the value of the "definitions" field.
-func (_u *TaskUpdateOne) ClearDefinitions() *TaskUpdateOne {
-	_u.mutation.ClearDefinitions()
-	return _u
-}
-
-// SetKnowledgeBits sets the "knowledge_bits" field.
-func (_u *TaskUpdateOne) SetKnowledgeBits(v []int) *TaskUpdateOne {
-	_u.mutation.SetKnowledgeBits(v)
-	return _u
-}
-
-// AppendKnowledgeBits appends value to the "knowledge_bits" field.
-func (_u *TaskUpdateOne) AppendKnowledgeBits(v []int) *TaskUpdateOne {
-	_u.mutation.AppendKnowledgeBits(v)
-	return _u
-}
-
-// ClearKnowledgeBits clears the value of the "knowledge_bits" field.
-func (_u *TaskUpdateOne) ClearKnowledgeBits() *TaskUpdateOne {
-	_u.mutation.ClearKnowledgeBits()
-	return _u
-}
-
-// SetParentContainers sets the "parent_containers" field.
-func (_u *TaskUpdateOne) SetParentContainers(v [][]interface{}) *TaskUpdateOne {
-	_u.mutation.SetParentContainers(v)
-	return _u
-}
-
-// AppendParentContainers appends value to the "parent_containers" field.
-func (_u *TaskUpdateOne) AppendParentContainers(v [][]interface{}) *TaskUpdateOne {
-	_u.mutation.AppendParentContainers(v)
-	return _u
-}
-
-// ClearParentContainers clears the value of the "parent_containers" field.
-func (_u *TaskUpdateOne) ClearParentContainers() *TaskUpdateOne {
-	_u.mutation.ClearParentContainers()
-	return _u
-}
-
-// SetKnowledgeNodes sets the "knowledge_nodes" field.
-func (_u *TaskUpdateOne) SetKnowledgeNodes(v []int) *TaskUpdateOne {
-	_u.mutation.SetKnowledgeNodes(v)
-	return _u
-}
-
-// AppendKnowledgeNodes appends value to the "knowledge_nodes" field.
-func (_u *TaskUpdateOne) AppendKnowledgeNodes(v []int) *TaskUpdateOne {
-	_u.mutation.AppendKnowledgeNodes(v)
-	return _u
-}
-
-// ClearKnowledgeNodes clears the value of the "knowledge_nodes" field.
-func (_u *TaskUpdateOne) ClearKnowledgeNodes() *TaskUpdateOne {
-	_u.mutation.ClearKnowledgeNodes()
 	return _u
 }
 
@@ -728,94 +369,11 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 			sqljson.Append(u, task.FieldTags, value)
 		})
 	}
-	if _u.mutation.TagsCleared() {
-		_spec.ClearField(task.FieldTags, field.TypeJSON)
-	}
 	if value, ok := _u.mutation.Done(); ok {
 		_spec.SetField(task.FieldDone, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Notes(); ok {
 		_spec.SetField(task.FieldNotes, field.TypeString, value)
-	}
-	if _u.mutation.NotesCleared() {
-		_spec.ClearField(task.FieldNotes, field.TypeString)
-	}
-	if value, ok := _u.mutation.Problems(); ok {
-		_spec.SetField(task.FieldProblems, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedProblems(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldProblems, value)
-		})
-	}
-	if _u.mutation.ProblemsCleared() {
-		_spec.ClearField(task.FieldProblems, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Questions(); ok {
-		_spec.SetField(task.FieldQuestions, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedQuestions(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldQuestions, value)
-		})
-	}
-	if _u.mutation.QuestionsCleared() {
-		_spec.ClearField(task.FieldQuestions, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Actions(); ok {
-		_spec.SetField(task.FieldActions, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedActions(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldActions, value)
-		})
-	}
-	if _u.mutation.ActionsCleared() {
-		_spec.ClearField(task.FieldActions, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Definitions(); ok {
-		_spec.SetField(task.FieldDefinitions, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedDefinitions(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldDefinitions, value)
-		})
-	}
-	if _u.mutation.DefinitionsCleared() {
-		_spec.ClearField(task.FieldDefinitions, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.KnowledgeBits(); ok {
-		_spec.SetField(task.FieldKnowledgeBits, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedKnowledgeBits(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldKnowledgeBits, value)
-		})
-	}
-	if _u.mutation.KnowledgeBitsCleared() {
-		_spec.ClearField(task.FieldKnowledgeBits, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.ParentContainers(); ok {
-		_spec.SetField(task.FieldParentContainers, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedParentContainers(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldParentContainers, value)
-		})
-	}
-	if _u.mutation.ParentContainersCleared() {
-		_spec.ClearField(task.FieldParentContainers, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.KnowledgeNodes(); ok {
-		_spec.SetField(task.FieldKnowledgeNodes, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedKnowledgeNodes(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, task.FieldKnowledgeNodes, value)
-		})
-	}
-	if _u.mutation.KnowledgeNodesCleared() {
-		_spec.ClearField(task.FieldKnowledgeNodes, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.DoneDateTime(); ok {
 		_spec.SetField(task.FieldDoneDateTime, field.TypeTime, value)

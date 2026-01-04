@@ -119,14 +119,7 @@ func importTasks(jsonPath string) error {
 			SetDescription(taskJSON.Description).
 			SetTags(taskJSON.Tags).
 			SetDone(taskJSON.Done).
-			SetNotes(taskJSON.Notes).
-			SetProblems(taskJSON.Problems).
-			SetQuestions(taskJSON.Questions).
-			SetActions(taskJSON.Actions).
-			SetDefinitions(taskJSON.Definitions).
-			SetKnowledgeBits(taskJSON.KnowledgeBits).
-			SetKnowledgeNodes(taskJSON.KnowledgeNodes).
-			SetParentContainers(taskJSON.ParentContainers)
+			SetNotes(taskJSON.Notes)
 
 		if doneDateTime != nil {
 			taskBuilder.SetDoneDateTime(*doneDateTime)

@@ -48,19 +48,12 @@ func (h *Handler) GetTaskByID(c *gin.Context) {
 
 	// Convert to custom response type to ensure all fields are included
 	response := TaskResponse{
-		ID:               task.ID,
-		Description:      task.Description,
-		Tags:             task.Tags,
-		Done:             task.Done,
-		Notes:            task.Notes,
-		Problems:         task.Problems,
-		Questions:        task.Questions,
-		Actions:          task.Actions,
-		Definitions:      task.Definitions,
-		KnowledgeBits:    task.KnowledgeBits,
-		ParentContainers: task.ParentContainers,
-		KnowledgeNodes:   task.KnowledgeNodes,
-		DoneDateTime:     task.DoneDateTime,
+		ID:           task.ID,
+		Description:  task.Description,
+		Tags:         task.Tags,
+		Done:         task.Done,
+		Notes:        task.Notes,
+		DoneDateTime: task.DoneDateTime,
 	}
 
 	c.JSON(200, response)
@@ -94,19 +87,12 @@ func (h *Handler) GetTasksByIDs(c *gin.Context) {
 	responses := make([]TaskResponse, len(tasks))
 	for i, t := range tasks {
 		responses[i] = TaskResponse{
-			ID:               t.ID,
-			Description:      t.Description,
-			Tags:             t.Tags,
-			Done:             t.Done,
-			Notes:            t.Notes,
-			Problems:         t.Problems,
-			Questions:        t.Questions,
-			Actions:          t.Actions,
-			Definitions:      t.Definitions,
-			KnowledgeBits:    t.KnowledgeBits,
-			ParentContainers: t.ParentContainers,
-			KnowledgeNodes:   t.KnowledgeNodes,
-			DoneDateTime:     t.DoneDateTime,
+			ID:           t.ID,
+			Description:  t.Description,
+			Tags:         t.Tags,
+			Done:         t.Done,
+			Notes:        t.Notes,
+			DoneDateTime: t.DoneDateTime,
 		}
 	}
 
@@ -141,19 +127,12 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 
 	// Convert to custom response type to ensure all fields are included
 	response := TaskResponse{
-		ID:               newTask.ID,
-		Description:      newTask.Description,
-		Tags:             newTask.Tags,
-		Done:             newTask.Done,
-		Notes:            newTask.Notes,
-		Problems:         newTask.Problems,
-		Questions:        newTask.Questions,
-		Actions:          newTask.Actions,
-		Definitions:      newTask.Definitions,
-		KnowledgeBits:    newTask.KnowledgeBits,
-		ParentContainers: newTask.ParentContainers,
-		KnowledgeNodes:   newTask.KnowledgeNodes,
-		DoneDateTime:     newTask.DoneDateTime,
+		ID:           newTask.ID,
+		Description:  newTask.Description,
+		Tags:         newTask.Tags,
+		Done:         newTask.Done,
+		Notes:        newTask.Notes,
+		DoneDateTime: newTask.DoneDateTime,
 	}
 
 	c.JSON(200, response)
@@ -230,19 +209,12 @@ func (h *Handler) FinishTask(c *gin.Context) {
 
 	// Convert to custom response type to ensure all fields are included
 	response := TaskResponse{
-		ID:               updatedTask.ID,
-		Description:      updatedTask.Description,
-		Tags:             updatedTask.Tags,
-		Done:             updatedTask.Done,
-		Notes:            updatedTask.Notes,
-		Problems:         updatedTask.Problems,
-		Questions:        updatedTask.Questions,
-		Actions:          updatedTask.Actions,
-		Definitions:      updatedTask.Definitions,
-		KnowledgeBits:    updatedTask.KnowledgeBits,
-		ParentContainers: updatedTask.ParentContainers,
-		KnowledgeNodes:   updatedTask.KnowledgeNodes,
-		DoneDateTime:     updatedTask.DoneDateTime,
+		ID:           updatedTask.ID,
+		Description:  updatedTask.Description,
+		Tags:         updatedTask.Tags,
+		Done:         updatedTask.Done,
+		Notes:        updatedTask.Notes,
+		DoneDateTime: updatedTask.DoneDateTime,
 	}
 
 	c.JSON(200, response)
@@ -360,27 +332,6 @@ func (h *Handler) NewTask(c *gin.Context) {
 	}
 	if req.Task.Notes != "" {
 		taskBuilder = taskBuilder.SetNotes(req.Task.Notes)
-	}
-	if req.Task.Problems != nil {
-		taskBuilder = taskBuilder.SetProblems(req.Task.Problems)
-	}
-	if req.Task.Questions != nil {
-		taskBuilder = taskBuilder.SetQuestions(req.Task.Questions)
-	}
-	if req.Task.Actions != nil {
-		taskBuilder = taskBuilder.SetActions(req.Task.Actions)
-	}
-	if req.Task.Definitions != nil {
-		taskBuilder = taskBuilder.SetDefinitions(req.Task.Definitions)
-	}
-	if req.Task.KnowledgeBits != nil {
-		taskBuilder = taskBuilder.SetKnowledgeBits(req.Task.KnowledgeBits)
-	}
-	if req.Task.KnowledgeNodes != nil {
-		taskBuilder = taskBuilder.SetKnowledgeNodes(req.Task.KnowledgeNodes)
-	}
-	if req.Task.ParentContainers != nil {
-		taskBuilder = taskBuilder.SetParentContainers(req.Task.ParentContainers)
 	}
 	if req.Task.DoneDateTime != nil {
 		taskBuilder = taskBuilder.SetDoneDateTime(*req.Task.DoneDateTime)
@@ -505,27 +456,6 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 	if req.Notes != "" {
 		taskBuilder = taskBuilder.SetNotes(req.Notes)
 	}
-	if req.Problems != nil {
-		taskBuilder = taskBuilder.SetProblems(req.Problems)
-	}
-	if req.Questions != nil {
-		taskBuilder = taskBuilder.SetQuestions(req.Questions)
-	}
-	if req.Actions != nil {
-		taskBuilder = taskBuilder.SetActions(req.Actions)
-	}
-	if req.Definitions != nil {
-		taskBuilder = taskBuilder.SetDefinitions(req.Definitions)
-	}
-	if req.KnowledgeBits != nil {
-		taskBuilder = taskBuilder.SetKnowledgeBits(req.KnowledgeBits)
-	}
-	if req.KnowledgeNodes != nil {
-		taskBuilder = taskBuilder.SetKnowledgeNodes(req.KnowledgeNodes)
-	}
-	if req.ParentContainers != nil {
-		taskBuilder = taskBuilder.SetParentContainers(req.ParentContainers)
-	}
 	if req.DoneDateTime != nil {
 		taskBuilder = taskBuilder.SetDoneDateTime(*req.DoneDateTime)
 	}
@@ -539,19 +469,12 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 
 	// Convert to custom response type to ensure all fields are included
 	response := TaskResponse{
-		ID:               updatedTask.ID,
-		Description:      updatedTask.Description,
-		Tags:             updatedTask.Tags,
-		Done:             updatedTask.Done,
-		Notes:            updatedTask.Notes,
-		Problems:         updatedTask.Problems,
-		Questions:        updatedTask.Questions,
-		Actions:          updatedTask.Actions,
-		Definitions:      updatedTask.Definitions,
-		KnowledgeBits:    updatedTask.KnowledgeBits,
-		ParentContainers: updatedTask.ParentContainers,
-		KnowledgeNodes:   updatedTask.KnowledgeNodes,
-		DoneDateTime:     updatedTask.DoneDateTime,
+		ID:           updatedTask.ID,
+		Description:  updatedTask.Description,
+		Tags:         updatedTask.Tags,
+		Done:         updatedTask.Done,
+		Notes:        updatedTask.Notes,
+		DoneDateTime: updatedTask.DoneDateTime,
 	}
 
 	c.JSON(200, response)

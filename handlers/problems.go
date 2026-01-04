@@ -10,7 +10,6 @@ import (
 	"arturgudiev/dashboard/ent/schema"
 
 	"github.com/gin-gonic/gin"
-	"github.com/niemeyer/pretty"
 )
 
 // GetProblemByID handles GET /problem/:id
@@ -20,7 +19,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        id   path      int  true  "Problem ID"
-// @Success      200  {object}  ProblemResponse
+// @Success      200  {object}  ProblemFull
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -33,7 +32,7 @@ func (h *Handler) GetProblemByID(c *gin.Context) {
 		return
 	}
 
-	problemEntity, err := h.App.Client.Problem.Get(c.Request.Context(), id)
+	problemFull, err := h.App.ProblemService.GetProblemFull(c.Request.Context(), id)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			c.JSON(404, gin.H{"error": "Problem not found"})
@@ -43,26 +42,7 @@ func (h *Handler) GetProblemByID(c *gin.Context) {
 		return
 	}
 
-	pretty.Print(problemEntity)
-
-	// Convert to custom response type to ensure all fields are included
-	response := ProblemResponse{
-		ID:               problemEntity.ID,
-		Description:      problemEntity.Description,
-		Tags:             problemEntity.Tags,
-		Notes:            problemEntity.Notes,
-		Problems:         problemEntity.Problems,
-		Questions:        problemEntity.Questions,
-		Actions:          problemEntity.Actions,
-		Definitions:      problemEntity.Definitions,
-		KnowledgeBits:    problemEntity.KnowledgeBits,
-		ParentContainers: problemEntity.ParentContainers,
-		KnowledgeNodes:   problemEntity.KnowledgeNodes,
-		DoneDateTime:     problemEntity.DoneDateTime,
-		Solution:         problemEntity.Solution,
-	}
-
-	c.JSON(200, response)
+	c.JSON(200, problemFull)
 }
 
 // GetProblemsByIDs handles POST /get-problems
@@ -93,19 +73,12 @@ func (h *Handler) GetProblemsByIDs(c *gin.Context) {
 	responses := make([]ProblemResponse, len(problems))
 	for i, p := range problems {
 		responses[i] = ProblemResponse{
-			ID:               p.ID,
-			Description:      p.Description,
-			Tags:             p.Tags,
-			Notes:            p.Notes,
-			Problems:         p.Problems,
-			Questions:        p.Questions,
-			Actions:          p.Actions,
-			Definitions:      p.Definitions,
-			KnowledgeBits:    p.KnowledgeBits,
-			ParentContainers: p.ParentContainers,
-			KnowledgeNodes:   p.KnowledgeNodes,
-			DoneDateTime:     p.DoneDateTime,
-			Solution:         p.Solution,
+			ID:           p.ID,
+			Description:  p.Description,
+			Tags:         p.Tags,
+			Notes:        p.Notes,
+			DoneDateTime: p.DoneDateTime,
+			Solution:     p.Solution,
 		}
 	}
 
@@ -164,19 +137,12 @@ func (h *Handler) SolveProblem(c *gin.Context) {
 
 	// Convert to custom response type to ensure all fields are included
 	response := ProblemResponse{
-		ID:               updatedProblem.ID,
-		Description:      updatedProblem.Description,
-		Tags:             updatedProblem.Tags,
-		Notes:            updatedProblem.Notes,
-		Problems:         updatedProblem.Problems,
-		Questions:        updatedProblem.Questions,
-		Actions:          updatedProblem.Actions,
-		Definitions:      updatedProblem.Definitions,
-		KnowledgeBits:    updatedProblem.KnowledgeBits,
-		ParentContainers: updatedProblem.ParentContainers,
-		KnowledgeNodes:   updatedProblem.KnowledgeNodes,
-		DoneDateTime:     updatedProblem.DoneDateTime,
-		Solution:         updatedProblem.Solution,
+		ID:           updatedProblem.ID,
+		Description:  updatedProblem.Description,
+		Tags:         updatedProblem.Tags,
+		Notes:        updatedProblem.Notes,
+		DoneDateTime: updatedProblem.DoneDateTime,
+		Solution:     updatedProblem.Solution,
 	}
 
 	c.JSON(200, response)
@@ -211,27 +177,6 @@ func (h *Handler) NewProblem(c *gin.Context) {
 	}
 	if req.Problem.Notes != "" {
 		problemBuilder = problemBuilder.SetNotes(req.Problem.Notes)
-	}
-	if req.Problem.Problems != nil {
-		problemBuilder = problemBuilder.SetProblems(req.Problem.Problems)
-	}
-	if req.Problem.Questions != nil {
-		problemBuilder = problemBuilder.SetQuestions(req.Problem.Questions)
-	}
-	if req.Problem.Actions != nil {
-		problemBuilder = problemBuilder.SetActions(req.Problem.Actions)
-	}
-	if req.Problem.Definitions != nil {
-		problemBuilder = problemBuilder.SetDefinitions(req.Problem.Definitions)
-	}
-	if req.Problem.KnowledgeBits != nil {
-		problemBuilder = problemBuilder.SetKnowledgeBits(req.Problem.KnowledgeBits)
-	}
-	if req.Problem.KnowledgeNodes != nil {
-		problemBuilder = problemBuilder.SetKnowledgeNodes(req.Problem.KnowledgeNodes)
-	}
-	if req.Problem.ParentContainers != nil {
-		problemBuilder = problemBuilder.SetParentContainers(req.Problem.ParentContainers)
 	}
 	if req.Problem.DoneDateTime != nil {
 		problemBuilder = problemBuilder.SetDoneDateTime(*req.Problem.DoneDateTime)
@@ -341,19 +286,12 @@ func (h *Handler) NewProblem(c *gin.Context) {
 
 	// Convert to custom response type to ensure all fields are included
 	response := ProblemResponse{
-		ID:               newProblem.ID,
-		Description:      newProblem.Description,
-		Tags:             newProblem.Tags,
-		Notes:            newProblem.Notes,
-		Problems:         newProblem.Problems,
-		Questions:        newProblem.Questions,
-		Actions:          newProblem.Actions,
-		Definitions:      newProblem.Definitions,
-		KnowledgeBits:    newProblem.KnowledgeBits,
-		ParentContainers: newProblem.ParentContainers,
-		KnowledgeNodes:   newProblem.KnowledgeNodes,
-		DoneDateTime:     newProblem.DoneDateTime,
-		Solution:         newProblem.Solution,
+		ID:           newProblem.ID,
+		Description:  newProblem.Description,
+		Tags:         newProblem.Tags,
+		Notes:        newProblem.Notes,
+		DoneDateTime: newProblem.DoneDateTime,
+		Solution:     newProblem.Solution,
 	}
 
 	c.JSON(200, response)
@@ -399,27 +337,6 @@ func (h *Handler) UpdateProblem(c *gin.Context) {
 	if req.Notes != "" {
 		problemBuilder = problemBuilder.SetNotes(req.Notes)
 	}
-	if req.Problems != nil {
-		problemBuilder = problemBuilder.SetProblems(req.Problems)
-	}
-	if req.Questions != nil {
-		problemBuilder = problemBuilder.SetQuestions(req.Questions)
-	}
-	if req.Actions != nil {
-		problemBuilder = problemBuilder.SetActions(req.Actions)
-	}
-	if req.Definitions != nil {
-		problemBuilder = problemBuilder.SetDefinitions(req.Definitions)
-	}
-	if req.KnowledgeBits != nil {
-		problemBuilder = problemBuilder.SetKnowledgeBits(req.KnowledgeBits)
-	}
-	if req.KnowledgeNodes != nil {
-		problemBuilder = problemBuilder.SetKnowledgeNodes(req.KnowledgeNodes)
-	}
-	if req.ParentContainers != nil {
-		problemBuilder = problemBuilder.SetParentContainers(req.ParentContainers)
-	}
 	if req.DoneDateTime != nil {
 		problemBuilder = problemBuilder.SetDoneDateTime(*req.DoneDateTime)
 	}
@@ -434,19 +351,12 @@ func (h *Handler) UpdateProblem(c *gin.Context) {
 
 	// Convert to custom response type to ensure all fields are included
 	response := ProblemResponse{
-		ID:               updatedProblem.ID,
-		Description:      updatedProblem.Description,
-		Tags:             updatedProblem.Tags,
-		Notes:            updatedProblem.Notes,
-		Problems:         updatedProblem.Problems,
-		Questions:        updatedProblem.Questions,
-		Actions:          updatedProblem.Actions,
-		Definitions:      updatedProblem.Definitions,
-		KnowledgeBits:    updatedProblem.KnowledgeBits,
-		ParentContainers: updatedProblem.ParentContainers,
-		KnowledgeNodes:   updatedProblem.KnowledgeNodes,
-		DoneDateTime:     updatedProblem.DoneDateTime,
-		Solution:         updatedProblem.Solution,
+		ID:           updatedProblem.ID,
+		Description:  updatedProblem.Description,
+		Tags:         updatedProblem.Tags,
+		Notes:        updatedProblem.Notes,
+		DoneDateTime: updatedProblem.DoneDateTime,
+		Solution:     updatedProblem.Solution,
 	}
 
 	c.JSON(200, response)

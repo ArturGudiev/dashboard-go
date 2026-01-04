@@ -17,20 +17,6 @@ const (
 	FieldTags = "tags"
 	// FieldNotes holds the string denoting the notes field in the database.
 	FieldNotes = "notes"
-	// FieldProblems holds the string denoting the problems field in the database.
-	FieldProblems = "problems"
-	// FieldQuestions holds the string denoting the questions field in the database.
-	FieldQuestions = "questions"
-	// FieldActions holds the string denoting the actions field in the database.
-	FieldActions = "actions"
-	// FieldDefinitions holds the string denoting the definitions field in the database.
-	FieldDefinitions = "definitions"
-	// FieldKnowledgeBits holds the string denoting the knowledge_bits field in the database.
-	FieldKnowledgeBits = "knowledge_bits"
-	// FieldParentContainers holds the string denoting the parent_containers field in the database.
-	FieldParentContainers = "parent_containers"
-	// FieldKnowledgeNodes holds the string denoting the knowledge_nodes field in the database.
-	FieldKnowledgeNodes = "knowledge_nodes"
 	// FieldDoneDateTime holds the string denoting the done_date_time field in the database.
 	FieldDoneDateTime = "done_date_time"
 	// FieldSolution holds the string denoting the solution field in the database.
@@ -45,13 +31,6 @@ var Columns = []string{
 	FieldDescription,
 	FieldTags,
 	FieldNotes,
-	FieldProblems,
-	FieldQuestions,
-	FieldActions,
-	FieldDefinitions,
-	FieldKnowledgeBits,
-	FieldParentContainers,
-	FieldKnowledgeNodes,
 	FieldDoneDateTime,
 	FieldSolution,
 }
@@ -73,20 +52,6 @@ var (
 	DefaultTags []string
 	// DefaultNotes holds the default value on creation for the "notes" field.
 	DefaultNotes string
-	// DefaultProblems holds the default value on creation for the "problems" field.
-	DefaultProblems []int
-	// DefaultQuestions holds the default value on creation for the "questions" field.
-	DefaultQuestions []int
-	// DefaultActions holds the default value on creation for the "actions" field.
-	DefaultActions []int
-	// DefaultDefinitions holds the default value on creation for the "definitions" field.
-	DefaultDefinitions []int
-	// DefaultKnowledgeBits holds the default value on creation for the "knowledge_bits" field.
-	DefaultKnowledgeBits []int
-	// DefaultParentContainers holds the default value on creation for the "parent_containers" field.
-	DefaultParentContainers [][]interface{}
-	// DefaultKnowledgeNodes holds the default value on creation for the "knowledge_nodes" field.
-	DefaultKnowledgeNodes []int
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.
 	IDValidator func(int) error
 )

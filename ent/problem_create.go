@@ -46,48 +46,6 @@ func (_c *ProblemCreate) SetNillableNotes(v *string) *ProblemCreate {
 	return _c
 }
 
-// SetProblems sets the "problems" field.
-func (_c *ProblemCreate) SetProblems(v []int) *ProblemCreate {
-	_c.mutation.SetProblems(v)
-	return _c
-}
-
-// SetQuestions sets the "questions" field.
-func (_c *ProblemCreate) SetQuestions(v []int) *ProblemCreate {
-	_c.mutation.SetQuestions(v)
-	return _c
-}
-
-// SetActions sets the "actions" field.
-func (_c *ProblemCreate) SetActions(v []int) *ProblemCreate {
-	_c.mutation.SetActions(v)
-	return _c
-}
-
-// SetDefinitions sets the "definitions" field.
-func (_c *ProblemCreate) SetDefinitions(v []int) *ProblemCreate {
-	_c.mutation.SetDefinitions(v)
-	return _c
-}
-
-// SetKnowledgeBits sets the "knowledge_bits" field.
-func (_c *ProblemCreate) SetKnowledgeBits(v []int) *ProblemCreate {
-	_c.mutation.SetKnowledgeBits(v)
-	return _c
-}
-
-// SetParentContainers sets the "parent_containers" field.
-func (_c *ProblemCreate) SetParentContainers(v [][]interface{}) *ProblemCreate {
-	_c.mutation.SetParentContainers(v)
-	return _c
-}
-
-// SetKnowledgeNodes sets the "knowledge_nodes" field.
-func (_c *ProblemCreate) SetKnowledgeNodes(v []int) *ProblemCreate {
-	_c.mutation.SetKnowledgeNodes(v)
-	return _c
-}
-
 // SetDoneDateTime sets the "done_date_time" field.
 func (_c *ProblemCreate) SetDoneDateTime(v time.Time) *ProblemCreate {
 	_c.mutation.SetDoneDateTime(v)
@@ -165,34 +123,6 @@ func (_c *ProblemCreate) defaults() {
 		v := problem.DefaultNotes
 		_c.mutation.SetNotes(v)
 	}
-	if _, ok := _c.mutation.Problems(); !ok {
-		v := problem.DefaultProblems
-		_c.mutation.SetProblems(v)
-	}
-	if _, ok := _c.mutation.Questions(); !ok {
-		v := problem.DefaultQuestions
-		_c.mutation.SetQuestions(v)
-	}
-	if _, ok := _c.mutation.Actions(); !ok {
-		v := problem.DefaultActions
-		_c.mutation.SetActions(v)
-	}
-	if _, ok := _c.mutation.Definitions(); !ok {
-		v := problem.DefaultDefinitions
-		_c.mutation.SetDefinitions(v)
-	}
-	if _, ok := _c.mutation.KnowledgeBits(); !ok {
-		v := problem.DefaultKnowledgeBits
-		_c.mutation.SetKnowledgeBits(v)
-	}
-	if _, ok := _c.mutation.ParentContainers(); !ok {
-		v := problem.DefaultParentContainers
-		_c.mutation.SetParentContainers(v)
-	}
-	if _, ok := _c.mutation.KnowledgeNodes(); !ok {
-		v := problem.DefaultKnowledgeNodes
-		_c.mutation.SetKnowledgeNodes(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -204,6 +134,12 @@ func (_c *ProblemCreate) check() error {
 		if err := problem.DescriptionValidator(v); err != nil {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Problem.description": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "Problem.tags"`)}
+	}
+	if _, ok := _c.mutation.Notes(); !ok {
+		return &ValidationError{Name: "notes", err: errors.New(`ent: missing required field "Problem.notes"`)}
 	}
 	if v, ok := _c.mutation.ID(); ok {
 		if err := problem.IDValidator(v); err != nil {
@@ -253,34 +189,6 @@ func (_c *ProblemCreate) createSpec() (*Problem, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Notes(); ok {
 		_spec.SetField(problem.FieldNotes, field.TypeString, value)
 		_node.Notes = value
-	}
-	if value, ok := _c.mutation.Problems(); ok {
-		_spec.SetField(problem.FieldProblems, field.TypeJSON, value)
-		_node.Problems = value
-	}
-	if value, ok := _c.mutation.Questions(); ok {
-		_spec.SetField(problem.FieldQuestions, field.TypeJSON, value)
-		_node.Questions = value
-	}
-	if value, ok := _c.mutation.Actions(); ok {
-		_spec.SetField(problem.FieldActions, field.TypeJSON, value)
-		_node.Actions = value
-	}
-	if value, ok := _c.mutation.Definitions(); ok {
-		_spec.SetField(problem.FieldDefinitions, field.TypeJSON, value)
-		_node.Definitions = value
-	}
-	if value, ok := _c.mutation.KnowledgeBits(); ok {
-		_spec.SetField(problem.FieldKnowledgeBits, field.TypeJSON, value)
-		_node.KnowledgeBits = value
-	}
-	if value, ok := _c.mutation.ParentContainers(); ok {
-		_spec.SetField(problem.FieldParentContainers, field.TypeJSON, value)
-		_node.ParentContainers = value
-	}
-	if value, ok := _c.mutation.KnowledgeNodes(); ok {
-		_spec.SetField(problem.FieldKnowledgeNodes, field.TypeJSON, value)
-		_node.KnowledgeNodes = value
 	}
 	if value, ok := _c.mutation.DoneDateTime(); ok {
 		_spec.SetField(problem.FieldDoneDateTime, field.TypeTime, value)

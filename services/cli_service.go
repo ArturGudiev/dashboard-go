@@ -62,8 +62,8 @@ func (s *CLIService) ViewTaskInteractive(ctx context.Context, id int) {
 
 		// Get task
 		t, err := s.client.Task.Get(ctx, currentID)
-		subtasks, _ := s.containerService.GetSubtasks(ctx, schema.ContainerTypeTask, currentID)
-		problems, _ := s.containerService.GetProblems(ctx, schema.ContainerTypeTask, currentID)
+		subtasks, _ := s.containerService.GetOpenSubtasks(ctx, schema.ContainerTypeTask, currentID)
+		problems, _ := s.containerService.GetOpenProblems(ctx, schema.ContainerTypeTask, currentID)
 
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -262,8 +262,8 @@ func (s *CLIService) ViewProblemInteractive(ctx context.Context, id int) {
 		// Clear screen before printing
 		utils.ClearScreen()
 		problem, _ := s.client.Problem.Get(ctx, currentID)
-		subtasks, _ := s.containerService.GetSubtasks(ctx, schema.ContainerTypeProblem, currentID)
-		problems, _ := s.containerService.GetProblems(ctx, schema.ContainerTypeProblem, currentID)
+		subtasks, _ := s.containerService.GetOpenSubtasks(ctx, schema.ContainerTypeProblem, currentID)
+		problems, _ := s.containerService.GetOpenProblems(ctx, schema.ContainerTypeProblem, currentID)
 
 		s.PrintProblemInfo(ctx, problem, subtasks, problems)
 

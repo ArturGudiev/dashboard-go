@@ -9,13 +9,14 @@ import (
 
 // App holds all application dependencies
 type App struct {
-	Client             *ent.Client
-	TaskService        *services.TaskService
-	ProblemService     *services.ProblemService
-	ContainerService   *services.ContainerService
-	CLIService         *services.CLIService
-	ProblemsRepository *services.ProblemsRepository
-	ctx                context.Context // Default context for CLI operations
+	Client                   *ent.Client
+	TaskService              *services.TaskService
+	ProblemService           *services.ProblemService
+	ContainerService         *services.ContainerService
+	CLIService               *services.CLIService
+	ProblemsRepository       *services.ProblemsRepository
+	ChildContainerRepository *services.ChildContainerRepository
+	ctx                      context.Context // Default context for CLI operations
 }
 
 // NewApp creates a new App instance with all dependencies initialized using Wire

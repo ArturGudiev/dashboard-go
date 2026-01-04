@@ -23,3 +23,11 @@ func (r *ProblemsRepository) AddSolution(ctx context.Context, ID int, solution s
 	}
 	return nil
 }
+
+func (r *ProblemsRepository) GetProblem(ctx context.Context, ID int) (*ent.Problem, error) {
+	problem, err := r.client.Problem.Get(ctx, ID)
+	if err != nil {
+		return nil, err
+	}
+	return problem, nil
+}

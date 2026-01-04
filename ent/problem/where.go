@@ -139,16 +139,6 @@ func DescriptionContainsFold(v string) predicate.Problem {
 	return predicate.Problem(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// TagsIsNil applies the IsNil predicate on the "tags" field.
-func TagsIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldTags))
-}
-
-// TagsNotNil applies the NotNil predicate on the "tags" field.
-func TagsNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldTags))
-}
-
 // NotesEQ applies the EQ predicate on the "notes" field.
 func NotesEQ(v string) predicate.Problem {
 	return predicate.Problem(sql.FieldEQ(FieldNotes, v))
@@ -204,16 +194,6 @@ func NotesHasSuffix(v string) predicate.Problem {
 	return predicate.Problem(sql.FieldHasSuffix(FieldNotes, v))
 }
 
-// NotesIsNil applies the IsNil predicate on the "notes" field.
-func NotesIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldNotes))
-}
-
-// NotesNotNil applies the NotNil predicate on the "notes" field.
-func NotesNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldNotes))
-}
-
 // NotesEqualFold applies the EqualFold predicate on the "notes" field.
 func NotesEqualFold(v string) predicate.Problem {
 	return predicate.Problem(sql.FieldEqualFold(FieldNotes, v))
@@ -222,76 +202,6 @@ func NotesEqualFold(v string) predicate.Problem {
 // NotesContainsFold applies the ContainsFold predicate on the "notes" field.
 func NotesContainsFold(v string) predicate.Problem {
 	return predicate.Problem(sql.FieldContainsFold(FieldNotes, v))
-}
-
-// ProblemsIsNil applies the IsNil predicate on the "problems" field.
-func ProblemsIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldProblems))
-}
-
-// ProblemsNotNil applies the NotNil predicate on the "problems" field.
-func ProblemsNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldProblems))
-}
-
-// QuestionsIsNil applies the IsNil predicate on the "questions" field.
-func QuestionsIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldQuestions))
-}
-
-// QuestionsNotNil applies the NotNil predicate on the "questions" field.
-func QuestionsNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldQuestions))
-}
-
-// ActionsIsNil applies the IsNil predicate on the "actions" field.
-func ActionsIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldActions))
-}
-
-// ActionsNotNil applies the NotNil predicate on the "actions" field.
-func ActionsNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldActions))
-}
-
-// DefinitionsIsNil applies the IsNil predicate on the "definitions" field.
-func DefinitionsIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldDefinitions))
-}
-
-// DefinitionsNotNil applies the NotNil predicate on the "definitions" field.
-func DefinitionsNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldDefinitions))
-}
-
-// KnowledgeBitsIsNil applies the IsNil predicate on the "knowledge_bits" field.
-func KnowledgeBitsIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldKnowledgeBits))
-}
-
-// KnowledgeBitsNotNil applies the NotNil predicate on the "knowledge_bits" field.
-func KnowledgeBitsNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldKnowledgeBits))
-}
-
-// ParentContainersIsNil applies the IsNil predicate on the "parent_containers" field.
-func ParentContainersIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldParentContainers))
-}
-
-// ParentContainersNotNil applies the NotNil predicate on the "parent_containers" field.
-func ParentContainersNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldParentContainers))
-}
-
-// KnowledgeNodesIsNil applies the IsNil predicate on the "knowledge_nodes" field.
-func KnowledgeNodesIsNil() predicate.Problem {
-	return predicate.Problem(sql.FieldIsNull(FieldKnowledgeNodes))
-}
-
-// KnowledgeNodesNotNil applies the NotNil predicate on the "knowledge_nodes" field.
-func KnowledgeNodesNotNil() predicate.Problem {
-	return predicate.Problem(sql.FieldNotNull(FieldKnowledgeNodes))
 }
 
 // DoneDateTimeEQ applies the EQ predicate on the "done_date_time" field.

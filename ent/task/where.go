@@ -139,16 +139,6 @@ func DescriptionContainsFold(v string) predicate.Task {
 	return predicate.Task(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// TagsIsNil applies the IsNil predicate on the "tags" field.
-func TagsIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldTags))
-}
-
-// TagsNotNil applies the NotNil predicate on the "tags" field.
-func TagsNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldTags))
-}
-
 // DoneEQ applies the EQ predicate on the "done" field.
 func DoneEQ(v bool) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldDone, v))
@@ -214,16 +204,6 @@ func NotesHasSuffix(v string) predicate.Task {
 	return predicate.Task(sql.FieldHasSuffix(FieldNotes, v))
 }
 
-// NotesIsNil applies the IsNil predicate on the "notes" field.
-func NotesIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldNotes))
-}
-
-// NotesNotNil applies the NotNil predicate on the "notes" field.
-func NotesNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldNotes))
-}
-
 // NotesEqualFold applies the EqualFold predicate on the "notes" field.
 func NotesEqualFold(v string) predicate.Task {
 	return predicate.Task(sql.FieldEqualFold(FieldNotes, v))
@@ -232,76 +212,6 @@ func NotesEqualFold(v string) predicate.Task {
 // NotesContainsFold applies the ContainsFold predicate on the "notes" field.
 func NotesContainsFold(v string) predicate.Task {
 	return predicate.Task(sql.FieldContainsFold(FieldNotes, v))
-}
-
-// ProblemsIsNil applies the IsNil predicate on the "problems" field.
-func ProblemsIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldProblems))
-}
-
-// ProblemsNotNil applies the NotNil predicate on the "problems" field.
-func ProblemsNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldProblems))
-}
-
-// QuestionsIsNil applies the IsNil predicate on the "questions" field.
-func QuestionsIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldQuestions))
-}
-
-// QuestionsNotNil applies the NotNil predicate on the "questions" field.
-func QuestionsNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldQuestions))
-}
-
-// ActionsIsNil applies the IsNil predicate on the "actions" field.
-func ActionsIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldActions))
-}
-
-// ActionsNotNil applies the NotNil predicate on the "actions" field.
-func ActionsNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldActions))
-}
-
-// DefinitionsIsNil applies the IsNil predicate on the "definitions" field.
-func DefinitionsIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldDefinitions))
-}
-
-// DefinitionsNotNil applies the NotNil predicate on the "definitions" field.
-func DefinitionsNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldDefinitions))
-}
-
-// KnowledgeBitsIsNil applies the IsNil predicate on the "knowledge_bits" field.
-func KnowledgeBitsIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldKnowledgeBits))
-}
-
-// KnowledgeBitsNotNil applies the NotNil predicate on the "knowledge_bits" field.
-func KnowledgeBitsNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldKnowledgeBits))
-}
-
-// ParentContainersIsNil applies the IsNil predicate on the "parent_containers" field.
-func ParentContainersIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldParentContainers))
-}
-
-// ParentContainersNotNil applies the NotNil predicate on the "parent_containers" field.
-func ParentContainersNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldParentContainers))
-}
-
-// KnowledgeNodesIsNil applies the IsNil predicate on the "knowledge_nodes" field.
-func KnowledgeNodesIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldKnowledgeNodes))
-}
-
-// KnowledgeNodesNotNil applies the NotNil predicate on the "knowledge_nodes" field.
-func KnowledgeNodesNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldKnowledgeNodes))
 }
 
 // DoneDateTimeEQ applies the EQ predicate on the "done_date_time" field.
