@@ -31,3 +31,12 @@ func (r *ProblemsRepository) GetProblem(ctx context.Context, ID int) (*ent.Probl
 	}
 	return problem, nil
 }
+
+func (r *ProblemsRepository) AddProblem(ctx context.Context, description string, tags []string, notes string) (*ent.Problem, error) {
+	problem, err := r.client.Problem.Create().SetDescription(description).SetTags(tags).SetNotes(notes).Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	return problem, nil
+}

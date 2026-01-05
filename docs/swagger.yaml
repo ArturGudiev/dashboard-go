@@ -2,16 +2,6 @@ basePath: /
 definitions:
   ent.Task:
     properties:
-      actions:
-        description: Actions holds the value of the "actions" field.
-        items:
-          type: integer
-        type: array
-      definitions:
-        description: Definitions holds the value of the "definitions" field.
-        items:
-          type: integer
-        type: array
       description:
         description: Description holds the value of the "description" field.
         type: string
@@ -24,35 +14,9 @@ definitions:
       id:
         description: ID of the ent.
         type: integer
-      knowledge_bits:
-        description: KnowledgeBits holds the value of the "knowledge_bits" field.
-        items:
-          type: integer
-        type: array
-      knowledge_nodes:
-        description: KnowledgeNodes holds the value of the "knowledge_nodes" field.
-        items:
-          type: integer
-        type: array
       notes:
         description: Notes holds the value of the "notes" field.
         type: string
-      parent_containers:
-        description: ParentContainers holds the value of the "parent_containers" field.
-        items:
-          items: {}
-          type: array
-        type: array
-      problems:
-        description: Problems holds the value of the "problems" field.
-        items:
-          type: integer
-        type: array
-      questions:
-        description: Questions holds the value of the "questions" field.
-        items:
-          type: integer
-        type: array
       tags:
         description: Tags holds the value of the "tags" field.
         items:
@@ -69,11 +33,12 @@ definitions:
     - ids
     type: object
   handlers.NewProblemRequest:
+    description: Request to create a new problem with optional parent container
     properties:
       parent:
-        $ref: '#/definitions/handlers.ParentRequest'
+        $ref: '#/definitions/models.ContainerDescription'
       problem:
-        $ref: '#/definitions/handlers.ProblemRequest'
+        $ref: '#/definitions/models.NewProblem'
     type: object
   handlers.NewTaskRequest:
     properties:
@@ -93,50 +58,6 @@ definitions:
         $ref: '#/definitions/handlers.ParentObj'
       type:
         type: string
-    type: object
-  handlers.ProblemRequest:
-    properties:
-      actions:
-        items:
-          type: integer
-        type: array
-      definitions:
-        items:
-          type: integer
-        type: array
-      description:
-        type: string
-      doneDateTime:
-        type: string
-      knowledgeBits:
-        items:
-          type: integer
-        type: array
-      knowledgeNodes:
-        items:
-          type: integer
-        type: array
-      notes:
-        type: string
-      parents:
-        items:
-          items: {}
-          type: array
-        type: array
-      problems:
-        items:
-          type: integer
-        type: array
-      questions:
-        items:
-          type: integer
-        type: array
-      solution:
-        type: string
-      tags:
-        items:
-          type: string
-        type: array
     type: object
   handlers.ProblemResponse:
     properties:
@@ -389,6 +310,110 @@ definitions:
           type: string
         type: array
     type: object
+  models.ContainerDescription:
+    description: Container description with ID and type
+    properties:
+      id:
+        example: 1
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/schema.ContainerType'
+        example: task
+    type: object
+  models.NewProblem:
+    description: New problem creation request
+    properties:
+      description:
+        example: Fix login bug
+        type: string
+      notes:
+        example: User cannot log in
+        type: string
+      tags:
+        example:
+        - bug
+        - urgent
+        items:
+          type: string
+        type: array
+    type: object
+  models.ProblemFull:
+    description: Complete problem information with all related entities
+    properties:
+      actions:
+        items:
+          type: integer
+        type: array
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      done_date_time:
+        type: string
+      id:
+        type: integer
+      knowledge_bits:
+        items:
+          type: integer
+        type: array
+      knowledge_nodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parent_containers:
+        items:
+          $ref: '#/definitions/models.ContainerDescription'
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      solution:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      tasks:
+        items:
+          type: integer
+        type: array
+    type: object
+  schema.ContainerType:
+    enum:
+    - epic
+    - story
+    - task
+    - question
+    - problem
+    - knowledge-node
+    - knowledge-bit
+    - definition
+    - action
+    - scheduled-task
+    - state
+    type: string
+    x-enum-varnames:
+    - ContainerTypeEpic
+    - ContainerTypeStory
+    - ContainerTypeTask
+    - ContainerTypeQuestion
+    - ContainerTypeProblem
+    - ContainerTypeKnowledgeNode
+    - ContainerTypeKnowledgeBit
+    - ContainerTypeDefinition
+    - ContainerTypeAction
+    - ContainerTypeScheduledTask
+    - ContainerTypeState
 host: localhost:8080
 info:
   contact:
@@ -667,7 +692,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.ProblemResponse'
+            $ref: '#/definitions/models.ProblemFull'
         "400":
           description: Bad Request
           schema:
@@ -746,7 +771,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.ProblemResponse'
+            $ref: '#/definitions/models.ProblemFull'
         "400":
           description: Bad Request
           schema:

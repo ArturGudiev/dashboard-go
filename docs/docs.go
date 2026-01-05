@@ -426,7 +426,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ProblemResponse"
+                            "$ref": "#/definitions/models.ProblemFull"
                         }
                     },
                     "400": {
@@ -546,7 +546,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ProblemResponse"
+                            "$ref": "#/definitions/models.ProblemFull"
                         }
                     },
                     "400": {
@@ -868,20 +868,6 @@ const docTemplate = `{
         "ent.Task": {
             "type": "object",
             "properties": {
-                "actions": {
-                    "description": "Actions holds the value of the \"actions\" field.",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "definitions": {
-                    "description": "Definitions holds the value of the \"definitions\" field.",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
                 "description": {
                     "description": "Description holds the value of the \"description\" field.",
                     "type": "string"
@@ -898,45 +884,9 @@ const docTemplate = `{
                     "description": "ID of the ent.",
                     "type": "integer"
                 },
-                "knowledge_bits": {
-                    "description": "KnowledgeBits holds the value of the \"knowledge_bits\" field.",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "knowledge_nodes": {
-                    "description": "KnowledgeNodes holds the value of the \"knowledge_nodes\" field.",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
                 "notes": {
                     "description": "Notes holds the value of the \"notes\" field.",
                     "type": "string"
-                },
-                "parent_containers": {
-                    "description": "ParentContainers holds the value of the \"parent_containers\" field.",
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {}
-                    }
-                },
-                "problems": {
-                    "description": "Problems holds the value of the \"problems\" field.",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "questions": {
-                    "description": "Questions holds the value of the \"questions\" field.",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "tags": {
                     "description": "Tags holds the value of the \"tags\" field.",
@@ -962,13 +912,14 @@ const docTemplate = `{
             }
         },
         "handlers.NewProblemRequest": {
+            "description": "Request to create a new problem with optional parent container",
             "type": "object",
             "properties": {
                 "parent": {
-                    "$ref": "#/definitions/handlers.ParentRequest"
+                    "$ref": "#/definitions/models.ContainerDescription"
                 },
                 "problem": {
-                    "$ref": "#/definitions/handlers.ProblemRequest"
+                    "$ref": "#/definitions/models.NewProblem"
                 }
             }
         },
@@ -999,72 +950,6 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
-                }
-            }
-        },
-        "handlers.ProblemRequest": {
-            "type": "object",
-            "properties": {
-                "actions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "definitions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "description": {
-                    "type": "string"
-                },
-                "doneDateTime": {
-                    "type": "string"
-                },
-                "knowledgeBits": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "knowledgeNodes": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "parents": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {}
-                    }
-                },
-                "problems": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "solution": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -1445,6 +1330,152 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "models.ContainerDescription": {
+            "description": "Container description with ID and type",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/schema.ContainerType"
+                        }
+                    ],
+                    "example": "task"
+                }
+            }
+        },
+        "models.NewProblem": {
+            "description": "New problem creation request",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Fix login bug"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "User cannot log in"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "bug",
+                        "urgent"
+                    ]
+                }
+            }
+        },
+        "models.ProblemFull": {
+            "description": "Complete problem information with all related entities",
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "done_date_time": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "knowledge_bits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledge_nodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parent_containers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContainerDescription"
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "solution": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "schema.ContainerType": {
+            "type": "string",
+            "enum": [
+                "epic",
+                "story",
+                "task",
+                "question",
+                "problem",
+                "knowledge-node",
+                "knowledge-bit",
+                "definition",
+                "action",
+                "scheduled-task",
+                "state"
+            ],
+            "x-enum-varnames": [
+                "ContainerTypeEpic",
+                "ContainerTypeStory",
+                "ContainerTypeTask",
+                "ContainerTypeQuestion",
+                "ContainerTypeProblem",
+                "ContainerTypeKnowledgeNode",
+                "ContainerTypeKnowledgeBit",
+                "ContainerTypeDefinition",
+                "ContainerTypeAction",
+                "ContainerTypeScheduledTask",
+                "ContainerTypeState"
+            ]
         }
     }
 }`

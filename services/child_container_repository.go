@@ -48,9 +48,59 @@ func (s *ChildContainerRepository) GetParentContainers(ctx context.Context, chil
 	}
 
 	for _, t := range parentRelations {
-		parentContainer := models.ContainerDescription{ID: t.ParentID, ContainerType: t.ParentType}
+		parentContainer := models.ContainerDescription{ID: t.ParentID, Type: t.ParentType}
 		parentContainers = append(parentContainers, parentContainer)
 	}
 
 	return parentContainers, nil
+}
+
+func (s *ChildContainerRepository) AddConnection(ctx context.Context, parentType schema.ContainerType, parentID int,
+	childType schema.ContainerType, childID int) (*ent.ContainerChild, error) {
+
+	maxChildOrders, _ := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ChildTypeEQ(childType),
+			containerchild.ParentIDEQ(parentID),
+			containerchild.ParentTypeEQ(parentType),
+		).
+		Aggregate(ent.Max(containerchild.FieldChildOrder)).
+		Ints(ctx)
+
+	maxParentOrders, _ := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ChildTypeEQ(childType),
+			containerchild.ChildID(childID),
+			containerchild.ParentTypeEQ(parentType),
+		).
+		Aggregate(ent.Max(containerchild.FieldChildOrder)).
+		Ints(ctx)
+
+	maxChildOrder := 0
+	if len(maxChildOrders) > 0 {
+		maxChildOrder = maxChildOrders[0]
+	}
+
+	maxParentOrder := 0
+	if len(maxParentOrders) > 0 {
+		maxParentOrder = maxParentOrders[0]
+	}
+
+	nextChildOrder := maxChildOrder + 1
+	nextParentOrder := maxParentOrder + 1
+
+	newRelation, err := s.client.ContainerChild.Create().
+		SetParentID(parentID).
+		SetParentType(parentType).
+		SetChildID(childID).
+		SetChildType(childType).
+		SetChildOrder(nextChildOrder).
+		SetParentOrder(nextParentOrder).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return newRelation, nil
 }

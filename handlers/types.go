@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"arturgudiev/dashboard/models"
 	"time"
 )
 
@@ -81,26 +82,11 @@ type TaskResponse struct {
 	DoneDateTime     *time.Time      `json:"done_date_time"`
 }
 
-// ProblemRequest represents a full problem request (used in new-problem endpoint)
-type ProblemRequest struct {
-	Description      string          `json:"description"`
-	Tags             []string        `json:"tags,omitempty"`
-	Notes            string          `json:"notes,omitempty"`
-	Problems         []int           `json:"problems,omitempty"`
-	Questions        []int           `json:"questions,omitempty"`
-	Actions          []int           `json:"actions,omitempty"`
-	Definitions      []int           `json:"definitions,omitempty"`
-	KnowledgeBits    []int           `json:"knowledgeBits,omitempty"`
-	KnowledgeNodes   []int           `json:"knowledgeNodes,omitempty"`
-	ParentContainers [][]interface{} `json:"parents,omitempty"`
-	DoneDateTime     *time.Time      `json:"doneDateTime,omitempty"`
-	Solution         *string         `json:"solution,omitempty"`
-}
-
 // NewProblemRequest represents a request to create a new problem with optional parent
+// @Description Request to create a new problem with optional parent container
 type NewProblemRequest struct {
-	Problem ProblemRequest `json:"problem"`
-	Parent  *ParentRequest `json:"parent,omitempty"`
+	Problem models.NewProblem            `json:"problem"`
+	Parent  *models.ContainerDescription `json:"parent,omitempty"`
 }
 
 // UpdateProblemRequest represents a request to update an existing problem

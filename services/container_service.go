@@ -27,7 +27,7 @@ func (s *ContainerService) GetOpenSubtasksIDs(ctx context.Context, containerType
 	openTasksIDs := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeTask)
 	if err != nil {
-		return nil, err
+		return []int{}, err
 	}
 
 	for _, relation := range childRelations {
@@ -82,7 +82,7 @@ func (s *ContainerService) GetOpenProblems(ctx context.Context, containerType sc
 }
 
 func (s *ContainerService) GetOpenProblemsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
-	var openProblems []int
+	openProblems := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeProblem)
 
 	if err == nil && len(childRelations) > 0 {

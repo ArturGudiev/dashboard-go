@@ -262,7 +262,7 @@ func (_q *ContainerChildQuery) Clone() *ContainerChildQuery {
 // Example:
 //
 //	var v []struct {
-//		ParentType schema.ContainerType `json:"parent_type,omitempty"`
+//		ParentType schema.Type `json:"parent_type,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -285,7 +285,7 @@ func (_q *ContainerChildQuery) GroupBy(field string, fields ...string) *Containe
 // Example:
 //
 //	var v []struct {
-//		ParentType schema.ContainerType `json:"parent_type,omitempty"`
+//		ParentType schema.Type `json:"parent_type,omitempty"`
 //	}
 //
 //	client.ContainerChild.Query().

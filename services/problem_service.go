@@ -8,7 +8,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
+
+	"github.com/niemeyer/pretty"
 )
 
 // ProblemService handles problem-related business logic
@@ -144,6 +147,9 @@ func (s *ProblemService) GetProblemFull(ctx context.Context, ID int) (*models.Pr
 	}
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeProblem, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeProblem, ID)
+	fmt.Println("AAAAA")
+	pretty.Println(subtasks)
+	pretty.Println(subproblems)
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeProblem, ID)
 	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil {
 		return nil, errors.New("problem not found")
@@ -166,4 +172,58 @@ func (s *ProblemService) GetProblemFull(ctx context.Context, ID int) (*models.Pr
 	}
 
 	return ProblemFull, nil
+}
+
+func (s *ProblemService) GetProblemsFull(ctx context.Context, IDs []int) ([]*models.ProblemFull, error) {
+	if len(IDs) == 0 {
+		return []*models.ProblemFull{}, nil
+	}
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	results := make([]*models.ProblemFull, 0, len(IDs))
+	var firstErr error
+
+	for _, id := range IDs {
+		wg.Add(1)
+		go func(problemID int) {
+			defer wg.Done()
+
+			problemFull, err := s.GetProblemFull(ctx, problemID)
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			if err != nil {
+				if firstErr == nil {
+					firstErr = err
+				}
+				return
+			}
+
+			results = append(results, problemFull)
+		}(id)
+	}
+
+	wg.Wait()
+
+	if firstErr != nil && len(results) == 0 {
+		return nil, firstErr
+	}
+
+	return results, firstErr
+}
+
+func (s *ProblemService) AddProblem(ctx context.Context, problem models.NewProblem, parent *models.ContainerDescription) (*models.ProblemFull, error) {
+	newProblem, err := s.problemsRepository.AddProblem(ctx, problem.Description, problem.Tags, problem.Notes)
+	if err != nil {
+		return nil, err
+	}
+	if parent != nil {
+		_, err := s.childContainerRepository.AddConnection(ctx, parent.Type, parent.ID, schema.ContainerTypeProblem, newProblem.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return s.GetProblemFull(ctx, newProblem.ID)
 }
