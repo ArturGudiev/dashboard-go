@@ -318,7 +318,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/handlers.ProblemResponse"
+                                "$ref": "#/definitions/models.ProblemFull"
                             }
                         }
                     },
@@ -614,7 +614,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ProblemResponse"
+                            "$ref": "#/definitions/models.ProblemFull"
                         }
                     },
                     "400": {
@@ -761,7 +761,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.UpdateProblemRequest"
+                            "$ref": "#/definitions/models.ProblemPartial"
                         }
                     }
                 ],
@@ -919,7 +919,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/models.ContainerDescription"
                 },
                 "problem": {
-                    "$ref": "#/definitions/models.NewProblem"
+                    "$ref": "#/definitions/models.ProblemShort"
                 }
             }
         },
@@ -1193,75 +1193,6 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.UpdateProblemRequest": {
-            "type": "object",
-            "properties": {
-                "actions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "definitions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "description": {
-                    "type": "string"
-                },
-                "doneDateTime": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "knowledgeBits": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "knowledgeNodes": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "parents": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {}
-                    }
-                },
-                "problems": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "solution": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "handlers.UpdateTaskRequest": {
             "type": "object",
             "properties": {
@@ -1349,30 +1280,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.NewProblem": {
-            "description": "New problem creation request",
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "example": "Fix login bug"
-                },
-                "notes": {
-                    "type": "string",
-                    "example": "User cannot log in"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "bug",
-                        "urgent"
-                    ]
-                }
-            }
-        },
         "models.ProblemFull": {
             "description": "Complete problem information with all related entities",
             "type": "object",
@@ -1392,19 +1299,19 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "done_date_time": {
+                "doneDateTime": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "knowledge_bits": {
+                "knowledgeBits": {
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
-                "knowledge_nodes": {
+                "knowledgeNodes": {
                     "type": "array",
                     "items": {
                         "type": "integer"
@@ -1413,7 +1320,7 @@ const docTemplate = `{
                 "notes": {
                     "type": "string"
                 },
-                "parent_containers": {
+                "parentContainers": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.ContainerDescription"
@@ -1445,6 +1352,56 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "models.ProblemPartial": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "solution": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.ProblemShort": {
+            "description": "New problem creation request",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Fix login bug"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "User cannot log in"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "bug",
+                        "urgent"
+                    ]
                 }
             }
         },

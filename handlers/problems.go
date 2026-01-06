@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"arturgudiev/dashboard/models"
 	"log"
 	"strconv"
 
@@ -49,7 +50,7 @@ func (h *Handler) GetProblemByID(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request  body      IDsRequest  true  "List of problem IDs"
-// @Success      200      {array}   ProblemResponse
+// @Success      200      {array}   models.ProblemFull
 // @Failure      400      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /get-problems [post]
@@ -81,7 +82,7 @@ func (h *Handler) GetProblemsByIDs(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      int  true  "Problem ID"
 // @Param        request  body      SolveProblemRequest  true  "Solution request"
-// @Success      200  {object}  ProblemResponse
+// @Success      200  {object}  models.ProblemFull
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -101,39 +102,15 @@ func (h *Handler) SolveProblem(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
+	problemFull, err := h.App.ProblemService.SolveProblem(ctx, id, req.Solution)
 
-	// Verify problem exists
-	_, err = h.App.Client.Problem.Get(ctx, id)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			c.JSON(404, gin.H{"error": "Problem not found"})
-			return
-		}
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Update problem with solution
-	updatedProblem, err := h.App.Client.Problem.UpdateOneID(id).
-		SetSolution(req.Solution).
-		Save(ctx)
 	if err != nil {
 		log.Printf("Error solving problem %d: %v", id, err)
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Convert to custom response type to ensure all fields are included
-	response := ProblemResponse{
-		ID:           updatedProblem.ID,
-		Description:  updatedProblem.Description,
-		Tags:         updatedProblem.Tags,
-		Notes:        updatedProblem.Notes,
-		DoneDateTime: updatedProblem.DoneDateTime,
-		Solution:     updatedProblem.Solution,
-	}
-
-	c.JSON(200, response)
+	c.JSON(200, problemFull)
 }
 
 // NewProblem handles POST /new-problem
@@ -176,14 +153,14 @@ func (h *Handler) NewProblem(c *gin.Context) {
 // @Tags         problems
 // @Accept       json
 // @Produce      json
-// @Param        request  body      UpdateProblemRequest  true  "Problem update request"
+// @Param        request  body      models.ProblemPartial  true  "Problem update request"
 // @Success      200      {object}  ProblemResponse
 // @Failure      400      {object}  map[string]string
 // @Failure      404      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /update-problem [put]
 func (h *Handler) UpdateProblem(c *gin.Context) {
-	var req UpdateProblemRequest
+	var req models.ProblemPartial
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -191,46 +168,13 @@ func (h *Handler) UpdateProblem(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	_, err := h.App.Client.Problem.Get(ctx, req.ID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			c.JSON(404, gin.H{"error": "Problem not found"})
-			return
-		}
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
+	problemFull, err := h.App.ProblemService.UpdateProblem(ctx, req)
 
-	problemBuilder := h.App.Client.Problem.UpdateOneID(req.ID).
-		SetDescription(req.Description)
-
-	if req.Tags != nil {
-		problemBuilder = problemBuilder.SetTags(req.Tags)
-	}
-	if req.Notes != "" {
-		problemBuilder = problemBuilder.SetNotes(req.Notes)
-	}
-	if req.DoneDateTime != nil {
-		problemBuilder = problemBuilder.SetDoneDateTime(*req.DoneDateTime)
-	}
-	problemBuilder = problemBuilder.SetNillableSolution(req.Solution)
-
-	updatedProblem, err := problemBuilder.Save(ctx)
 	if err != nil {
 		log.Printf("Error updating problem: %v", err)
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Convert to custom response type to ensure all fields are included
-	response := ProblemResponse{
-		ID:           updatedProblem.ID,
-		Description:  updatedProblem.Description,
-		Tags:         updatedProblem.Tags,
-		Notes:        updatedProblem.Notes,
-		DoneDateTime: updatedProblem.DoneDateTime,
-		Solution:     updatedProblem.Solution,
-	}
-
-	c.JSON(200, response)
+	c.JSON(200, problemFull)
 }

@@ -10,8 +10,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"github.com/niemeyer/pretty"
 )
 
 // ProblemService handles problem-related business logic
@@ -113,9 +111,8 @@ func (s *ProblemService) FinishProblemRecursively(ctx context.Context, problem *
 		updateBuilder = updateBuilder.SetSolution("")
 	}
 
-	updateBuilder.Save(ctx)
-
-	return nil
+	_, err := updateBuilder.Save(ctx)
+	return err
 }
 
 // FinishProblemById finishes a problem and all its descendants by problem ID
@@ -147,9 +144,6 @@ func (s *ProblemService) GetProblemFull(ctx context.Context, ID int) (*models.Pr
 	}
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeProblem, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeProblem, ID)
-	fmt.Println("AAAAA")
-	pretty.Println(subtasks)
-	pretty.Println(subproblems)
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeProblem, ID)
 	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil {
 		return nil, errors.New("problem not found")
@@ -214,7 +208,7 @@ func (s *ProblemService) GetProblemsFull(ctx context.Context, IDs []int) ([]*mod
 	return results, firstErr
 }
 
-func (s *ProblemService) AddProblem(ctx context.Context, problem models.NewProblem, parent *models.ContainerDescription) (*models.ProblemFull, error) {
+func (s *ProblemService) AddProblem(ctx context.Context, problem models.ProblemShort, parent *models.ContainerDescription) (*models.ProblemFull, error) {
 	newProblem, err := s.problemsRepository.AddProblem(ctx, problem.Description, problem.Tags, problem.Notes)
 	if err != nil {
 		return nil, err
@@ -226,4 +220,20 @@ func (s *ProblemService) AddProblem(ctx context.Context, problem models.NewProbl
 		}
 	}
 	return s.GetProblemFull(ctx, newProblem.ID)
+}
+
+func (s *ProblemService) SolveProblem(ctx context.Context, problemID int, solution string) (*models.ProblemFull, error) {
+	err := s.problemsRepository.AddSolution(ctx, problemID, solution)
+	if err != nil {
+		return nil, err
+	}
+	return s.GetProblemFull(ctx, problemID)
+}
+
+func (s *ProblemService) UpdateProblem(ctx context.Context, problemPartial models.ProblemPartial) (*models.ProblemFull, error) {
+	err := s.problemsRepository.UpdateProblem(ctx, problemPartial)
+	if err != nil {
+		return nil, err
+	}
+	return s.GetProblemFull(ctx, problemPartial.ID)
 }

@@ -85,25 +85,8 @@ type TaskResponse struct {
 // NewProblemRequest represents a request to create a new problem with optional parent
 // @Description Request to create a new problem with optional parent container
 type NewProblemRequest struct {
-	Problem models.NewProblem            `json:"problem"`
+	Problem models.ProblemShort          `json:"problem"`
 	Parent  *models.ContainerDescription `json:"parent,omitempty"`
-}
-
-// UpdateProblemRequest represents a request to update an existing problem
-type UpdateProblemRequest struct {
-	ID               int             `json:"id"`
-	Description      string          `json:"description"`
-	Tags             []string        `json:"tags,omitempty"`
-	Notes            string          `json:"notes,omitempty"`
-	Problems         []int           `json:"problems,omitempty"`
-	Questions        []int           `json:"questions,omitempty"`
-	Actions          []int           `json:"actions,omitempty"`
-	Definitions      []int           `json:"definitions,omitempty"`
-	KnowledgeBits    []int           `json:"knowledgeBits,omitempty"`
-	KnowledgeNodes   []int           `json:"knowledgeNodes,omitempty"`
-	ParentContainers [][]interface{} `json:"parents,omitempty"`
-	DoneDateTime     *time.Time      `json:"doneDateTime,omitempty"`
-	Solution         *string         `json:"solution,omitempty"`
 }
 
 // SolveProblemRequest represents a request to solve a problem

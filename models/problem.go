@@ -17,16 +17,25 @@ type ProblemFull struct {
 	Questions        []int                  `json:"questions"`
 	Actions          []int                  `json:"actions"`
 	Definitions      []int                  `json:"definitions"`
-	KnowledgeBits    []int                  `json:"knowledge_bits"`
-	ParentContainers []ContainerDescription `json:"parent_containers"`
-	KnowledgeNodes   []int                  `json:"knowledge_nodes"`
-	DoneDateTime     *time.Time             `json:"done_date_time"`
+	KnowledgeBits    []int                  `json:"knowledgeBits"`
+	ParentContainers []ContainerDescription `json:"parentContainers"`
+	KnowledgeNodes   []int                  `json:"knowledgeNodes"`
+	DoneDateTime     *time.Time             `json:"doneDateTime"`
 }
 
-// NewProblem represents a new problem creation request
+// ProblemShort represents a new problem creation request
 // @Description New problem creation request
-type NewProblem struct {
+type ProblemShort struct {
 	Description string   `json:"description" example:"Fix login bug"`
-	Tags        []string `json:"tags,omitempty" example:"bug,urgent"`
-	Notes       string   `json:"notes,omitempty" example:"User cannot log in"`
+	Tags        []string `json:"tags" example:"bug,urgent"`
+	Notes       string   `json:"notes" example:"User cannot log in"`
+}
+
+type ProblemPartial struct {
+	ID           int        `json:"id"`
+	Description  *string    `json:"description"`
+	Tags         *[]string  `json:"tags"`
+	Notes        *string    `json:"notes"`
+	DoneDateTime *time.Time `json:"doneDateTime"`
+	Solution     *string    `json:"solution"`
 }

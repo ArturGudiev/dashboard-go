@@ -38,7 +38,7 @@ definitions:
       parent:
         $ref: '#/definitions/models.ContainerDescription'
       problem:
-        $ref: '#/definitions/models.NewProblem'
+        $ref: '#/definitions/models.ProblemShort'
     type: object
   handlers.NewTaskRequest:
     properties:
@@ -218,52 +218,6 @@ definitions:
           type: string
         type: array
     type: object
-  handlers.UpdateProblemRequest:
-    properties:
-      actions:
-        items:
-          type: integer
-        type: array
-      definitions:
-        items:
-          type: integer
-        type: array
-      description:
-        type: string
-      doneDateTime:
-        type: string
-      id:
-        type: integer
-      knowledgeBits:
-        items:
-          type: integer
-        type: array
-      knowledgeNodes:
-        items:
-          type: integer
-        type: array
-      notes:
-        type: string
-      parents:
-        items:
-          items: {}
-          type: array
-        type: array
-      problems:
-        items:
-          type: integer
-        type: array
-      questions:
-        items:
-          type: integer
-        type: array
-      solution:
-        type: string
-      tags:
-        items:
-          type: string
-        type: array
-    type: object
   handlers.UpdateTaskRequest:
     properties:
       actions:
@@ -321,23 +275,6 @@ definitions:
         - $ref: '#/definitions/schema.ContainerType'
         example: task
     type: object
-  models.NewProblem:
-    description: New problem creation request
-    properties:
-      description:
-        example: Fix login bug
-        type: string
-      notes:
-        example: User cannot log in
-        type: string
-      tags:
-        example:
-        - bug
-        - urgent
-        items:
-          type: string
-        type: array
-    type: object
   models.ProblemFull:
     description: Complete problem information with all related entities
     properties:
@@ -351,21 +288,21 @@ definitions:
         type: array
       description:
         type: string
-      done_date_time:
+      doneDateTime:
         type: string
       id:
         type: integer
-      knowledge_bits:
+      knowledgeBits:
         items:
           type: integer
         type: array
-      knowledge_nodes:
+      knowledgeNodes:
         items:
           type: integer
         type: array
       notes:
         type: string
-      parent_containers:
+      parentContainers:
         items:
           $ref: '#/definitions/models.ContainerDescription'
         type: array
@@ -386,6 +323,40 @@ definitions:
       tasks:
         items:
           type: integer
+        type: array
+    type: object
+  models.ProblemPartial:
+    properties:
+      description:
+        type: string
+      doneDateTime:
+        type: string
+      id:
+        type: integer
+      notes:
+        type: string
+      solution:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  models.ProblemShort:
+    description: New problem creation request
+    properties:
+      description:
+        example: Fix login bug
+        type: string
+      notes:
+        example: User cannot log in
+        type: string
+      tags:
+        example:
+        - bug
+        - urgent
+        items:
+          type: string
         type: array
     type: object
   schema.ContainerType:
@@ -621,7 +592,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/handlers.ProblemResponse'
+              $ref: '#/definitions/models.ProblemFull'
             type: array
         "400":
           description: Bad Request
@@ -816,7 +787,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.ProblemResponse'
+            $ref: '#/definitions/models.ProblemFull'
         "400":
           description: Bad Request
           schema:
@@ -911,7 +882,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.UpdateProblemRequest'
+          $ref: '#/definitions/models.ProblemPartial'
       produces:
       - application/json
       responses:

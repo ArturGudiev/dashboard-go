@@ -2,6 +2,7 @@ package services
 
 import (
 	"arturgudiev/dashboard/ent"
+	"arturgudiev/dashboard/models"
 	"context"
 )
 
@@ -39,4 +40,31 @@ func (r *ProblemsRepository) AddProblem(ctx context.Context, description string,
 		return nil, err
 	}
 	return problem, nil
+}
+
+func (r *ProblemsRepository) UpdateProblem(ctx context.Context, problem models.ProblemPartial) error {
+	updateBuilder := r.client.Problem.UpdateOneID(problem.ID)
+
+	if problem.Description != nil {
+		updateBuilder = updateBuilder.SetDescription(*problem.Description)
+	}
+
+	if problem.Notes != nil {
+		updateBuilder = updateBuilder.SetNotes(*problem.Notes)
+	}
+
+	if problem.Tags != nil {
+		updateBuilder = updateBuilder.SetTags(*problem.Tags)
+	}
+
+	if problem.Solution != nil {
+		updateBuilder = updateBuilder.SetSolution(*problem.Solution)
+	}
+
+	if problem.DoneDateTime != nil {
+		updateBuilder = updateBuilder.SetDoneDateTime(*problem.DoneDateTime)
+	}
+
+	_, err := updateBuilder.Save(ctx)
+	return err
 }
