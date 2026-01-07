@@ -14,6 +14,7 @@ type App struct {
 	ProblemService           *services.ProblemService
 	ContainerService         *services.ContainerService
 	CLIService               *services.CLIService
+	TasksRepository          *services.TasksRepository
 	ProblemsRepository       *services.ProblemsRepository
 	ChildContainerRepository *services.ChildContainerRepository
 	ctx                      context.Context // Default context for CLI operations

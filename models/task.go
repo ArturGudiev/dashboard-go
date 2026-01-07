@@ -1,24 +1,32 @@
 package models
 
 import (
-	"arturgudiev/dashboard/ent"
 	"time"
 )
 
 // TaskFull represents a task with all fields plus children tasks at the top level
 type TaskFull struct {
-	ID               int             `json:"id"`
-	Description      string          `json:"description"`
-	Tags             []string        `json:"tags,omitempty"`
-	Done             bool            `json:"done"`
-	Notes            string          `json:"notes,omitempty"`
-	Problems         []int           `json:"problems,omitempty"`
-	Questions        []int           `json:"questions,omitempty"`
-	Actions          []int           `json:"actions,omitempty"`
-	Definitions      []int           `json:"definitions,omitempty"`
-	KnowledgeBits    []int           `json:"knowledge_bits,omitempty"`
-	ParentContainers [][]interface{} `json:"parent_containers,omitempty"`
-	KnowledgeNodes   []int           `json:"knowledge_nodes,omitempty"`
-	DoneDateTime     *time.Time      `json:"done_date_time,omitempty"`
-	Tasks            []*ent.Task     `json:"tasks,omitempty"`
+	ID               int                    `json:"id"`
+	Description      string                 `json:"description"`
+	Tags             []string               `json:"tags"`
+	Done             bool                   `json:"done"`
+	Notes            string                 `json:"notes"`
+	Tasks            []int                  `json:"tasks"`
+	Problems         []int                  `json:"problems"`
+	Questions        []int                  `json:"questions"`
+	Actions          []int                  `json:"actions"`
+	Definitions      []int                  `json:"definitions"`
+	KnowledgeBits    []int                  `json:"knowledgeBits"`
+	ParentContainers []ContainerDescription `json:"parentContainers"`
+	KnowledgeNodes   []int                  `json:"knowledgeNodes"`
+	DoneDateTime     *time.Time             `json:"doneDateTime"`
+}
+
+type TaskPartial struct {
+	ID           int        `json:"id"`
+	Description  *string    `json:"description"`
+	Tags         *[]string  `json:"tags"`
+	Notes        *string    `json:"notes"`
+	DoneDateTime *time.Time `json:"doneDateTime"`
+	Done         *bool      `json:"bool"`
 }

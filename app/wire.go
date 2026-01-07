@@ -26,6 +26,7 @@ func InitializeApp() (*App, error) {
 		services.NewProblemService,
 		services.NewContainerService,
 		services.NewCLIService,
+		services.NewTasksRepository,
 		services.NewProblemsRepository,
 		services.NewChildContainerRepository,
 		// App provider
@@ -77,6 +78,7 @@ func provideApp(
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
+	tasksRepository *services.TasksRepository,
 	problemsRepository *services.ProblemsRepository,
 	childContainerRepository *services.ChildContainerRepository,
 ) *App {
@@ -86,6 +88,7 @@ func provideApp(
 		ProblemService:           problemService,
 		ContainerService:         containerService,
 		CLIService:               cliService,
+		TasksRepository:          tasksRepository,
 		ProblemsRepository:       problemsRepository,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(), // Default context for CLI

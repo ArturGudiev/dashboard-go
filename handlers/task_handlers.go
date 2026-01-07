@@ -11,7 +11,6 @@ import (
 	"arturgudiev/dashboard/ent/task"
 
 	"github.com/gin-gonic/gin"
-	"github.com/niemeyer/pretty"
 )
 
 // GetTaskByID handles GET /task/:id
@@ -21,7 +20,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        id   path      int  true  "Task ID"
-// @Success      200  {object}  TaskResponse
+// @Success      200  {object}  models.TaskFull
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -34,7 +33,8 @@ func (h *Handler) GetTaskByID(c *gin.Context) {
 		return
 	}
 
-	task, err := h.App.Client.Task.Get(c.Request.Context(), id)
+	//task, err := h.App.Client.Task.Get(c.Request.Context(), id)
+	taskFull, err := h.App.TaskService.GetTaskFull(c.Request.Context(), id)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			c.JSON(404, gin.H{"error": "Task not found"})
@@ -44,19 +44,7 @@ func (h *Handler) GetTaskByID(c *gin.Context) {
 		return
 	}
 
-	pretty.Print(task)
-
-	// Convert to custom response type to ensure all fields are included
-	response := TaskResponse{
-		ID:           task.ID,
-		Description:  task.Description,
-		Tags:         task.Tags,
-		Done:         task.Done,
-		Notes:        task.Notes,
-		DoneDateTime: task.DoneDateTime,
-	}
-
-	c.JSON(200, response)
+	c.JSON(200, taskFull)
 }
 
 // GetTasksByIDs handles POST /get-tasks
