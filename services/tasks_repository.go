@@ -30,36 +30,62 @@ func (r *TasksRepository) SetTaskDone(ctx context.Context, ID int, solution stri
 	return err
 }
 
-func (r *TasksRepository) AddTask(ctx context.Context, description string, tags []string, notes string) (*ent.Task, error) {
-	task, err := r.client.Task.Create().SetDescription(description).SetTags(tags).SetNotes(notes).Save(ctx)
-
+func (r *TasksRepository) AddTask(ctx context.Context, description string, tags []string, notes string, done bool) (*ent.Task, error) {
+	task, err := r.client.Task.Create().SetDescription(description).SetTags(tags).SetNotes(notes).SetDone(done).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return task, nil
 }
 
-func (r *TasksRepository) UpdateTask(ctx context.Context, problem models.TaskPartial) error {
-	updateBuilder := r.client.Task.UpdateOneID(problem.ID)
+func (r *TasksRepository) AddTaskByFields(ctx context.Context, fields models.TaskFieldsPartial) (*ent.Task, error) {
+	task := r.client.Task.Create()
 
-	if problem.Description != nil {
-		updateBuilder = updateBuilder.SetDescription(*problem.Description)
+	if fields.Description != nil {
+		task.SetDescription(*fields.Description)
 	}
 
-	if problem.Notes != nil {
-		updateBuilder = updateBuilder.SetNotes(*problem.Notes)
+	if fields.Tags != nil {
+		task.SetTags(*fields.Tags)
 	}
 
-	if problem.Tags != nil {
-		updateBuilder = updateBuilder.SetTags(*problem.Tags)
+	if fields.Notes != nil {
+		task.SetNotes(*fields.Notes)
 	}
 
-	if problem.Done != nil {
-		updateBuilder = updateBuilder.SetDone(*problem.Done)
+	if fields.Done != nil {
+		task.SetDone(*fields.Done)
 	}
 
-	if problem.DoneDateTime != nil {
-		updateBuilder = updateBuilder.SetDoneDateTime(*problem.DoneDateTime)
+	newTask, err := task.Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	return newTask, nil
+}
+
+func (r *TasksRepository) UpdateTask(ctx context.Context, task models.TaskPartial) error {
+	updateBuilder := r.client.Task.UpdateOneID(task.ID)
+
+	if task.Description != nil {
+		updateBuilder = updateBuilder.SetDescription(*task.Description)
+	}
+
+	if task.Notes != nil {
+		updateBuilder = updateBuilder.SetNotes(*task.Notes)
+	}
+
+	if task.Tags != nil {
+		updateBuilder = updateBuilder.SetTags(*task.Tags)
+	}
+
+	if task.Done != nil {
+		updateBuilder = updateBuilder.SetDone(*task.Done)
+	}
+
+	if task.DoneDateTime != nil {
+		updateBuilder = updateBuilder.SetDoneDateTime(*task.DoneDateTime)
 	}
 
 	_, err := updateBuilder.Save(ctx)

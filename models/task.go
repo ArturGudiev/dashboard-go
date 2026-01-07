@@ -30,3 +30,11 @@ type TaskPartial struct {
 	DoneDateTime *time.Time `json:"doneDateTime"`
 	Done         *bool      `json:"bool"`
 }
+
+type TaskFieldsPartial struct {
+	Description  *string    `json:"description"`
+	Tags         *[]string  `json:"tags"`
+	Notes        *string    `json:"notes"`
+	DoneDateTime *time.Time `json:"doneDateTime"`
+	Done         *bool      `json:"bool"`
+}

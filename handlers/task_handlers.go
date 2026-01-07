@@ -33,7 +33,6 @@ func (h *Handler) GetTaskByID(c *gin.Context) {
 		return
 	}
 
-	//task, err := h.App.Client.Task.Get(c.Request.Context(), id)
 	taskFull, err := h.App.TaskService.GetTaskFull(c.Request.Context(), id)
 	if err != nil {
 		if ent.IsNotFound(err) {

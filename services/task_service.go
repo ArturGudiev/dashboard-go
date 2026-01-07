@@ -22,7 +22,8 @@ type TaskService struct {
 // NewTaskService creates a new TaskService
 func NewTaskService(client *ent.Client, containerService *ContainerService, problemService *ProblemService,
 	tasksRepository *TasksRepository, childContainerRepository *ChildContainerRepository) *TaskService {
-	return &TaskService{client: client, containerService: containerService, problemService: problemService}
+	return &TaskService{client: client, containerService: containerService, problemService: problemService,
+		tasksRepository: tasksRepository, childContainerRepository: childContainerRepository}
 }
 
 // GetOpenDescendantTasks recursively gets all descendant tasks that are not done
@@ -114,4 +115,23 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 	}
 
 	return TaskFull, nil
+}
+
+func (s *TaskService) AddAnonymousTask(ctx context.Context) error {
+	description := "Anonymous task"
+	tags := []string{}
+	notes := ""
+	doneDateTime := time.Now()
+	done := true
+
+	fields := models.TaskFieldsPartial{
+		Description:  &description,
+		Tags:         &tags,
+		Notes:        &notes,
+		DoneDateTime: &doneDateTime,
+		Done:         &done,
+	}
+
+	_, err := s.tasksRepository.AddTaskByFields(ctx, fields)
+	return err
 }
