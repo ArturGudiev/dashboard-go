@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"log"
-	"strconv"
-	"time"
-
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/schema"
-	"arturgudiev/dashboard/ent/task"
+	"log"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,26 +61,12 @@ func (h *Handler) GetTasksByIDs(c *gin.Context) {
 		return
 	}
 
-	tasks, err := h.App.Client.Task.Query().Where(task.IDIn(req.IDs...)).All(c.Request.Context())
+	tasks, err := h.App.TaskService.GetTasksFull(c.Request.Context(), req.IDs)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Convert to slice of TaskResponse to ensure all fields are included
-	responses := make([]TaskResponse, len(tasks))
-	for i, t := range tasks {
-		responses[i] = TaskResponse{
-			ID:           t.ID,
-			Description:  t.Description,
-			Tags:         t.Tags,
-			Done:         t.Done,
-			Notes:        t.Notes,
-			DoneDateTime: t.DoneDateTime,
-		}
-	}
-
-	c.JSON(200, responses)
+	c.JSON(200, tasks)
 }
 
 // AddAnonymousTask handles PUT /add-anonymous-task
@@ -92,17 +75,11 @@ func (h *Handler) GetTasksByIDs(c *gin.Context) {
 // @Tags         tasks
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  TaskResponse
+// @Success      200  {object}  ent.Task
 // @Failure      500  {object}  map[string]string
 // @Router       /add-anonymous-task [put]
 func (h *Handler) AddAnonymousTask(c *gin.Context) {
-	newTask, err := h.App.Client.Task.Create().
-		SetDescription("Simple task").
-		SetDone(true).
-		SetTags([]string{}).
-		SetNotes("").
-		SetDoneDateTime(time.Now()).
-		Save(c.Request.Context())
+	newTask, err := h.App.TaskService.AddAnonymousTask(c.Request.Context())
 
 	if err != nil {
 		log.Printf("Error creating task: %v", err)
@@ -110,19 +87,7 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 		return
 	}
 
-	log.Printf("Successfully created task with ID: %d", newTask.ID)
-
-	// Convert to custom response type to ensure all fields are included
-	response := TaskResponse{
-		ID:           newTask.ID,
-		Description:  newTask.Description,
-		Tags:         newTask.Tags,
-		Done:         newTask.Done,
-		Notes:        newTask.Notes,
-		DoneDateTime: newTask.DoneDateTime,
-	}
-
-	c.JSON(200, response)
+	c.JSON(200, newTask)
 }
 
 // GetDoneTasks handles GET /done-tasks
@@ -135,30 +100,14 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 // @Failure      500  {object}  map[string]string
 // @Router       /done-tasks [get]
 func (h *Handler) GetDoneTasks(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	// Get start of today (00:00:00)
-	now := time.Now()
-	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	startOfTomorrow := startOfToday.AddDate(0, 0, 1)
-
-	// Query tasks where Done is true and DoneDateTime is today
-	tasks, err := h.App.Client.Task.Query().
-		Where(
-			task.DoneEQ(true),
-			task.DoneDateTimeNotNil(),
-			task.DoneDateTimeGTE(startOfToday),
-			task.DoneDateTimeLT(startOfTomorrow),
-		).
-		All(ctx)
+	tasksCount, err := h.App.TaskService.GetDoneTasksCount(c.Request.Context())
 
 	if err != nil {
-		log.Printf("Error querying done tasks: %v", err)
+		log.Printf("Error querying done tasksCount: %v", err)
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(200, len(tasks))
+	c.JSON(200, tasksCount)
 }
 
 // FinishTask handles PUT /finish-task/:id
@@ -218,7 +167,7 @@ func (h *Handler) FinishTask(c *gin.Context) {
 // @Failure      400      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /finish-tasks/ [put]
-func (h *Handler) FinishTasks(c *gin.Context) {
+func (h *Handler) FinishTasks(c *gin.Context) { // TODO after Go: modify
 	var tasks []TaskIDRequest
 	if err := c.ShouldBindJSON(&tasks); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})

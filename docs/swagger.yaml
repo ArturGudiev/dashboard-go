@@ -359,6 +359,55 @@ definitions:
           type: string
         type: array
     type: object
+  models.TaskFull:
+    properties:
+      actions:
+        items:
+          type: integer
+        type: array
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      done:
+        type: boolean
+      doneDateTime:
+        type: string
+      id:
+        type: integer
+      knowledgeBits:
+        items:
+          type: integer
+        type: array
+      knowledgeNodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parentContainers:
+        items:
+          $ref: '#/definitions/models.ContainerDescription'
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      tasks:
+        items:
+          type: integer
+        type: array
+    type: object
   schema.ContainerType:
     enum:
     - epic
@@ -826,7 +875,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.TaskResponse'
+            $ref: '#/definitions/models.TaskFull'
         "400":
           description: Bad Request
           schema:

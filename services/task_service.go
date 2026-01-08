@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -117,7 +118,47 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 	return TaskFull, nil
 }
 
-func (s *TaskService) AddAnonymousTask(ctx context.Context) error {
+func (s *TaskService) GetTasksFull(ctx context.Context, IDs []int) ([]*models.TaskFull, error) {
+	if len(IDs) == 0 {
+		return []*models.TaskFull{}, nil
+	}
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	results := make([]*models.TaskFull, 0, len(IDs))
+	var firstErr error
+
+	for _, id := range IDs {
+		wg.Add(1)
+		go func(taskID int) {
+			defer wg.Done()
+
+			taskFull, err := s.GetTaskFull(ctx, taskID)
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			if err != nil {
+				if firstErr == nil {
+					firstErr = err
+				}
+				return
+			}
+
+			results = append(results, taskFull)
+		}(id)
+	}
+
+	wg.Wait()
+
+	if firstErr != nil && len(results) == 0 {
+		return nil, firstErr
+	}
+
+	return results, firstErr
+}
+
+func (s *TaskService) AddAnonymousTask(ctx context.Context) (*ent.Task, error) {
 	description := "Anonymous task"
 	tags := []string{}
 	notes := ""
@@ -132,6 +173,13 @@ func (s *TaskService) AddAnonymousTask(ctx context.Context) error {
 		Done:         &done,
 	}
 
-	_, err := s.tasksRepository.AddTaskByFields(ctx, fields)
-	return err
+	newTask, err := s.tasksRepository.AddTaskByFields(ctx, fields)
+	return newTask, err
+}
+
+func (s *TaskService) GetDoneTasksCount(ctx context.Context) (int, error) {
+	now := time.Now()
+	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	startOfTomorrow := startOfToday.AddDate(0, 0, 1)
+	return s.tasksRepository.getDoneTasksCountInRange(ctx, startOfToday, startOfTomorrow)
 }

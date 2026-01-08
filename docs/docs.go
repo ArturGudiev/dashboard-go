@@ -673,7 +673,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.TaskResponse"
+                            "$ref": "#/definitions/models.TaskFull"
                         }
                     },
                     "400": {
@@ -1402,6 +1402,80 @@ const docTemplate = `{
                         "bug",
                         "urgent"
                     ]
+                }
+            }
+        },
+        "models.TaskFull": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "done": {
+                    "type": "boolean"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "knowledgeBits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parentContainers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContainerDescription"
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },

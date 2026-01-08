@@ -2,8 +2,10 @@ package services
 
 import (
 	"arturgudiev/dashboard/ent"
+	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/models"
 	"context"
+	"time"
 )
 
 type TasksRepository struct {
@@ -57,6 +59,10 @@ func (r *TasksRepository) AddTaskByFields(ctx context.Context, fields models.Tas
 		task.SetDone(*fields.Done)
 	}
 
+	if fields.DoneDateTime != nil {
+		task.SetDoneDateTime(*fields.DoneDateTime)
+	}
+
 	newTask, err := task.Save(ctx)
 
 	if err != nil {
@@ -90,4 +96,18 @@ func (r *TasksRepository) UpdateTask(ctx context.Context, task models.TaskPartia
 
 	_, err := updateBuilder.Save(ctx)
 	return err
+}
+
+func (r *TasksRepository) getDoneTasksCountInRange(ctx context.Context, start time.Time, end time.Time) (int, error) {
+	tasks, err := r.client.Task.Query().
+		Where(
+			task.DoneEQ(true),
+			task.DoneDateTimeNotNil(),
+			task.DoneDateTimeGTE(start),
+			task.DoneDateTimeLT(end),
+		).All(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return len(tasks), nil
 }
