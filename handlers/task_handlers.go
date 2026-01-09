@@ -2,8 +2,7 @@ package handlers
 
 import (
 	"arturgudiev/dashboard/ent"
-	"arturgudiev/dashboard/ent/containerchild"
-	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/models"
 	"log"
 	"strconv"
 
@@ -218,12 +217,8 @@ func (h *Handler) FinishTasksByIDs(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	for _, id := range ids {
-		task, err := h.App.Client.Task.Get(ctx, id)
+		task, err := h.App.TasksRepository.GetTask(ctx, id)
 		if err != nil {
-			if ent.IsNotFound(err) {
-				log.Printf("Task %d not found, skipping", id)
-				continue
-			}
 			log.Printf("Error getting task %d: %v", id, err)
 			continue
 		}
@@ -258,97 +253,18 @@ func (h *Handler) NewTask(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
+	newProblem, err := h.App.TaskService.AddTask(ctx, req.Task, req.Parent)
 
-	taskBuilder := h.App.Client.Task.Create().
-		SetDescription(req.Task.Description).
-		SetDone(req.Task.Done)
-
-	if req.Task.Tags != nil {
-		taskBuilder = taskBuilder.SetTags(req.Task.Tags)
-	}
-	if req.Task.Notes != "" {
-		taskBuilder = taskBuilder.SetNotes(req.Task.Notes)
-	}
-	if req.Task.DoneDateTime != nil {
-		taskBuilder = taskBuilder.SetDoneDateTime(*req.Task.DoneDateTime)
-	}
-
-	newTask, err := taskBuilder.Save(ctx)
 	if err != nil {
-		log.Printf("Error creating task: %v", err)
+		if ent.IsNotFound(err) {
+			c.JSON(404, gin.H{"error": "Parent container not found"})
+			return
+		}
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	if req.Parent != nil && req.Parent.Type == "task" {
-		parentTask, err := h.App.Client.Task.Get(ctx, req.Parent.Obj.ID)
-		if err != nil {
-			if ent.IsNotFound(err) {
-				c.JSON(404, gin.H{"error": "Parent task not found"})
-				return
-			}
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-
-		exists, err := h.App.Client.ContainerChild.Query().
-			Where(
-				containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-				containerchild.ParentID(parentTask.ID),
-				containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-				containerchild.ChildID(newTask.ID),
-			).
-			Exist(ctx)
-		if err != nil {
-			log.Printf("Error checking relationship: %v", err)
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-
-		if !exists {
-			childCount, err := h.App.Client.ContainerChild.Query().
-				Where(
-					containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-					containerchild.ParentID(parentTask.ID),
-					containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-				).
-				Count(ctx)
-			if err != nil {
-				log.Printf("Error counting children: %v", err)
-				c.JSON(500, gin.H{"error": err.Error()})
-				return
-			}
-
-			parentCount, err := h.App.Client.ContainerChild.Query().
-				Where(
-					containerchild.ChildTypeEQ(schema.ContainerTypeTask),
-					containerchild.ChildID(newTask.ID),
-					containerchild.ParentTypeEQ(schema.ContainerTypeTask),
-				).
-				Count(ctx)
-			if err != nil {
-				log.Printf("Error counting parents: %v", err)
-				c.JSON(500, gin.H{"error": err.Error()})
-				return
-			}
-
-			_, err = h.App.Client.ContainerChild.Create().
-				SetParentType(schema.ContainerTypeTask).
-				SetParentID(parentTask.ID).
-				SetChildType(schema.ContainerTypeTask).
-				SetChildID(newTask.ID).
-				SetChildOrder(childCount).
-				SetParentOrder(parentCount).
-				Save(ctx)
-			if err != nil {
-				log.Printf("Error creating relationship: %v", err)
-				c.JSON(500, gin.H{"error": err.Error()})
-				return
-			}
-		}
-	}
-
-	c.JSON(200, newTask)
+	c.JSON(200, newProblem)
 }
 
 // UpdateTask handles PUT /update-task
@@ -357,14 +273,14 @@ func (h *Handler) NewTask(c *gin.Context) {
 // @Tags         tasks
 // @Accept       json
 // @Produce      json
-// @Param        request  body      UpdateTaskRequest  true  "Task update request"
-// @Success      200      {object}  TaskResponse
+// @Param        request  body      models.TaskPartial  true  "Task update request"
+// @Success      200      {object}  models.TaskFull
 // @Failure      400      {object}  map[string]string
 // @Failure      404      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /update-task [put]
 func (h *Handler) UpdateTask(c *gin.Context) {
-	var req UpdateTaskRequest
+	var req models.TaskPartial
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -372,46 +288,13 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	_, err := h.App.Client.Task.Get(ctx, req.ID)
+	taskFull, err := h.App.TaskService.UpdateTask(ctx, req)
+
 	if err != nil {
-		if ent.IsNotFound(err) {
-			c.JSON(404, gin.H{"error": "Task not found"})
-			return
-		}
+		log.Printf("Error updating problem: %v", err)
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	taskBuilder := h.App.Client.Task.UpdateOneID(req.ID).
-		SetDescription(req.Description).
-		SetDone(req.Done)
-
-	if req.Tags != nil {
-		taskBuilder = taskBuilder.SetTags(req.Tags)
-	}
-	if req.Notes != "" {
-		taskBuilder = taskBuilder.SetNotes(req.Notes)
-	}
-	if req.DoneDateTime != nil {
-		taskBuilder = taskBuilder.SetDoneDateTime(*req.DoneDateTime)
-	}
-
-	updatedTask, err := taskBuilder.Save(ctx)
-	if err != nil {
-		log.Printf("Error updating task: %v", err)
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Convert to custom response type to ensure all fields are included
-	response := TaskResponse{
-		ID:           updatedTask.ID,
-		Description:  updatedTask.Description,
-		Tags:         updatedTask.Tags,
-		Done:         updatedTask.Done,
-		Notes:        updatedTask.Notes,
-		DoneDateTime: updatedTask.DoneDateTime,
-	}
-
-	c.JSON(200, response)
+	c.JSON(200, taskFull)
 }

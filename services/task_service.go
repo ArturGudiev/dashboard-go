@@ -177,9 +177,31 @@ func (s *TaskService) AddAnonymousTask(ctx context.Context) (*ent.Task, error) {
 	return newTask, err
 }
 
+func (s *TaskService) AddTask(ctx context.Context, task models.TaskShort, parent *models.ContainerDescription) (*models.TaskFull, error) {
+	newTask, err := s.tasksRepository.AddTask(ctx, task.Description, task.Tags, task.Notes, false)
+	if err != nil {
+		return nil, err
+	}
+	if parent != nil {
+		_, err := s.childContainerRepository.AddConnection(ctx, parent.Type, parent.ID, schema.ContainerTypeTask, newTask.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return s.GetTaskFull(ctx, newTask.ID)
+}
+
 func (s *TaskService) GetDoneTasksCount(ctx context.Context) (int, error) {
 	now := time.Now()
 	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	startOfTomorrow := startOfToday.AddDate(0, 0, 1)
 	return s.tasksRepository.getDoneTasksCountInRange(ctx, startOfToday, startOfTomorrow)
+}
+
+func (s *TaskService) UpdateTask(ctx context.Context, taskPartial models.TaskPartial) (*models.TaskFull, error) {
+	err := s.tasksRepository.UpdateTask(ctx, taskPartial)
+	if err != nil {
+		return nil, err
+	}
+	return s.GetTaskFull(ctx, taskPartial.ID)
 }

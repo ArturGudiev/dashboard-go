@@ -67,7 +67,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.TaskResponse"
+                            "$ref": "#/definitions/ent.Task"
                         }
                     },
                     "500": {
@@ -822,7 +822,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.UpdateTaskRequest"
+                            "$ref": "#/definitions/models.TaskPartial"
                         }
                     }
                 ],
@@ -830,7 +830,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.TaskResponse"
+                            "$ref": "#/definitions/models.TaskFull"
                         }
                     },
                     "400": {
@@ -927,29 +927,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "parent": {
-                    "$ref": "#/definitions/handlers.ParentRequest"
+                    "$ref": "#/definitions/models.ContainerDescription"
                 },
                 "task": {
-                    "$ref": "#/definitions/handlers.TaskRequest"
-                }
-            }
-        },
-        "handlers.ParentObj": {
-            "type": "object",
-            "properties": {
-                "_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "handlers.ParentRequest": {
-            "type": "object",
-            "properties": {
-                "obj": {
-                    "$ref": "#/definitions/handlers.ParentObj"
-                },
-                "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/models.TaskShort"
                 }
             }
         },
@@ -1041,72 +1022,6 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.TaskRequest": {
-            "type": "object",
-            "properties": {
-                "actions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "definitions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "description": {
-                    "type": "string"
-                },
-                "done": {
-                    "type": "boolean"
-                },
-                "doneDateTime": {
-                    "type": "string"
-                },
-                "knowledgeBits": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "knowledgeNodes": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "parents": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {}
-                    }
-                },
-                "problems": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "handlers.TaskResponse": {
             "type": "object",
             "properties": {
@@ -1184,75 +1099,6 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "handlers.UpdateTaskRequest": {
-            "type": "object",
-            "properties": {
-                "actions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "definitions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "description": {
-                    "type": "string"
-                },
-                "done": {
-                    "type": "boolean"
-                },
-                "doneDateTime": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "knowledgeBits": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "knowledgeNodes": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "parents": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {}
-                    }
-                },
-                "problems": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "tags": {
                     "type": "array",
@@ -1476,6 +1322,55 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "models.TaskPartial": {
+            "type": "object",
+            "properties": {
+                "bool": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.TaskShort": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Fix login bug"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "User cannot log in"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "bug",
+                        "urgent"
+                    ]
                 }
             }
         },

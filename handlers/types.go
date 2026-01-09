@@ -44,8 +44,8 @@ type TaskRequest struct {
 
 // NewTaskRequest represents a request to create a new task with optional parent
 type NewTaskRequest struct {
-	Task   TaskRequest    `json:"task"`
-	Parent *ParentRequest `json:"parent,omitempty"`
+	Task   models.TaskShort             `json:"task"`
+	Parent *models.ContainerDescription `json:"parent,omitempty"`
 }
 
 // UpdateTaskRequest represents a request to update an existing task

@@ -43,21 +43,9 @@ definitions:
   handlers.NewTaskRequest:
     properties:
       parent:
-        $ref: '#/definitions/handlers.ParentRequest'
+        $ref: '#/definitions/models.ContainerDescription'
       task:
-        $ref: '#/definitions/handlers.TaskRequest'
-    type: object
-  handlers.ParentObj:
-    properties:
-      _id:
-        type: integer
-    type: object
-  handlers.ParentRequest:
-    properties:
-      obj:
-        $ref: '#/definitions/handlers.ParentObj'
-      type:
-        type: string
+        $ref: '#/definitions/models.TaskShort'
     type: object
   handlers.ProblemResponse:
     properties:
@@ -117,50 +105,6 @@ definitions:
       _id:
         type: integer
     type: object
-  handlers.TaskRequest:
-    properties:
-      actions:
-        items:
-          type: integer
-        type: array
-      definitions:
-        items:
-          type: integer
-        type: array
-      description:
-        type: string
-      done:
-        type: boolean
-      doneDateTime:
-        type: string
-      knowledgeBits:
-        items:
-          type: integer
-        type: array
-      knowledgeNodes:
-        items:
-          type: integer
-        type: array
-      notes:
-        type: string
-      parents:
-        items:
-          items: {}
-          type: array
-        type: array
-      problems:
-        items:
-          type: integer
-        type: array
-      questions:
-        items:
-          type: integer
-        type: array
-      tags:
-        items:
-          type: string
-        type: array
-    type: object
   handlers.TaskResponse:
     properties:
       actions:
@@ -213,52 +157,6 @@ definitions:
         type: integer
       name:
         type: string
-      tags:
-        items:
-          type: string
-        type: array
-    type: object
-  handlers.UpdateTaskRequest:
-    properties:
-      actions:
-        items:
-          type: integer
-        type: array
-      definitions:
-        items:
-          type: integer
-        type: array
-      description:
-        type: string
-      done:
-        type: boolean
-      doneDateTime:
-        type: string
-      id:
-        type: integer
-      knowledgeBits:
-        items:
-          type: integer
-        type: array
-      knowledgeNodes:
-        items:
-          type: integer
-        type: array
-      notes:
-        type: string
-      parents:
-        items:
-          items: {}
-          type: array
-        type: array
-      problems:
-        items:
-          type: integer
-        type: array
-      questions:
-        items:
-          type: integer
-        type: array
       tags:
         items:
           type: string
@@ -408,6 +306,39 @@ definitions:
           type: integer
         type: array
     type: object
+  models.TaskPartial:
+    properties:
+      bool:
+        type: boolean
+      description:
+        type: string
+      doneDateTime:
+        type: string
+      id:
+        type: integer
+      notes:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  models.TaskShort:
+    properties:
+      description:
+        example: Fix login bug
+        type: string
+      notes:
+        example: User cannot log in
+        type: string
+      tags:
+        example:
+        - bug
+        - urgent
+        items:
+          type: string
+        type: array
+    type: object
   schema.ContainerType:
     enum:
     - epic
@@ -476,7 +407,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.TaskResponse'
+            $ref: '#/definitions/ent.Task'
         "500":
           description: Internal Server Error
           schema:
@@ -971,14 +902,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.UpdateTaskRequest'
+          $ref: '#/definitions/models.TaskPartial'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.TaskResponse'
+            $ref: '#/definitions/models.TaskFull'
         "400":
           description: Bad Request
           schema:
