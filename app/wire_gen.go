@@ -9,6 +9,7 @@ package app
 import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/migrate"
+	"arturgudiev/dashboard/repositories"
 	"arturgudiev/dashboard/services"
 	"context"
 	"log"
@@ -35,7 +36,8 @@ func InitializeApp() (*App, error) {
 	tasksRepository := services.NewTasksRepository(client)
 	taskService := services.NewTaskService(client, containerService, problemService, tasksRepository, childContainerRepository)
 	cliService := services.NewCLIService(client, containerService, problemsRepository)
-	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, childContainerRepository)
+	questionsRepository := repositories.NewQuestionsRepository(client)
+	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, childContainerRepository)
 	return app, nil
 }
 
@@ -81,6 +83,7 @@ func provideApp(
 	cliService *services.CLIService,
 	tasksRepository *services.TasksRepository,
 	problemsRepository *services.ProblemsRepository,
+	questionsRepository *repositories.QuestionsRepository,
 	childContainerRepository *services.ChildContainerRepository,
 ) *App {
 	return &App{
@@ -91,6 +94,7 @@ func provideApp(
 		CLIService:               cliService,
 		TasksRepository:          tasksRepository,
 		ProblemsRepository:       problemsRepository,
+		QuestionsRepository:      questionsRepository,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(),
 	}

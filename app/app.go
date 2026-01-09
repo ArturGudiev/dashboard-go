@@ -1,6 +1,7 @@
 package app
 
 import (
+	"arturgudiev/dashboard/repositories"
 	"context"
 
 	"arturgudiev/dashboard/ent"
@@ -16,6 +17,7 @@ type App struct {
 	CLIService               *services.CLIService
 	TasksRepository          *services.TasksRepository
 	ProblemsRepository       *services.ProblemsRepository
+	QuestionsRepository      *repositories.QuestionsRepository
 	ChildContainerRepository *services.ChildContainerRepository
 	ctx                      context.Context // Default context for CLI operations
 }

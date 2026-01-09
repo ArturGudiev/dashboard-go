@@ -6,6 +6,7 @@ package app
 import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/migrate"
+	"arturgudiev/dashboard/repositories"
 	"arturgudiev/dashboard/services"
 	"context"
 	"log"
@@ -28,6 +29,7 @@ func InitializeApp() (*App, error) {
 		services.NewCLIService,
 		services.NewTasksRepository,
 		services.NewProblemsRepository,
+		repositories.NewQuestionsRepository,
 		services.NewChildContainerRepository,
 		// App provider
 		provideApp,
@@ -80,6 +82,7 @@ func provideApp(
 	cliService *services.CLIService,
 	tasksRepository *services.TasksRepository,
 	problemsRepository *services.ProblemsRepository,
+	questionsRepository *repositories.QuestionsRepository,
 	childContainerRepository *services.ChildContainerRepository,
 ) *App {
 	return &App{
@@ -90,6 +93,7 @@ func provideApp(
 		CLIService:               cliService,
 		TasksRepository:          tasksRepository,
 		ProblemsRepository:       problemsRepository,
+		QuestionsRepository:      questionsRepository,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(), // Default context for CLI
 	}
