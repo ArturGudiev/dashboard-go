@@ -42,14 +42,6 @@ func (ContainerChild) Fields() []ent.Field {
 	}
 }
 
-// Edges of the ContainerChild.
-//func (ContainerChild) Edges() []ent.Edge {
-//	// No edges - ContainerChild is polymorphic and can reference multiple entity types
-//	// (tasks, problems, etc.) based on parent_type/child_type enums
-//	// Foreign keys are not used to maintain referential integrity across different tables
-//	return []ent.Edge{}
-//}
-
 // Indexes of the ContainerChild.
 func (ContainerChild) Indexes() []ent.Index {
 	return []ent.Index{

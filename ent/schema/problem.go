@@ -30,10 +30,3 @@ func (Problem) Fields() []ent.Field {
 			Nillable(),
 	}
 }
-
-// // Edges of the Problem.
-// func (Problem) Edges() []ent.Edge {
-// 	// Note: Parent-child relationships are handled through ContainerChild join table
-// 	// using parent_type/child_type enums, not through Ent edges
-// 	return []ent.Edge{}
-// }

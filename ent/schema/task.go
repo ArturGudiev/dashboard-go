@@ -30,11 +30,3 @@ func (Task) Fields() []ent.Field {
 			Nillable(),
 	}
 }
-
-// Edges of the Task.
-//func (Task) Edges() []ent.Edge {
-//	// Note: Parent-child relationships are handled through ContainerChild join table
-//	// using parent_type/child_type enums, not through Ent edges
-//	// This allows polymorphic relationships (tasks, problems, etc.)
-//	return []ent.Edge{}
-//}
