@@ -5,6 +5,7 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/problem"
+	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
@@ -58,6 +59,24 @@ func init() {
 	problemDescID := problemFields[0].Descriptor()
 	// problem.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	problem.IDValidator = problemDescID.Validators[0].(func(int) error)
+	questionFields := schema.Question{}.Fields()
+	_ = questionFields
+	// questionDescDescription is the schema descriptor for description field.
+	questionDescDescription := questionFields[1].Descriptor()
+	// question.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	question.DescriptionValidator = questionDescDescription.Validators[0].(func(string) error)
+	// questionDescTags is the schema descriptor for tags field.
+	questionDescTags := questionFields[2].Descriptor()
+	// question.DefaultTags holds the default value on creation for the tags field.
+	question.DefaultTags = questionDescTags.Default.([]string)
+	// questionDescNotes is the schema descriptor for notes field.
+	questionDescNotes := questionFields[3].Descriptor()
+	// question.DefaultNotes holds the default value on creation for the notes field.
+	question.DefaultNotes = questionDescNotes.Default.(string)
+	// questionDescID is the schema descriptor for id field.
+	questionDescID := questionFields[0].Descriptor()
+	// question.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	question.IDValidator = questionDescID.Validators[0].(func(int) error)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescDescription is the schema descriptor for description field.

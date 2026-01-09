@@ -67,6 +67,21 @@ var (
 		Columns:    ProblemsColumns,
 		PrimaryKey: []*schema.Column{ProblemsColumns[0]},
 	}
+	// QuestionsColumns holds the columns for the "questions" table.
+	QuestionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
+		{Name: "answer", Type: field.TypeString, Nullable: true},
+	}
+	// QuestionsTable holds the schema information for the "questions" table.
+	QuestionsTable = &schema.Table{
+		Name:       "questions",
+		Columns:    QuestionsColumns,
+		PrimaryKey: []*schema.Column{QuestionsColumns[0]},
+	}
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -98,6 +113,7 @@ var (
 	Tables = []*schema.Table{
 		ContainerChildrenTable,
 		ProblemsTable,
+		QuestionsTable,
 		TasksTable,
 		TestsTable,
 	}

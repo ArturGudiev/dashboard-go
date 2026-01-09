@@ -5,13 +5,13 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// Problem holds the schema definition for the Problem entity.
-type Problem struct {
+// Task holds the schema definition for the Task entity.
+type Question struct {
 	ent.Schema
 }
 
 // Fields of the Problem.
-func (Problem) Fields() []ent.Field {
+func (Question) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("id").
 			Positive().
@@ -25,15 +25,15 @@ func (Problem) Fields() []ent.Field {
 		field.Time("done_date_time").
 			Optional().
 			Nillable(),
-		field.String("solution").
+		field.String("answer").
 			Optional().
 			Nillable(),
 	}
 }
 
-// // Edges of the Problem.
-// func (Problem) Edges() []ent.Edge {
-// 	// Note: Parent-child relationships are handled through ContainerChild join table
-// 	// using parent_type/child_type enums, not through Ent edges
-// 	return []ent.Edge{}
-// }
+// Edges of the Question.
+//func (Question) Edges() []ent.Edge {
+//	// Note: Parent-child relationships are handled through ContainerChild join table
+//	// using parent_type/child_type enums, not through Ent edges
+//	return []ent.Edge{}
+//}

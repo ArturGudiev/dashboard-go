@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/predicate"
+	"arturgudiev/dashboard/ent/question"
 	"context"
 	"fmt"
 	"math"
@@ -15,64 +15,64 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// ContainerChildQuery is the builder for querying ContainerChild entities.
-type ContainerChildQuery struct {
+// QuestionQuery is the builder for querying Question entities.
+type QuestionQuery struct {
 	config
 	ctx        *QueryContext
-	order      []containerchild.OrderOption
+	order      []question.OrderOption
 	inters     []Interceptor
-	predicates []predicate.ContainerChild
+	predicates []predicate.Question
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the ContainerChildQuery builder.
-func (_q *ContainerChildQuery) Where(ps ...predicate.ContainerChild) *ContainerChildQuery {
+// Where adds a new predicate for the QuestionQuery builder.
+func (_q *QuestionQuery) Where(ps ...predicate.Question) *QuestionQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *ContainerChildQuery) Limit(limit int) *ContainerChildQuery {
+func (_q *QuestionQuery) Limit(limit int) *QuestionQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *ContainerChildQuery) Offset(offset int) *ContainerChildQuery {
+func (_q *QuestionQuery) Offset(offset int) *QuestionQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *ContainerChildQuery) Unique(unique bool) *ContainerChildQuery {
+func (_q *QuestionQuery) Unique(unique bool) *QuestionQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *ContainerChildQuery) Order(o ...containerchild.OrderOption) *ContainerChildQuery {
+func (_q *QuestionQuery) Order(o ...question.OrderOption) *QuestionQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
-// First returns the first ContainerChild entity from the query.
-// Returns a *NotFoundError when no ContainerChild was found.
-func (_q *ContainerChildQuery) First(ctx context.Context) (*ContainerChild, error) {
+// First returns the first Question entity from the query.
+// Returns a *NotFoundError when no Question was found.
+func (_q *QuestionQuery) First(ctx context.Context) (*Question, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{containerchild.Label}
+		return nil, &NotFoundError{question.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *ContainerChildQuery) FirstX(ctx context.Context) *ContainerChild {
+func (_q *QuestionQuery) FirstX(ctx context.Context) *Question {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -80,22 +80,22 @@ func (_q *ContainerChildQuery) FirstX(ctx context.Context) *ContainerChild {
 	return node
 }
 
-// FirstID returns the first ContainerChild ID from the query.
-// Returns a *NotFoundError when no ContainerChild ID was found.
-func (_q *ContainerChildQuery) FirstID(ctx context.Context) (id int, err error) {
+// FirstID returns the first Question ID from the query.
+// Returns a *NotFoundError when no Question ID was found.
+func (_q *QuestionQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{containerchild.Label}
+		err = &NotFoundError{question.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *ContainerChildQuery) FirstIDX(ctx context.Context) int {
+func (_q *QuestionQuery) FirstIDX(ctx context.Context) int {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -103,10 +103,10 @@ func (_q *ContainerChildQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns a single ContainerChild entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one ContainerChild entity is found.
-// Returns a *NotFoundError when no ContainerChild entities are found.
-func (_q *ContainerChildQuery) Only(ctx context.Context) (*ContainerChild, error) {
+// Only returns a single Question entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Question entity is found.
+// Returns a *NotFoundError when no Question entities are found.
+func (_q *QuestionQuery) Only(ctx context.Context) (*Question, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -115,14 +115,14 @@ func (_q *ContainerChildQuery) Only(ctx context.Context) (*ContainerChild, error
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{containerchild.Label}
+		return nil, &NotFoundError{question.Label}
 	default:
-		return nil, &NotSingularError{containerchild.Label}
+		return nil, &NotSingularError{question.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *ContainerChildQuery) OnlyX(ctx context.Context) *ContainerChild {
+func (_q *QuestionQuery) OnlyX(ctx context.Context) *Question {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -130,10 +130,10 @@ func (_q *ContainerChildQuery) OnlyX(ctx context.Context) *ContainerChild {
 	return node
 }
 
-// OnlyID is like Only, but returns the only ContainerChild ID in the query.
-// Returns a *NotSingularError when more than one ContainerChild ID is found.
+// OnlyID is like Only, but returns the only Question ID in the query.
+// Returns a *NotSingularError when more than one Question ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *ContainerChildQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *QuestionQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -142,15 +142,15 @@ func (_q *ContainerChildQuery) OnlyID(ctx context.Context) (id int, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{containerchild.Label}
+		err = &NotFoundError{question.Label}
 	default:
-		err = &NotSingularError{containerchild.Label}
+		err = &NotSingularError{question.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *ContainerChildQuery) OnlyIDX(ctx context.Context) int {
+func (_q *QuestionQuery) OnlyIDX(ctx context.Context) int {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -158,18 +158,18 @@ func (_q *ContainerChildQuery) OnlyIDX(ctx context.Context) int {
 	return id
 }
 
-// All executes the query and returns a list of ContainerChilds.
-func (_q *ContainerChildQuery) All(ctx context.Context) ([]*ContainerChild, error) {
+// All executes the query and returns a list of Questions.
+func (_q *QuestionQuery) All(ctx context.Context) ([]*Question, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*ContainerChild, *ContainerChildQuery]()
-	return withInterceptors[[]*ContainerChild](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*Question, *QuestionQuery]()
+	return withInterceptors[[]*Question](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *ContainerChildQuery) AllX(ctx context.Context) []*ContainerChild {
+func (_q *QuestionQuery) AllX(ctx context.Context) []*Question {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -177,20 +177,20 @@ func (_q *ContainerChildQuery) AllX(ctx context.Context) []*ContainerChild {
 	return nodes
 }
 
-// IDs executes the query and returns a list of ContainerChild IDs.
-func (_q *ContainerChildQuery) IDs(ctx context.Context) (ids []int, err error) {
+// IDs executes the query and returns a list of Question IDs.
+func (_q *QuestionQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(containerchild.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(question.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *ContainerChildQuery) IDsX(ctx context.Context) []int {
+func (_q *QuestionQuery) IDsX(ctx context.Context) []int {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -199,16 +199,16 @@ func (_q *ContainerChildQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (_q *ContainerChildQuery) Count(ctx context.Context) (int, error) {
+func (_q *QuestionQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*ContainerChildQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*QuestionQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *ContainerChildQuery) CountX(ctx context.Context) int {
+func (_q *QuestionQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -217,7 +217,7 @@ func (_q *ContainerChildQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *ContainerChildQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *QuestionQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -230,7 +230,7 @@ func (_q *ContainerChildQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *ContainerChildQuery) ExistX(ctx context.Context) bool {
+func (_q *QuestionQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -238,18 +238,18 @@ func (_q *ContainerChildQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the ContainerChildQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the QuestionQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *ContainerChildQuery) Clone() *ContainerChildQuery {
+func (_q *QuestionQuery) Clone() *QuestionQuery {
 	if _q == nil {
 		return nil
 	}
-	return &ContainerChildQuery{
+	return &QuestionQuery{
 		config:     _q.config,
 		ctx:        _q.ctx.Clone(),
-		order:      append([]containerchild.OrderOption{}, _q.order...),
+		order:      append([]question.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.ContainerChild{}, _q.predicates...),
+		predicates: append([]predicate.Question{}, _q.predicates...),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -262,19 +262,19 @@ func (_q *ContainerChildQuery) Clone() *ContainerChildQuery {
 // Example:
 //
 //	var v []struct {
-//		ParentType schema.ContainerType `json:"parent_type,omitempty"`
+//		Description string `json:"description,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.ContainerChild.Query().
-//		GroupBy(containerchild.FieldParentType).
+//	client.Question.Query().
+//		GroupBy(question.FieldDescription).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *ContainerChildQuery) GroupBy(field string, fields ...string) *ContainerChildGroupBy {
+func (_q *QuestionQuery) GroupBy(field string, fields ...string) *QuestionGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ContainerChildGroupBy{build: _q}
+	grbuild := &QuestionGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = containerchild.Label
+	grbuild.label = question.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -285,26 +285,26 @@ func (_q *ContainerChildQuery) GroupBy(field string, fields ...string) *Containe
 // Example:
 //
 //	var v []struct {
-//		ParentType schema.ContainerType `json:"parent_type,omitempty"`
+//		Description string `json:"description,omitempty"`
 //	}
 //
-//	client.ContainerChild.Query().
-//		Select(containerchild.FieldParentType).
+//	client.Question.Query().
+//		Select(question.FieldDescription).
 //		Scan(ctx, &v)
-func (_q *ContainerChildQuery) Select(fields ...string) *ContainerChildSelect {
+func (_q *QuestionQuery) Select(fields ...string) *QuestionSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &ContainerChildSelect{ContainerChildQuery: _q}
-	sbuild.label = containerchild.Label
+	sbuild := &QuestionSelect{QuestionQuery: _q}
+	sbuild.label = question.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a ContainerChildSelect configured with the given aggregations.
-func (_q *ContainerChildQuery) Aggregate(fns ...AggregateFunc) *ContainerChildSelect {
+// Aggregate returns a QuestionSelect configured with the given aggregations.
+func (_q *QuestionQuery) Aggregate(fns ...AggregateFunc) *QuestionSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *ContainerChildQuery) prepareQuery(ctx context.Context) error {
+func (_q *QuestionQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -316,7 +316,7 @@ func (_q *ContainerChildQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !containerchild.ValidColumn(f) {
+		if !question.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -330,16 +330,16 @@ func (_q *ContainerChildQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (_q *ContainerChildQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ContainerChild, error) {
+func (_q *QuestionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Question, error) {
 	var (
-		nodes = []*ContainerChild{}
+		nodes = []*Question{}
 		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*ContainerChild).scanValues(nil, columns)
+		return (*Question).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &ContainerChild{config: _q.config}
+		node := &Question{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
@@ -355,7 +355,7 @@ func (_q *ContainerChildQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	return nodes, nil
 }
 
-func (_q *ContainerChildQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *QuestionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
@@ -364,8 +364,8 @@ func (_q *ContainerChildQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *ContainerChildQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(containerchild.Table, containerchild.Columns, sqlgraph.NewFieldSpec(containerchild.FieldID, field.TypeInt))
+func (_q *QuestionQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(question.Table, question.Columns, sqlgraph.NewFieldSpec(question.FieldID, field.TypeInt))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -374,9 +374,9 @@ func (_q *ContainerChildQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, containerchild.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, question.FieldID)
 		for i := range fields {
-			if fields[i] != containerchild.FieldID {
+			if fields[i] != question.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -404,12 +404,12 @@ func (_q *ContainerChildQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *ContainerChildQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *QuestionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(containerchild.Table)
+	t1 := builder.Table(question.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = containerchild.Columns
+		columns = question.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -436,28 +436,28 @@ func (_q *ContainerChildQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// ContainerChildGroupBy is the group-by builder for ContainerChild entities.
-type ContainerChildGroupBy struct {
+// QuestionGroupBy is the group-by builder for Question entities.
+type QuestionGroupBy struct {
 	selector
-	build *ContainerChildQuery
+	build *QuestionQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *ContainerChildGroupBy) Aggregate(fns ...AggregateFunc) *ContainerChildGroupBy {
+func (_g *QuestionGroupBy) Aggregate(fns ...AggregateFunc) *QuestionGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *ContainerChildGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *QuestionGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ContainerChildQuery, *ContainerChildGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*QuestionQuery, *QuestionGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *ContainerChildGroupBy) sqlScan(ctx context.Context, root *ContainerChildQuery, v any) error {
+func (_g *QuestionGroupBy) sqlScan(ctx context.Context, root *QuestionQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -484,28 +484,28 @@ func (_g *ContainerChildGroupBy) sqlScan(ctx context.Context, root *ContainerChi
 	return sql.ScanSlice(rows, v)
 }
 
-// ContainerChildSelect is the builder for selecting fields of ContainerChild entities.
-type ContainerChildSelect struct {
-	*ContainerChildQuery
+// QuestionSelect is the builder for selecting fields of Question entities.
+type QuestionSelect struct {
+	*QuestionQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *ContainerChildSelect) Aggregate(fns ...AggregateFunc) *ContainerChildSelect {
+func (_s *QuestionSelect) Aggregate(fns ...AggregateFunc) *QuestionSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *ContainerChildSelect) Scan(ctx context.Context, v any) error {
+func (_s *QuestionSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ContainerChildQuery, *ContainerChildSelect](ctx, _s.ContainerChildQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*QuestionQuery, *QuestionSelect](ctx, _s.QuestionQuery, _s, _s.inters, v)
 }
 
-func (_s *ContainerChildSelect) sqlScan(ctx context.Context, root *ContainerChildQuery, v any) error {
+func (_s *QuestionSelect) sqlScan(ctx context.Context, root *QuestionQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {

@@ -16,6 +16,8 @@ type Tx struct {
 	ContainerChild *ContainerChildClient
 	// Problem is the client for interacting with the Problem builders.
 	Problem *ProblemClient
+	// Question is the client for interacting with the Question builders.
+	Question *QuestionClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Test is the client for interacting with the Test builders.
@@ -153,6 +155,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.ContainerChild = NewContainerChildClient(tx.config)
 	tx.Problem = NewProblemClient(tx.config)
+	tx.Question = NewQuestionClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Test = NewTestClient(tx.config)
 }

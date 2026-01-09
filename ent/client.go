@@ -13,6 +13,7 @@ import (
 
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/problem"
+	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
 
@@ -30,6 +31,8 @@ type Client struct {
 	ContainerChild *ContainerChildClient
 	// Problem is the client for interacting with the Problem builders.
 	Problem *ProblemClient
+	// Question is the client for interacting with the Question builders.
+	Question *QuestionClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Test is the client for interacting with the Test builders.
@@ -47,6 +50,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.ContainerChild = NewContainerChildClient(c.config)
 	c.Problem = NewProblemClient(c.config)
+	c.Question = NewQuestionClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Test = NewTestClient(c.config)
 }
@@ -143,6 +147,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:         cfg,
 		ContainerChild: NewContainerChildClient(cfg),
 		Problem:        NewProblemClient(cfg),
+		Question:       NewQuestionClient(cfg),
 		Task:           NewTaskClient(cfg),
 		Test:           NewTestClient(cfg),
 	}, nil
@@ -166,6 +171,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:         cfg,
 		ContainerChild: NewContainerChildClient(cfg),
 		Problem:        NewProblemClient(cfg),
+		Question:       NewQuestionClient(cfg),
 		Task:           NewTaskClient(cfg),
 		Test:           NewTestClient(cfg),
 	}, nil
@@ -198,6 +204,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.ContainerChild.Use(hooks...)
 	c.Problem.Use(hooks...)
+	c.Question.Use(hooks...)
 	c.Task.Use(hooks...)
 	c.Test.Use(hooks...)
 }
@@ -207,6 +214,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.ContainerChild.Intercept(interceptors...)
 	c.Problem.Intercept(interceptors...)
+	c.Question.Intercept(interceptors...)
 	c.Task.Intercept(interceptors...)
 	c.Test.Intercept(interceptors...)
 }
@@ -218,6 +226,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ContainerChild.mutate(ctx, m)
 	case *ProblemMutation:
 		return c.Problem.mutate(ctx, m)
+	case *QuestionMutation:
+		return c.Question.mutate(ctx, m)
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
 	case *TestMutation:
@@ -493,6 +503,139 @@ func (c *ProblemClient) mutate(ctx context.Context, m *ProblemMutation) (Value, 
 	}
 }
 
+// QuestionClient is a client for the Question schema.
+type QuestionClient struct {
+	config
+}
+
+// NewQuestionClient returns a client for the Question from the given config.
+func NewQuestionClient(c config) *QuestionClient {
+	return &QuestionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `question.Hooks(f(g(h())))`.
+func (c *QuestionClient) Use(hooks ...Hook) {
+	c.hooks.Question = append(c.hooks.Question, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `question.Intercept(f(g(h())))`.
+func (c *QuestionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Question = append(c.inters.Question, interceptors...)
+}
+
+// Create returns a builder for creating a Question entity.
+func (c *QuestionClient) Create() *QuestionCreate {
+	mutation := newQuestionMutation(c.config, OpCreate)
+	return &QuestionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Question entities.
+func (c *QuestionClient) CreateBulk(builders ...*QuestionCreate) *QuestionCreateBulk {
+	return &QuestionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *QuestionClient) MapCreateBulk(slice any, setFunc func(*QuestionCreate, int)) *QuestionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &QuestionCreateBulk{err: fmt.Errorf("calling to QuestionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*QuestionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &QuestionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Question.
+func (c *QuestionClient) Update() *QuestionUpdate {
+	mutation := newQuestionMutation(c.config, OpUpdate)
+	return &QuestionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *QuestionClient) UpdateOne(_m *Question) *QuestionUpdateOne {
+	mutation := newQuestionMutation(c.config, OpUpdateOne, withQuestion(_m))
+	return &QuestionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *QuestionClient) UpdateOneID(id int) *QuestionUpdateOne {
+	mutation := newQuestionMutation(c.config, OpUpdateOne, withQuestionID(id))
+	return &QuestionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Question.
+func (c *QuestionClient) Delete() *QuestionDelete {
+	mutation := newQuestionMutation(c.config, OpDelete)
+	return &QuestionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *QuestionClient) DeleteOne(_m *Question) *QuestionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *QuestionClient) DeleteOneID(id int) *QuestionDeleteOne {
+	builder := c.Delete().Where(question.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &QuestionDeleteOne{builder}
+}
+
+// Query returns a query builder for Question.
+func (c *QuestionClient) Query() *QuestionQuery {
+	return &QuestionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeQuestion},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Question entity by its id.
+func (c *QuestionClient) Get(ctx context.Context, id int) (*Question, error) {
+	return c.Query().Where(question.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *QuestionClient) GetX(ctx context.Context, id int) *Question {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *QuestionClient) Hooks() []Hook {
+	return c.hooks.Question
+}
+
+// Interceptors returns the client interceptors.
+func (c *QuestionClient) Interceptors() []Interceptor {
+	return c.inters.Question
+}
+
+func (c *QuestionClient) mutate(ctx context.Context, m *QuestionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&QuestionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&QuestionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&QuestionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&QuestionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Question mutation op: %q", m.Op())
+	}
+}
+
 // TaskClient is a client for the Task schema.
 type TaskClient struct {
 	config
@@ -762,9 +905,9 @@ func (c *TestClient) mutate(ctx context.Context, m *TestMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ContainerChild, Problem, Task, Test []ent.Hook
+		ContainerChild, Problem, Question, Task, Test []ent.Hook
 	}
 	inters struct {
-		ContainerChild, Problem, Task, Test []ent.Interceptor
+		ContainerChild, Problem, Question, Task, Test []ent.Interceptor
 	}
 )

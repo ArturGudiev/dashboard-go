@@ -24,7 +24,6 @@ func (Test) Fields() []ent.Field {
 }
 
 // Edges of the Test.
-func (Test) Edges() []ent.Edge {
-	return nil
-}
-
+//func (Test) Edges() []ent.Edge {
+//	return nil
+//}
