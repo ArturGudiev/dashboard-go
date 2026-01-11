@@ -81,6 +81,26 @@ func (s *ContainerService) GetOpenProblems(ctx context.Context, containerType sc
 	return openProblems, nil
 }
 
+func (s *ContainerService) GetOpenQuestions(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Question, error) {
+	var openQuestions []*ent.Question
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeQuestion)
+
+	if err == nil && len(childRelations) > 0 {
+		// Filter to only open Questions - load Questions manually since edges don't exist
+		for _, relation := range childRelations {
+			childQuestion, err := s.client.Question.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+			// Only include Questions that don't have a solution (open Questions)
+			if childQuestion.Answer == nil {
+				openQuestions = append(openQuestions, childQuestion)
+			}
+		}
+	}
+	return openQuestions, nil
+}
+
 func (s *ContainerService) GetOpenProblemsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
 	openProblems := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeProblem)
@@ -224,6 +244,19 @@ func (s *ContainerService) PrintProblems(problems []*ent.Problem) {
 	}
 }
 
+func (s *ContainerService) PrintQuestions(questions []*ent.Question) {
+	if len(questions) > 0 {
+		fmt.Println("\nChild Questions:")
+		for i, childProblem := range questions {
+			status := "Open"
+			if childProblem.Answer != nil {
+				status = "Solved"
+			}
+			fmt.Printf("  %d. [ID: %d] %s - %s\n", i+1, childProblem.ID, status, childProblem.Description)
+		}
+	}
+}
+
 func (s *ContainerService) AddSubproblem(ctx context.Context, parentType schema.ContainerType, parentID int, description string) error {
 	// Create the new problem (not done - solution is null by default)
 	newProblem, err := s.client.Problem.Create().
@@ -273,6 +306,58 @@ func (s *ContainerService) AddSubproblem(ctx context.Context, parentType schema.
 	}
 
 	fmt.Printf("Problem created successfully! ID: %d\n", newProblem.ID)
+	return nil
+}
+
+func (s *ContainerService) AddSubquestion(ctx context.Context, parentType schema.ContainerType, parentID int, description string) error {
+	// Create the new question (not done - answer is null by default)
+	newQuestion, err := s.client.Question.Create().
+		SetDescription(description).
+		SetTags([]string{}).
+		SetNotes("").
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create question: %v", err)
+	}
+
+	// Get the count of existing children to set child_order
+	childCount, err := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ParentTypeEQ(parentType),
+			containerchild.ParentID(parentID),
+			containerchild.ChildTypeEQ(schema.ContainerTypeQuestion),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count children: %v", err)
+	}
+
+	// Get the count of existing parents to set parent_order
+	parentCount, err := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ChildTypeEQ(parentType),
+			containerchild.ChildID(parentID),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count parents: %v", err)
+	}
+
+	// Create the parent-child relationship
+	_, err = s.client.ContainerChild.Create().
+		SetParentType(parentType).
+		SetParentID(parentID).
+		SetChildType(schema.ContainerTypeQuestion).
+		SetChildID(newQuestion.ID).
+		SetChildOrder(childCount).
+		SetParentOrder(parentCount).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create relationship: %v", err)
+	}
+
+	fmt.Printf("Question created successfully! ID: %d\n", newQuestion.ID)
 	return nil
 }
 

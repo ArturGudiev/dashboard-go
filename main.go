@@ -88,6 +88,13 @@ func main() {
 	router.POST("/new-problem", h.NewProblem)
 	router.PUT("/update-problem", h.UpdateProblem)
 
+	// Question routes
+	router.GET("/question/:id", h.GetQuestionByID)
+	router.POST("/get-questions", h.GetQuestionsByIDs)
+	router.POST("/new-question", h.NewQuestion)
+	router.PUT("/update-question", h.UpdateQuestion)
+	router.POST("/answer-question/:id", h.AnswerQuestion)
+
 	// Start server
 	port := os.Getenv("PORT")
 	if port == "" {

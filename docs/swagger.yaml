@@ -23,6 +23,13 @@ definitions:
           type: string
         type: array
     type: object
+  handlers.AnswerQuestionRequest:
+    properties:
+      answer:
+        type: string
+    required:
+    - answer
+    type: object
   handlers.IDsRequest:
     properties:
       ids:
@@ -39,6 +46,14 @@ definitions:
         $ref: '#/definitions/models.ContainerDescription'
       problem:
         $ref: '#/definitions/models.ProblemShort'
+    type: object
+  handlers.NewQuestionRequest:
+    description: Request to create a new question with optional parent container
+    properties:
+      parent:
+        $ref: '#/definitions/models.ContainerDescription'
+      question:
+        $ref: '#/definitions/models.QuestionShort'
     type: object
   handlers.NewTaskRequest:
     properties:
@@ -257,6 +272,90 @@ definitions:
           type: string
         type: array
     type: object
+  models.QuestionFull:
+    description: Complete question information with all related entities
+    properties:
+      actions:
+        items:
+          type: integer
+        type: array
+      answer:
+        type: string
+      definitions:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      doneDateTime:
+        type: string
+      id:
+        type: integer
+      knowledgeBits:
+        items:
+          type: integer
+        type: array
+      knowledgeNodes:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parentContainers:
+        items:
+          $ref: '#/definitions/models.ContainerDescription'
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      tasks:
+        items:
+          type: integer
+        type: array
+    type: object
+  models.QuestionPartial:
+    properties:
+      answer:
+        type: string
+      description:
+        type: string
+      doneDateTime:
+        type: string
+      id:
+        type: integer
+      notes:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  models.QuestionShort:
+    description: New question creation request
+    properties:
+      description:
+        example: Fix login bug
+        type: string
+      notes:
+        example: User cannot log in
+        type: string
+      tags:
+        example:
+        - bug
+        - urgent
+        items:
+          type: string
+        type: array
+    type: object
   models.TaskFull:
     properties:
       actions:
@@ -417,6 +516,51 @@ paths:
       summary: Create anonymous task
       tags:
       - tasks
+  /answer-question/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Sets the answer for a question
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Answer request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AnswerQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.QuestionFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Answer question
+      tags:
+      - questions
   /done-tasks:
     get:
       consumes:
@@ -589,6 +733,42 @@ paths:
       summary: Get problems by IDs
       tags:
       - problems
+  /get-questions:
+    post:
+      consumes:
+      - application/json
+      description: Returns multiple questions by their IDs
+      parameters:
+      - description: List of question IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.IDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.QuestionFull'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get questions by IDs
+      tags:
+      - questions
   /get-tasks:
     post:
       consumes:
@@ -665,6 +845,46 @@ paths:
       summary: Create new problem
       tags:
       - problems
+  /new-question:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new question with optional parent relationship
+      parameters:
+      - description: Question creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.NewQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.QuestionFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new question
+      tags:
+      - questions
   /new-task:
     post:
       consumes:
@@ -744,6 +964,45 @@ paths:
       summary: Get problem by ID
       tags:
       - problems
+  /question/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a question by its ID
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.QuestionFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get question by ID
+      tags:
+      - questions
   /solve-problem/{id}:
     put:
       consumes:
@@ -891,6 +1150,46 @@ paths:
       summary: Update problem
       tags:
       - problems
+  /update-question:
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing question by ID
+      parameters:
+      - description: Question update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.QuestionPartial'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.QuestionFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update question
+      tags:
+      - questions
   /update-task:
     put:
       consumes:

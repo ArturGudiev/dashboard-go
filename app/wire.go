@@ -22,13 +22,13 @@ func InitializeApp() (*App, error) {
 	wire.Build(
 		// Provider for ent.Client (includes migration)
 		provideEntClient,
-		// Service providers
 		services.NewTaskService,
 		services.NewProblemService,
 		services.NewContainerService,
 		services.NewCLIService,
 		services.NewTasksRepository,
 		services.NewProblemsRepository,
+		services.NewQuestionService,
 		repositories.NewQuestionsRepository,
 		services.NewChildContainerRepository,
 		// App provider
@@ -83,6 +83,7 @@ func provideApp(
 	tasksRepository *services.TasksRepository,
 	problemsRepository *services.ProblemsRepository,
 	questionsRepository *repositories.QuestionsRepository,
+	questionsService *services.QuestionService,
 	childContainerRepository *services.ChildContainerRepository,
 ) *App {
 	return &App{
@@ -94,6 +95,7 @@ func provideApp(
 		TasksRepository:          tasksRepository,
 		ProblemsRepository:       problemsRepository,
 		QuestionsRepository:      questionsRepository,
+		QuestionsService:         questionsService,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(), // Default context for CLI
 	}

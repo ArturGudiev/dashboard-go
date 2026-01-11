@@ -82,6 +82,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/answer-question/{id}": {
+            "post": {
+                "description": "Sets the answer for a question",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "questions"
+                ],
+                "summary": "Answer question",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Question ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Answer request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AnswerQuestionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.QuestionFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/done-tasks": {
             "get": {
                 "description": "Returns all done tasks where doneDateTime is today",
@@ -343,6 +411,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/get-questions": {
+            "post": {
+                "description": "Returns multiple questions by their IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "questions"
+                ],
+                "summary": "Get questions by IDs",
+                "parameters": [
+                    {
+                        "description": "List of question IDs",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.IDsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.QuestionFull"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/get-tasks": {
             "post": {
                 "description": "Returns multiple tasks by their IDs",
@@ -427,6 +550,67 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/new-question": {
+            "post": {
+                "description": "Creates a new question with optional parent relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "questions"
+                ],
+                "summary": "Create new question",
+                "parameters": [
+                    {
+                        "description": "Question creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NewQuestionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.QuestionFull"
                         }
                     },
                     "400": {
@@ -547,6 +731,65 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/question/{id}": {
+            "get": {
+                "description": "Returns a question by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "questions"
+                ],
+                "summary": "Get question by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Question ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.QuestionFull"
                         }
                     },
                     "400": {
@@ -802,6 +1045,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/update-question": {
+            "put": {
+                "description": "Updates an existing question by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "questions"
+                ],
+                "summary": "Update question",
+                "parameters": [
+                    {
+                        "description": "Question update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.QuestionPartial"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.QuestionFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/update-task": {
             "put": {
                 "description": "Updates an existing task by ID",
@@ -897,6 +1201,17 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.AnswerQuestionRequest": {
+            "type": "object",
+            "required": [
+                "answer"
+            ],
+            "properties": {
+                "answer": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.IDsRequest": {
             "type": "object",
             "required": [
@@ -920,6 +1235,18 @@ const docTemplate = `{
                 },
                 "problem": {
                     "$ref": "#/definitions/models.ProblemShort"
+                }
+            }
+        },
+        "handlers.NewQuestionRequest": {
+            "description": "Request to create a new question with optional parent container",
+            "type": "object",
+            "properties": {
+                "parent": {
+                    "$ref": "#/definitions/models.ContainerDescription"
+                },
+                "question": {
+                    "$ref": "#/definitions/models.QuestionShort"
                 }
             }
         },
@@ -1229,6 +1556,131 @@ const docTemplate = `{
         },
         "models.ProblemShort": {
             "description": "New problem creation request",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Fix login bug"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "User cannot log in"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "bug",
+                        "urgent"
+                    ]
+                }
+            }
+        },
+        "models.QuestionFull": {
+            "description": "Complete question information with all related entities",
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "answer": {
+                    "type": "string"
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "knowledgeBits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parentContainers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContainerDescription"
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.QuestionPartial": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.QuestionShort": {
+            "description": "New question creation request",
             "type": "object",
             "properties": {
                 "description": {
