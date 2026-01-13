@@ -14,6 +14,7 @@ import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
+	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
 
@@ -33,6 +34,8 @@ type Client struct {
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
 	Question *QuestionClient
+	// Story is the client for interacting with the Story builders.
+	Story *StoryClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Test is the client for interacting with the Test builders.
@@ -51,6 +54,7 @@ func (c *Client) init() {
 	c.ContainerChild = NewContainerChildClient(c.config)
 	c.Problem = NewProblemClient(c.config)
 	c.Question = NewQuestionClient(c.config)
+	c.Story = NewStoryClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Test = NewTestClient(c.config)
 }
@@ -148,6 +152,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ContainerChild: NewContainerChildClient(cfg),
 		Problem:        NewProblemClient(cfg),
 		Question:       NewQuestionClient(cfg),
+		Story:          NewStoryClient(cfg),
 		Task:           NewTaskClient(cfg),
 		Test:           NewTestClient(cfg),
 	}, nil
@@ -172,6 +177,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ContainerChild: NewContainerChildClient(cfg),
 		Problem:        NewProblemClient(cfg),
 		Question:       NewQuestionClient(cfg),
+		Story:          NewStoryClient(cfg),
 		Task:           NewTaskClient(cfg),
 		Test:           NewTestClient(cfg),
 	}, nil
@@ -202,21 +208,21 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.ContainerChild.Use(hooks...)
-	c.Problem.Use(hooks...)
-	c.Question.Use(hooks...)
-	c.Task.Use(hooks...)
-	c.Test.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.ContainerChild, c.Problem, c.Question, c.Story, c.Task, c.Test,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.ContainerChild.Intercept(interceptors...)
-	c.Problem.Intercept(interceptors...)
-	c.Question.Intercept(interceptors...)
-	c.Task.Intercept(interceptors...)
-	c.Test.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.ContainerChild, c.Problem, c.Question, c.Story, c.Task, c.Test,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -228,6 +234,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Problem.mutate(ctx, m)
 	case *QuestionMutation:
 		return c.Question.mutate(ctx, m)
+	case *StoryMutation:
+		return c.Story.mutate(ctx, m)
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
 	case *TestMutation:
@@ -636,6 +644,139 @@ func (c *QuestionClient) mutate(ctx context.Context, m *QuestionMutation) (Value
 	}
 }
 
+// StoryClient is a client for the Story schema.
+type StoryClient struct {
+	config
+}
+
+// NewStoryClient returns a client for the Story from the given config.
+func NewStoryClient(c config) *StoryClient {
+	return &StoryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `story.Hooks(f(g(h())))`.
+func (c *StoryClient) Use(hooks ...Hook) {
+	c.hooks.Story = append(c.hooks.Story, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `story.Intercept(f(g(h())))`.
+func (c *StoryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Story = append(c.inters.Story, interceptors...)
+}
+
+// Create returns a builder for creating a Story entity.
+func (c *StoryClient) Create() *StoryCreate {
+	mutation := newStoryMutation(c.config, OpCreate)
+	return &StoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Story entities.
+func (c *StoryClient) CreateBulk(builders ...*StoryCreate) *StoryCreateBulk {
+	return &StoryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StoryClient) MapCreateBulk(slice any, setFunc func(*StoryCreate, int)) *StoryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StoryCreateBulk{err: fmt.Errorf("calling to StoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StoryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StoryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Story.
+func (c *StoryClient) Update() *StoryUpdate {
+	mutation := newStoryMutation(c.config, OpUpdate)
+	return &StoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StoryClient) UpdateOne(_m *Story) *StoryUpdateOne {
+	mutation := newStoryMutation(c.config, OpUpdateOne, withStory(_m))
+	return &StoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StoryClient) UpdateOneID(id int) *StoryUpdateOne {
+	mutation := newStoryMutation(c.config, OpUpdateOne, withStoryID(id))
+	return &StoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Story.
+func (c *StoryClient) Delete() *StoryDelete {
+	mutation := newStoryMutation(c.config, OpDelete)
+	return &StoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StoryClient) DeleteOne(_m *Story) *StoryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StoryClient) DeleteOneID(id int) *StoryDeleteOne {
+	builder := c.Delete().Where(story.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StoryDeleteOne{builder}
+}
+
+// Query returns a query builder for Story.
+func (c *StoryClient) Query() *StoryQuery {
+	return &StoryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeStory},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Story entity by its id.
+func (c *StoryClient) Get(ctx context.Context, id int) (*Story, error) {
+	return c.Query().Where(story.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StoryClient) GetX(ctx context.Context, id int) *Story {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *StoryClient) Hooks() []Hook {
+	return c.hooks.Story
+}
+
+// Interceptors returns the client interceptors.
+func (c *StoryClient) Interceptors() []Interceptor {
+	return c.inters.Story
+}
+
+func (c *StoryClient) mutate(ctx context.Context, m *StoryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Story mutation op: %q", m.Op())
+	}
+}
+
 // TaskClient is a client for the Task schema.
 type TaskClient struct {
 	config
@@ -905,9 +1046,9 @@ func (c *TestClient) mutate(ctx context.Context, m *TestMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ContainerChild, Problem, Question, Task, Test []ent.Hook
+		ContainerChild, Problem, Question, Story, Task, Test []ent.Hook
 	}
 	inters struct {
-		ContainerChild, Problem, Question, Task, Test []ent.Interceptor
+		ContainerChild, Problem, Question, Story, Task, Test []ent.Interceptor
 	}
 )

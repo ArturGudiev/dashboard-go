@@ -95,6 +95,12 @@ func main() {
 	router.PUT("/update-question", h.UpdateQuestion)
 	router.POST("/answer-question/:id", h.AnswerQuestion)
 
+	// Stories routes
+	router.GET("/story/:id", h.GetStoryByID)
+	router.GET("/new-story", h.NewStory)
+	router.POST("/get-stories", h.GetStoriesByIDs)
+	// router.PUT("/update-story", h.UpdateStory)
+
 	// Start server
 	port := os.Getenv("PORT")
 	if port == "" {

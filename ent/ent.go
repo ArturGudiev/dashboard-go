@@ -6,6 +6,7 @@ import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
+	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
 	"context"
@@ -80,6 +81,7 @@ func checkColumn(t, c string) error {
 			containerchild.Table: containerchild.ValidColumn,
 			problem.Table:        problem.ValidColumn,
 			question.Table:       question.ValidColumn,
+			story.Table:          story.ValidColumn,
 			task.Table:           task.ValidColumn,
 			test.Table:           test.ValidColumn,
 		})

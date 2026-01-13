@@ -158,6 +158,20 @@ func (s *ContainerService) GetDescription(ctx context.Context, containerType sch
 		}
 		result := fmt.Sprintf("%s-%d %s", containerType, ID, problem.Description)
 		return &result, nil
+	case schema.ContainerTypeQuestion:
+		question, err := s.client.Question.Get(ctx, ID)
+		if err != nil {
+			return nil, err
+		}
+		result := fmt.Sprintf("%s-%d %s", containerType, ID, question.Description)
+		return &result, nil
+	case schema.ContainerTypeStory:
+		story, err := s.client.Story.Get(ctx, ID)
+		if err != nil {
+			return nil, err
+		}
+		result := fmt.Sprintf("%s-%d %s", containerType, ID, story.Description)
+		return &result, nil
 	default:
 		return nil, fmt.Errorf("unsupported container type: %s", containerType)
 	}

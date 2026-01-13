@@ -19,6 +19,8 @@ type App struct {
 	ProblemsRepository       *services.ProblemsRepository
 	QuestionsRepository      *repositories.QuestionsRepository
 	QuestionsService         *services.QuestionService
+	StoriesRepository        *repositories.StoriesRepository
+	StoriesService           *services.StoriesService
 	ChildContainerRepository *services.ChildContainerRepository
 	ctx                      context.Context // Default context for CLI operations
 }

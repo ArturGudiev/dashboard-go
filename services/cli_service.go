@@ -327,6 +327,30 @@ func (s *CLIService) PrintQuestionInfo(ctx context.Context, q *ent.Question, sub
 	fmt.Println()
 }
 
+func (s *CLIService) PrintStoryInfo(ctx context.Context, st *ent.Story, subtasks []*ent.Task, problems []*ent.Problem, questions []*ent.Question) {
+	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeStory, st.ID)
+
+	fmt.Println(strings.Repeat("=", 80))
+	color.Cyan("\tStory ID: %d\n", st.ID)
+	fmt.Printf("\tDescription: %s\n", st.Description)
+	fmt.Printf("\tStatus: %s\n", map[bool]string{true: "Closed", false: "Open"}[st.Closed])
+	if st.Notes != "" {
+		fmt.Printf("Notes: %s\n", st.Notes)
+	}
+	if len(st.Tags) > 0 {
+		fmt.Printf("Tags: %s\n", strings.Join(st.Tags, ", "))
+	}
+	if st.DoneDateTime != nil {
+		fmt.Printf("Done Date: %s\n", st.DoneDateTime.Format("2006-01-02 15:04:05"))
+	}
+	fmt.Println(strings.Repeat("=", 80))
+
+	s.containerService.PrintSubtasks(subtasks)
+	s.containerService.PrintProblems(problems)
+	s.containerService.PrintQuestions(questions)
+	fmt.Println()
+}
+
 func (s *CLIService) ViewProblemInteractive(ctx context.Context, id int) {
 	scanner := bufio.NewScanner(os.Stdin)
 	currentID := id
@@ -531,6 +555,103 @@ func (s *CLIService) ViewQuestionInteractive(ctx context.Context, id int) {
 	}
 }
 
+func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
+	scanner := bufio.NewScanner(os.Stdin)
+	currentID := id
+
+	for {
+		// Clear screen before printing
+		utils.ClearScreen()
+		story, err := s.client.Story.Get(ctx, currentID)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				fmt.Printf("Story %d not found.\n", currentID)
+			} else {
+				fmt.Printf("Error getting story: %v\n", err)
+			}
+			return
+		}
+		subtasks, _ := s.containerService.GetOpenSubtasks(ctx, schema.ContainerTypeStory, currentID)
+		problems, _ := s.containerService.GetOpenProblems(ctx, schema.ContainerTypeStory, currentID)
+		questions, _ := s.containerService.GetOpenQuestions(ctx, schema.ContainerTypeStory, currentID)
+
+		s.PrintStoryInfo(ctx, story, subtasks, problems, questions)
+
+		line := utils.GetUserInput(scanner)
+		if line == "" {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddTaskCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddProblemCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddQuestionCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
+			continue
+		}
+
+		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectProblemCommand(ctx, line, problems); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectQuestionCommand(ctx, line, questions); wasIt {
+			continue
+		}
+
+		if line == "u" {
+			err := s.NavigateToParent(ctx, schema.ContainerTypeStory, currentID)
+			if err != nil {
+			}
+			continue
+		}
+
+		if strings.HasPrefix(line, "ft ") {
+			indexStr := strings.TrimSpace(line[3:])
+			if indexStr == "" {
+				fmt.Println("Error: index required. Usage: ft <id>")
+				utils.WaitForUserInput()
+				continue
+			}
+
+			var taskDescriptions []string
+			mapper := func(el *ent.Task) string { return el.Description }
+			for _, el := range subtasks {
+				taskDescriptions = append(taskDescriptions, mapper(el))
+			}
+
+			fmt.Println(strings.Join(taskDescriptions, ", "))
+
+			utils.WaitForUserInput()
+			// Continue loop to refresh and show the new subtask
+			continue
+		}
+
+		lineLower := strings.ToLower(line)
+		switch lineLower {
+		case "q", "quit", "exit":
+			os.Exit(0)
+			return
+		case "r", "refresh":
+			// Continue loop to refresh (screen will be cleared at start of loop)
+			continue
+		case "":
+			// Empty input, refresh
+			continue
+		default:
+			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, 'p+ <description>' to add problem, or 'q+ <description>' to add question.\n", line)
+			utils.WaitForUserInput()
+		}
+	}
+}
+
 func (s *CLIService) ViewContainerInteractive(ctx context.Context, containerType schema.ContainerType, ID int) {
 	switch containerType {
 	case schema.ContainerTypeTask:
@@ -539,6 +660,8 @@ func (s *CLIService) ViewContainerInteractive(ctx context.Context, containerType
 		s.ViewProblemInteractive(ctx, ID)
 	case schema.ContainerTypeQuestion:
 		s.ViewQuestionInteractive(ctx, ID)
+	case schema.ContainerTypeStory:
+		s.ViewStoryInteractive(ctx, ID)
 	}
 
 }
