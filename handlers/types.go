@@ -94,23 +94,6 @@ type SolveProblemRequest struct {
 	Solution string `json:"solution" binding:"required"`
 }
 
-// ProblemResponse represents a problem response with all fields always included
-type ProblemResponse struct {
-	ID               int             `json:"id"`
-	Description      string          `json:"description"`
-	Tags             []string        `json:"tags"`
-	Notes            string          `json:"notes"`
-	Problems         []int           `json:"problems"`
-	Questions        []int           `json:"questions"`
-	Actions          []int           `json:"actions"`
-	Definitions      []int           `json:"definitions"`
-	KnowledgeBits    []int           `json:"knowledge_bits"`
-	ParentContainers [][]interface{} `json:"parent_containers"`
-	KnowledgeNodes   []int           `json:"knowledge_nodes"`
-	DoneDateTime     *time.Time      `json:"done_date_time"`
-	Solution         *string         `json:"solution"`
-}
-
 // NewQuestionRequest represents a request to create a new question with optional parent
 // @Description Request to create a new question with optional parent container
 type NewQuestionRequest struct {
@@ -121,21 +104,4 @@ type NewQuestionRequest struct {
 // AnswerQuestionRequest represents a request to answer a question
 type AnswerQuestionRequest struct {
 	Answer string `json:"answer" binding:"required"`
-}
-
-// QuestionResponse represents a question response with all fields always included
-type QuestionResponse struct {
-	ID               int             `json:"id"`
-	Description      string          `json:"description"`
-	Tags             []string        `json:"tags"`
-	Notes            string          `json:"notes"`
-	Problems         []int           `json:"problems"`
-	Questions        []int           `json:"questions"`
-	Actions          []int           `json:"actions"`
-	Definitions      []int           `json:"definitions"`
-	KnowledgeBits    []int           `json:"knowledge_bits"`
-	ParentContainers [][]interface{} `json:"parent_containers"`
-	KnowledgeNodes   []int           `json:"knowledge_nodes"`
-	DoneDateTime     *time.Time      `json:"done_date_time"`
-	Answer           *string         `json:"answer"`
 }

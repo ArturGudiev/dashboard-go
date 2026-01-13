@@ -14,9 +14,9 @@ func NewQuestionsRepository(client *ent.Client) *QuestionsRepository {
 	return &QuestionsRepository{client: client}
 }
 
-func (r *QuestionsRepository) AddSolution(ctx context.Context, ID int, solution string) error {
+func (r *QuestionsRepository) AddAnswer(ctx context.Context, ID int, answer string) error {
 	updateBuilder := r.client.Question.UpdateOneID(ID).
-		SetAnswer(solution)
+		SetAnswer(answer)
 
 	_, err := updateBuilder.Save(ctx)
 	if err != nil {

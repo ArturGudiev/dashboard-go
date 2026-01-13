@@ -154,7 +154,7 @@ func (h *Handler) NewProblem(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request  body      models.ProblemPartial  true  "Problem update request"
-// @Success      200      {object}  ProblemResponse
+// @Success      200      {object}  models.ProblemFull
 // @Failure      400      {object}  map[string]string
 // @Failure      404      {object}  map[string]string
 // @Failure      500      {object}  map[string]string

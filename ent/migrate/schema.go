@@ -82,6 +82,21 @@ var (
 		Columns:    QuestionsColumns,
 		PrimaryKey: []*schema.Column{QuestionsColumns[0]},
 	}
+	// StoriesColumns holds the columns for the "stories" table.
+	StoriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "closed", Type: field.TypeBool, Default: false},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
+	}
+	// StoriesTable holds the schema information for the "stories" table.
+	StoriesTable = &schema.Table{
+		Name:       "stories",
+		Columns:    StoriesColumns,
+		PrimaryKey: []*schema.Column{StoriesColumns[0]},
+	}
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -114,6 +129,7 @@ var (
 		ContainerChildrenTable,
 		ProblemsTable,
 		QuestionsTable,
+		StoriesTable,
 		TasksTable,
 		TestsTable,
 	}

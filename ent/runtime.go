@@ -7,6 +7,7 @@ import (
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
 )
@@ -77,6 +78,28 @@ func init() {
 	questionDescID := questionFields[0].Descriptor()
 	// question.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	question.IDValidator = questionDescID.Validators[0].(func(int) error)
+	storyFields := schema.Story{}.Fields()
+	_ = storyFields
+	// storyDescDescription is the schema descriptor for description field.
+	storyDescDescription := storyFields[1].Descriptor()
+	// story.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	story.DescriptionValidator = storyDescDescription.Validators[0].(func(string) error)
+	// storyDescTags is the schema descriptor for tags field.
+	storyDescTags := storyFields[2].Descriptor()
+	// story.DefaultTags holds the default value on creation for the tags field.
+	story.DefaultTags = storyDescTags.Default.([]string)
+	// storyDescClosed is the schema descriptor for closed field.
+	storyDescClosed := storyFields[3].Descriptor()
+	// story.DefaultClosed holds the default value on creation for the closed field.
+	story.DefaultClosed = storyDescClosed.Default.(bool)
+	// storyDescNotes is the schema descriptor for notes field.
+	storyDescNotes := storyFields[4].Descriptor()
+	// story.DefaultNotes holds the default value on creation for the notes field.
+	story.DefaultNotes = storyDescNotes.Default.(string)
+	// storyDescID is the schema descriptor for id field.
+	storyDescID := storyFields[0].Descriptor()
+	// story.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	story.IDValidator = storyDescID.Validators[0].(func(int) error)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescDescription is the schema descriptor for description field.

@@ -8,6 +8,7 @@ import (
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
 	"context"
@@ -32,6 +33,7 @@ const (
 	TypeContainerChild = "ContainerChild"
 	TypeProblem        = "Problem"
 	TypeQuestion       = "Question"
+	TypeStory          = "Story"
 	TypeTask           = "Task"
 	TypeTest           = "Test"
 )
@@ -1981,6 +1983,592 @@ func (m *QuestionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *QuestionMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Question edge %s", name)
+}
+
+// StoryMutation represents an operation that mutates the Story nodes in the graph.
+type StoryMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	description    *string
+	tags           *[]string
+	appendtags     []string
+	closed         *bool
+	notes          *string
+	done_date_time *time.Time
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*Story, error)
+	predicates     []predicate.Story
+}
+
+var _ ent.Mutation = (*StoryMutation)(nil)
+
+// storyOption allows management of the mutation configuration using functional options.
+type storyOption func(*StoryMutation)
+
+// newStoryMutation creates new mutation for the Story entity.
+func newStoryMutation(c config, op Op, opts ...storyOption) *StoryMutation {
+	m := &StoryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeStory,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withStoryID sets the ID field of the mutation.
+func withStoryID(id int) storyOption {
+	return func(m *StoryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Story
+		)
+		m.oldValue = func(ctx context.Context) (*Story, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Story.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withStory sets the old Story of the mutation.
+func withStory(node *Story) storyOption {
+	return func(m *StoryMutation) {
+		m.oldValue = func(context.Context) (*Story, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m StoryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m StoryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Story entities.
+func (m *StoryMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *StoryMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *StoryMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Story.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDescription sets the "description" field.
+func (m *StoryMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *StoryMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Story entity.
+// If the Story object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StoryMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *StoryMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetTags sets the "tags" field.
+func (m *StoryMutation) SetTags(s []string) {
+	m.tags = &s
+	m.appendtags = nil
+}
+
+// Tags returns the value of the "tags" field in the mutation.
+func (m *StoryMutation) Tags() (r []string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old "tags" field's value of the Story entity.
+// If the Story object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StoryMutation) OldTags(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTags is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// AppendTags adds s to the "tags" field.
+func (m *StoryMutation) AppendTags(s []string) {
+	m.appendtags = append(m.appendtags, s...)
+}
+
+// AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
+func (m *StoryMutation) AppendedTags() ([]string, bool) {
+	if len(m.appendtags) == 0 {
+		return nil, false
+	}
+	return m.appendtags, true
+}
+
+// ResetTags resets all changes to the "tags" field.
+func (m *StoryMutation) ResetTags() {
+	m.tags = nil
+	m.appendtags = nil
+}
+
+// SetClosed sets the "closed" field.
+func (m *StoryMutation) SetClosed(b bool) {
+	m.closed = &b
+}
+
+// Closed returns the value of the "closed" field in the mutation.
+func (m *StoryMutation) Closed() (r bool, exists bool) {
+	v := m.closed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClosed returns the old "closed" field's value of the Story entity.
+// If the Story object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StoryMutation) OldClosed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClosed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClosed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClosed: %w", err)
+	}
+	return oldValue.Closed, nil
+}
+
+// ResetClosed resets all changes to the "closed" field.
+func (m *StoryMutation) ResetClosed() {
+	m.closed = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *StoryMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *StoryMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the Story entity.
+// If the Story object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StoryMutation) OldNotes(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *StoryMutation) ResetNotes() {
+	m.notes = nil
+}
+
+// SetDoneDateTime sets the "done_date_time" field.
+func (m *StoryMutation) SetDoneDateTime(t time.Time) {
+	m.done_date_time = &t
+}
+
+// DoneDateTime returns the value of the "done_date_time" field in the mutation.
+func (m *StoryMutation) DoneDateTime() (r time.Time, exists bool) {
+	v := m.done_date_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDoneDateTime returns the old "done_date_time" field's value of the Story entity.
+// If the Story object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StoryMutation) OldDoneDateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDoneDateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDoneDateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDoneDateTime: %w", err)
+	}
+	return oldValue.DoneDateTime, nil
+}
+
+// ClearDoneDateTime clears the value of the "done_date_time" field.
+func (m *StoryMutation) ClearDoneDateTime() {
+	m.done_date_time = nil
+	m.clearedFields[story.FieldDoneDateTime] = struct{}{}
+}
+
+// DoneDateTimeCleared returns if the "done_date_time" field was cleared in this mutation.
+func (m *StoryMutation) DoneDateTimeCleared() bool {
+	_, ok := m.clearedFields[story.FieldDoneDateTime]
+	return ok
+}
+
+// ResetDoneDateTime resets all changes to the "done_date_time" field.
+func (m *StoryMutation) ResetDoneDateTime() {
+	m.done_date_time = nil
+	delete(m.clearedFields, story.FieldDoneDateTime)
+}
+
+// Where appends a list predicates to the StoryMutation builder.
+func (m *StoryMutation) Where(ps ...predicate.Story) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the StoryMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *StoryMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Story, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *StoryMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *StoryMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Story).
+func (m *StoryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *StoryMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.description != nil {
+		fields = append(fields, story.FieldDescription)
+	}
+	if m.tags != nil {
+		fields = append(fields, story.FieldTags)
+	}
+	if m.closed != nil {
+		fields = append(fields, story.FieldClosed)
+	}
+	if m.notes != nil {
+		fields = append(fields, story.FieldNotes)
+	}
+	if m.done_date_time != nil {
+		fields = append(fields, story.FieldDoneDateTime)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *StoryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case story.FieldDescription:
+		return m.Description()
+	case story.FieldTags:
+		return m.Tags()
+	case story.FieldClosed:
+		return m.Closed()
+	case story.FieldNotes:
+		return m.Notes()
+	case story.FieldDoneDateTime:
+		return m.DoneDateTime()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *StoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case story.FieldDescription:
+		return m.OldDescription(ctx)
+	case story.FieldTags:
+		return m.OldTags(ctx)
+	case story.FieldClosed:
+		return m.OldClosed(ctx)
+	case story.FieldNotes:
+		return m.OldNotes(ctx)
+	case story.FieldDoneDateTime:
+		return m.OldDoneDateTime(ctx)
+	}
+	return nil, fmt.Errorf("unknown Story field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StoryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case story.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case story.FieldTags:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
+		return nil
+	case story.FieldClosed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClosed(v)
+		return nil
+	case story.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	case story.FieldDoneDateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDoneDateTime(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Story field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *StoryMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *StoryMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StoryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Story numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *StoryMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(story.FieldDoneDateTime) {
+		fields = append(fields, story.FieldDoneDateTime)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *StoryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *StoryMutation) ClearField(name string) error {
+	switch name {
+	case story.FieldDoneDateTime:
+		m.ClearDoneDateTime()
+		return nil
+	}
+	return fmt.Errorf("unknown Story nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *StoryMutation) ResetField(name string) error {
+	switch name {
+	case story.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case story.FieldTags:
+		m.ResetTags()
+		return nil
+	case story.FieldClosed:
+		m.ResetClosed()
+		return nil
+	case story.FieldNotes:
+		m.ResetNotes()
+		return nil
+	case story.FieldDoneDateTime:
+		m.ResetDoneDateTime()
+		return nil
+	}
+	return fmt.Errorf("unknown Story field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *StoryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *StoryMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *StoryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *StoryMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *StoryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *StoryMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *StoryMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Story unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *StoryMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Story edge %s", name)
 }
 
 // TaskMutation represents an operation that mutates the Task nodes in the graph.

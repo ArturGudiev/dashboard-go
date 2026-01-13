@@ -15,6 +15,9 @@ type Problem func(*sql.Selector)
 // Question is the predicate function for question builders.
 type Question func(*sql.Selector)
 
+// Story is the predicate function for story builders.
+type Story func(*sql.Selector)
+
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)
 

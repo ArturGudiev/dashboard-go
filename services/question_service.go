@@ -22,12 +22,10 @@ type QuestionService struct {
 	childContainerRepository *ChildContainerRepository
 }
 
-// NewQuestionService creates a new QuestionService
 func NewQuestionService(client *ent.Client, containerService *ContainerService, questionsRepository *repositories.QuestionsRepository, childContainerRepository *ChildContainerRepository) *QuestionService {
 	return &QuestionService{client: client, containerService: containerService, questionsRepository: questionsRepository, childContainerRepository: childContainerRepository}
 }
 
-// GetOpenDescendantQuestions recursively gets all descendant questions that are not done
 func (s *QuestionService) GetOpenDescendantQuestions(ctx context.Context, parentQuestion *ent.Question) []*ent.Question {
 	var result []*ent.Question
 
@@ -64,37 +62,6 @@ func (s *QuestionService) GetOpenDescendantQuestions(ctx context.Context, parent
 	return result
 }
 
-func (s *QuestionService) GetParent(ctx context.Context, problem *ent.Problem) *ent.Problem { // TODO Check all
-	// Get all parent relationships where this problem is the child
-	parentRelations, err := s.client.ContainerChild.Query().
-		Where(
-			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
-			containerchild.ChildID(problem.ID),
-		).
-		All(ctx)
-
-	if err != nil || len(parentRelations) == 0 {
-		return nil
-	}
-
-	// Get the parent problem from the first relation
-	// Since edges don't support Problem, we need to check parent type and load accordingly
-	parentRelation := parentRelations[0]
-	var parentProblem *ent.Problem
-
-	if parentRelation.ParentType == schema.ContainerTypeProblem {
-		parentProblem, err = s.client.Problem.Get(ctx, parentRelation.ParentID)
-		if err != nil {
-			return nil
-		}
-		return parentProblem
-	}
-
-	// If parent is not a problem, return nil (could be a task or other type)
-	return nil
-}
-
-// FinishProblemRecursively finishes all open descendant problems of the given problem
 func (s *QuestionService) FinishQuestionRecursively(ctx context.Context, question *ent.Question) error {
 	// Recursively get all descendant problems that are not done
 	allProblemsToFinish := s.GetOpenDescendantQuestions(ctx, question)
@@ -117,7 +84,6 @@ func (s *QuestionService) FinishQuestionRecursively(ctx context.Context, questio
 	return err
 }
 
-// FinishProblemById finishes a problem and all its descendants by problem ID
 func (s *QuestionService) FinishQuestionById(ctx context.Context, questionID int) (*ent.Question, error) {
 	// Get the problem by ID
 	question, err := s.client.Question.Get(ctx, questionID)
@@ -144,9 +110,9 @@ func (s *QuestionService) GetQuestionFull(ctx context.Context, ID int) (*models.
 	if errProblem != nil {
 		return nil, errProblem
 	}
-	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeProblem, ID)
-	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeProblem, ID)
-	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeProblem, ID)
+	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeQuestion, ID)
+	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeQuestion, ID)
+	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeQuestion, ID)
 	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil {
 		return nil, errors.New("question not found")
 	}
@@ -210,29 +176,29 @@ func (s *QuestionService) GetQuestionsFull(ctx context.Context, IDs []int) ([]*m
 	return results, firstErr
 }
 
-func (s *QuestionService) AddProblem(ctx context.Context, problem models.QuestionShort, parent *models.ContainerDescription) (*models.QuestionFull, error) {
-	newProblem, err := s.questionsRepository.AddQuestion(ctx, problem.Description, problem.Tags, problem.Notes)
+func (s *QuestionService) AddQuestion(ctx context.Context, problem models.QuestionShort, parent *models.ContainerDescription) (*models.QuestionFull, error) {
+	newQuestion, err := s.questionsRepository.AddQuestion(ctx, problem.Description, problem.Tags, problem.Notes)
 	if err != nil {
 		return nil, err
 	}
 	if parent != nil {
-		_, err := s.childContainerRepository.AddConnection(ctx, parent.Type, parent.ID, schema.ContainerTypeProblem, newProblem.ID)
+		_, err := s.childContainerRepository.AddConnection(ctx, parent.Type, parent.ID, schema.ContainerTypeQuestion, newQuestion.ID)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return s.GetQuestionFull(ctx, newProblem.ID)
+	return s.GetQuestionFull(ctx, newQuestion.ID)
 }
 
-func (s *QuestionService) SolveProblem(ctx context.Context, problemID int, solution string) (*models.QuestionFull, error) {
-	err := s.questionsRepository.AddSolution(ctx, problemID, solution)
+func (s *QuestionService) AnswerQuestion(ctx context.Context, questionID int, answer string) (*models.QuestionFull, error) {
+	err := s.questionsRepository.AddAnswer(ctx, questionID, answer)
 	if err != nil {
 		return nil, err
 	}
-	return s.GetQuestionFull(ctx, problemID)
+	return s.GetQuestionFull(ctx, questionID)
 }
 
-func (s *QuestionService) UpdateProblem(ctx context.Context, questionPartial models.QuestionPartial) (*models.QuestionFull, error) {
+func (s *QuestionService) UpdateQuestion(ctx context.Context, questionPartial models.QuestionPartial) (*models.QuestionFull, error) {
 	err := s.questionsRepository.UpdateQuestion(ctx, questionPartial)
 	if err != nil {
 		return nil, err

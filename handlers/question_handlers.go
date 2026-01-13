@@ -94,7 +94,7 @@ func (h *Handler) NewQuestion(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	newQuestion, err := h.App.QuestionsService.AddProblem(ctx, req.Question, req.Parent)
+	newQuestion, err := h.App.QuestionsService.AddQuestion(ctx, req.Question, req.Parent)
 
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -129,7 +129,7 @@ func (h *Handler) UpdateQuestion(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	questionFull, err := h.App.QuestionsService.UpdateProblem(ctx, req)
+	questionFull, err := h.App.QuestionsService.UpdateQuestion(ctx, req)
 
 	if err != nil {
 		log.Printf("Error updating question: %v", err)
@@ -168,7 +168,7 @@ func (h *Handler) AnswerQuestion(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	questionFull, err := h.App.QuestionsService.SolveProblem(ctx, id, req.Answer)
+	questionFull, err := h.App.QuestionsService.AnswerQuestion(ctx, id, req.Answer)
 
 	if err != nil {
 		log.Printf("Error answering question %d: %v", id, err)

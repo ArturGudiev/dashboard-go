@@ -466,6 +466,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/get-stories": {
+            "post": {
+                "description": "Returns multiple stories by their IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stories"
+                ],
+                "summary": "Get stories by IDs",
+                "parameters": [
+                    {
+                        "description": "List of story IDs",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.IDsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.StoryFull"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/get-tasks": {
             "post": {
                 "description": "Returns multiple tasks by their IDs",
@@ -611,6 +666,67 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.QuestionFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/new-story": {
+            "post": {
+                "description": "Creates a new story with optional parent relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stories"
+                ],
+                "summary": "Create new story",
+                "parameters": [
+                    {
+                        "description": "Story creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.NewStoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.StoryFull"
                         }
                     },
                     "400": {
@@ -890,6 +1006,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/story/{id}": {
+            "get": {
+                "description": "Returns a story by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stories"
+                ],
+                "summary": "Get story by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Story ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.StoryFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/task/{id}": {
             "get": {
                 "description": "Returns a task by its ID",
@@ -1012,7 +1187,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ProblemResponse"
+                            "$ref": "#/definitions/models.ProblemFull"
                         }
                     },
                     "400": {
@@ -1074,6 +1249,67 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.QuestionFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/update-story": {
+            "put": {
+                "description": "Updates an existing story by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stories"
+                ],
+                "summary": "Update story",
+                "parameters": [
+                    {
+                        "description": "Story update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.StoryPartial"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.StoryFull"
                         }
                     },
                     "400": {
@@ -1261,75 +1497,6 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.ProblemResponse": {
-            "type": "object",
-            "properties": {
-                "actions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "definitions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "description": {
-                    "type": "string"
-                },
-                "done_date_time": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "knowledge_bits": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "knowledge_nodes": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "parent_containers": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {}
-                    }
-                },
-                "problems": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "solution": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "handlers.SolveProblemRequest": {
             "type": "object",
             "required": [
@@ -1450,6 +1617,17 @@ const docTemplate = `{
                         }
                     ],
                     "example": "task"
+                }
+            }
+        },
+        "models.NewStoryRequest": {
+            "type": "object",
+            "properties": {
+                "parent": {
+                    "$ref": "#/definitions/models.ContainerDescription"
+                },
+                "story": {
+                    "$ref": "#/definitions/models.StoryShort"
                 }
             }
         },
@@ -1681,6 +1859,129 @@ const docTemplate = `{
         },
         "models.QuestionShort": {
             "description": "New question creation request",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Fix login bug"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "User cannot log in"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "bug",
+                        "urgent"
+                    ]
+                }
+            }
+        },
+        "models.StoryFull": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "closed": {
+                    "type": "boolean"
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "knowledgeBits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parentContainers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContainerDescription"
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.StoryPartial": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.StoryShort": {
             "type": "object",
             "properties": {
                 "description": {
