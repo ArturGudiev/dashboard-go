@@ -9,6 +9,9 @@ import (
 // ContainerChild is the predicate function for containerchild builders.
 type ContainerChild func(*sql.Selector)
 
+// Epic is the predicate function for epic builders.
+type Epic func(*sql.Selector)
+
 // Problem is the predicate function for problem builders.
 type Problem func(*sql.Selector)
 

@@ -35,12 +35,14 @@ func InitializeApp() (*App, error) {
 	problemService := services.NewProblemService(client, containerService, problemsRepository, childContainerRepository)
 	tasksRepository := services.NewTasksRepository(client)
 	taskService := services.NewTaskService(client, containerService, problemService, tasksRepository, childContainerRepository)
-	cliService := services.NewCLIService(client, containerService, problemsRepository)
+	epicsRepository := repositories.NewEpicsRepository(client)
+	cliService := services.NewCLIService(client, containerService, problemsRepository, epicsRepository)
 	questionsRepository := repositories.NewQuestionsRepository(client)
 	questionService := services.NewQuestionService(client, containerService, questionsRepository, childContainerRepository)
 	storiesRepository := repositories.NewStoriesRepository(client)
 	storiesService := services.NewStoriesService(client, containerService, storiesRepository, childContainerRepository)
-	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, childContainerRepository)
+	epicsService := services.NewEpicsService(client, containerService, epicsRepository, childContainerRepository)
+	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, childContainerRepository)
 	return app, nil
 }
 
@@ -90,6 +92,8 @@ func provideApp(
 	questionsService *services.QuestionService,
 	storiesRepository *repositories.StoriesRepository,
 	storiesService *services.StoriesService,
+	epicsRepository *repositories.EpicsRepository,
+	epicsService *services.EpicsService,
 	childContainerRepository *services.ChildContainerRepository,
 ) *App {
 	return &App{
@@ -104,6 +108,8 @@ func provideApp(
 		QuestionsService:         questionsService,
 		StoriesRepository:        storiesRepository,
 		StoriesService:           storiesService,
+		EpicsRepository:          epicsRepository,
+		EpicsService:             epicsService,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(),
 	}

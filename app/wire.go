@@ -30,8 +30,10 @@ func InitializeApp() (*App, error) {
 		services.NewProblemsRepository,
 		services.NewQuestionService,
 		services.NewStoriesService,
+		services.NewEpicsService,
 		repositories.NewQuestionsRepository,
 		repositories.NewStoriesRepository,
+		repositories.NewEpicsRepository,
 		services.NewChildContainerRepository,
 		// App provider
 		provideApp,
@@ -88,6 +90,8 @@ func provideApp(
 	questionsService *services.QuestionService,
 	storiesRepository *repositories.StoriesRepository,
 	storiesService *services.StoriesService,
+	epicsRepository *repositories.EpicsRepository,
+	epicsService *services.EpicsService,
 	childContainerRepository *services.ChildContainerRepository,
 ) *App {
 	return &App{
@@ -102,6 +106,8 @@ func provideApp(
 		QuestionsService:         questionsService,
 		StoriesRepository:        storiesRepository,
 		StoriesService:           storiesService,
+		EpicsRepository:          epicsRepository,
+		EpicsService:             epicsService,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(), // Default context for CLI
 	}

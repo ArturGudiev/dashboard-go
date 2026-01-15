@@ -20,6 +20,18 @@ func (f ContainerChildFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ContainerChildMutation", m)
 }
 
+// The EpicFunc type is an adapter to allow the use of ordinary
+// function as Epic mutator.
+type EpicFunc func(context.Context, *ent.EpicMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EpicFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EpicMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EpicMutation", m)
+}
+
 // The ProblemFunc type is an adapter to allow the use of ordinary
 // function as Problem mutator.
 type ProblemFunc func(context.Context, *ent.ProblemMutation) (ent.Value, error)

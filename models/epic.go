@@ -2,12 +2,14 @@ package models
 
 import "time"
 
-type StoryFull struct {
+type EpicFull struct {
 	ID               int                    `json:"id"`
 	Description      string                 `json:"description"`
 	Tags             []string               `json:"tags"`
 	Notes            string                 `json:"notes"`
 	Closed           bool                   `json:"closed"`
+	Epics            []int                  `json:"epics"`
+	Stories          []int                  `json:"stories"`
 	Tasks            []int                  `json:"tasks"`
 	Questions        []int                  `json:"questions"`
 	Problems         []int                  `json:"problems"`
@@ -19,13 +21,13 @@ type StoryFull struct {
 	DoneDateTime     *time.Time             `json:"doneDateTime"`
 }
 
-type StoryShort struct {
+type EpicShort struct {
 	Description string   `json:"description" example:"Fix login bug"`
 	Tags        []string `json:"tags" example:"bug,urgent"`
 	Notes       string   `json:"notes" example:"User cannot log in"`
 }
 
-type StoryPartial struct {
+type EpicPartial struct {
 	ID           int        `json:"id"`
 	Description  *string    `json:"description"`
 	Tags         *[]string  `json:"tags"`
@@ -33,7 +35,7 @@ type StoryPartial struct {
 	DoneDateTime *time.Time `json:"doneDateTime"`
 }
 
-type NewStoryRequest struct {
-	Story  StoryShort            `json:"story"`
+type NewEpicRequest struct {
+	Epic   EpicShort             `json:"epic"`
 	Parent *ContainerDescription `json:"parent,omitempty"`
 }

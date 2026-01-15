@@ -46,12 +46,27 @@ func main() {
 			runCLI(application)
 			return
 		case "import":
-			// Import tasks from JSON file
+			// Import tasks/epics/stories from JSON file
+			importType := "tasks"
 			jsonPath := ""
 			if len(os.Args) > 2 {
-				jsonPath = os.Args[2]
+				importType = os.Args[2]
 			}
-			if err := importTasks(jsonPath); err != nil {
+			if len(os.Args) > 3 {
+				jsonPath = os.Args[3]
+			}
+			var err error
+			switch importType {
+			case "tasks":
+				err = importTasks(jsonPath)
+			case "epics":
+				err = importEpics(jsonPath)
+			case "stories":
+				err = importStories(jsonPath)
+			default:
+				log.Fatalf("Unknown import type: %s. Use 'tasks', 'epics', or 'stories'", importType)
+			}
+			if err != nil {
 				log.Fatalf("Import failed: %v", err)
 			}
 			return
@@ -97,9 +112,15 @@ func main() {
 
 	// Stories routes
 	router.GET("/story/:id", h.GetStoryByID)
-	router.GET("/new-story", h.NewStory)
+	router.POST("/new-story", h.NewStory)
 	router.POST("/get-stories", h.GetStoriesByIDs)
-	// router.PUT("/update-story", h.UpdateStory)
+	router.PUT("/update-story", h.UpdateStory)
+
+	// Epic routes
+	router.GET("/epic/:id", h.GetEpicByID)
+	router.POST("/get-epics", h.GetEpicsByIDs)
+	router.POST("/new-epic", h.NewEpic)
+	router.PUT("/update-epic", h.UpdateEpic)
 
 	// Start server
 	port := os.Getenv("PORT")

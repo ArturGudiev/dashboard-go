@@ -52,6 +52,21 @@ var (
 			},
 		},
 	}
+	// EpicsColumns holds the columns for the "epics" table.
+	EpicsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "closed", Type: field.TypeBool, Default: false},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
+	}
+	// EpicsTable holds the schema information for the "epics" table.
+	EpicsTable = &schema.Table{
+		Name:       "epics",
+		Columns:    EpicsColumns,
+		PrimaryKey: []*schema.Column{EpicsColumns[0]},
+	}
 	// ProblemsColumns holds the columns for the "problems" table.
 	ProblemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -127,6 +142,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ContainerChildrenTable,
+		EpicsTable,
 		ProblemsTable,
 		QuestionsTable,
 		StoriesTable,

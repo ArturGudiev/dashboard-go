@@ -12,6 +12,7 @@ import (
 	"arturgudiev/dashboard/ent/migrate"
 
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/story"
@@ -30,6 +31,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// ContainerChild is the client for interacting with the ContainerChild builders.
 	ContainerChild *ContainerChildClient
+	// Epic is the client for interacting with the Epic builders.
+	Epic *EpicClient
 	// Problem is the client for interacting with the Problem builders.
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
@@ -52,6 +55,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.ContainerChild = NewContainerChildClient(c.config)
+	c.Epic = NewEpicClient(c.config)
 	c.Problem = NewProblemClient(c.config)
 	c.Question = NewQuestionClient(c.config)
 	c.Story = NewStoryClient(c.config)
@@ -150,6 +154,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:            ctx,
 		config:         cfg,
 		ContainerChild: NewContainerChildClient(cfg),
+		Epic:           NewEpicClient(cfg),
 		Problem:        NewProblemClient(cfg),
 		Question:       NewQuestionClient(cfg),
 		Story:          NewStoryClient(cfg),
@@ -175,6 +180,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:            ctx,
 		config:         cfg,
 		ContainerChild: NewContainerChildClient(cfg),
+		Epic:           NewEpicClient(cfg),
 		Problem:        NewProblemClient(cfg),
 		Question:       NewQuestionClient(cfg),
 		Story:          NewStoryClient(cfg),
@@ -209,7 +215,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.ContainerChild, c.Problem, c.Question, c.Story, c.Task, c.Test,
+		c.ContainerChild, c.Epic, c.Problem, c.Question, c.Story, c.Task, c.Test,
 	} {
 		n.Use(hooks...)
 	}
@@ -219,7 +225,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.ContainerChild, c.Problem, c.Question, c.Story, c.Task, c.Test,
+		c.ContainerChild, c.Epic, c.Problem, c.Question, c.Story, c.Task, c.Test,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -230,6 +236,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ContainerChildMutation:
 		return c.ContainerChild.mutate(ctx, m)
+	case *EpicMutation:
+		return c.Epic.mutate(ctx, m)
 	case *ProblemMutation:
 		return c.Problem.mutate(ctx, m)
 	case *QuestionMutation:
@@ -375,6 +383,139 @@ func (c *ContainerChildClient) mutate(ctx context.Context, m *ContainerChildMuta
 		return (&ContainerChildDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ContainerChild mutation op: %q", m.Op())
+	}
+}
+
+// EpicClient is a client for the Epic schema.
+type EpicClient struct {
+	config
+}
+
+// NewEpicClient returns a client for the Epic from the given config.
+func NewEpicClient(c config) *EpicClient {
+	return &EpicClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `epic.Hooks(f(g(h())))`.
+func (c *EpicClient) Use(hooks ...Hook) {
+	c.hooks.Epic = append(c.hooks.Epic, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `epic.Intercept(f(g(h())))`.
+func (c *EpicClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Epic = append(c.inters.Epic, interceptors...)
+}
+
+// Create returns a builder for creating a Epic entity.
+func (c *EpicClient) Create() *EpicCreate {
+	mutation := newEpicMutation(c.config, OpCreate)
+	return &EpicCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Epic entities.
+func (c *EpicClient) CreateBulk(builders ...*EpicCreate) *EpicCreateBulk {
+	return &EpicCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EpicClient) MapCreateBulk(slice any, setFunc func(*EpicCreate, int)) *EpicCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EpicCreateBulk{err: fmt.Errorf("calling to EpicClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EpicCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EpicCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Epic.
+func (c *EpicClient) Update() *EpicUpdate {
+	mutation := newEpicMutation(c.config, OpUpdate)
+	return &EpicUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EpicClient) UpdateOne(_m *Epic) *EpicUpdateOne {
+	mutation := newEpicMutation(c.config, OpUpdateOne, withEpic(_m))
+	return &EpicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EpicClient) UpdateOneID(id int) *EpicUpdateOne {
+	mutation := newEpicMutation(c.config, OpUpdateOne, withEpicID(id))
+	return &EpicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Epic.
+func (c *EpicClient) Delete() *EpicDelete {
+	mutation := newEpicMutation(c.config, OpDelete)
+	return &EpicDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EpicClient) DeleteOne(_m *Epic) *EpicDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EpicClient) DeleteOneID(id int) *EpicDeleteOne {
+	builder := c.Delete().Where(epic.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EpicDeleteOne{builder}
+}
+
+// Query returns a query builder for Epic.
+func (c *EpicClient) Query() *EpicQuery {
+	return &EpicQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEpic},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Epic entity by its id.
+func (c *EpicClient) Get(ctx context.Context, id int) (*Epic, error) {
+	return c.Query().Where(epic.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EpicClient) GetX(ctx context.Context, id int) *Epic {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *EpicClient) Hooks() []Hook {
+	return c.hooks.Epic
+}
+
+// Interceptors returns the client interceptors.
+func (c *EpicClient) Interceptors() []Interceptor {
+	return c.inters.Epic
+}
+
+func (c *EpicClient) mutate(ctx context.Context, m *EpicMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EpicCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EpicUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EpicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EpicDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Epic mutation op: %q", m.Op())
 	}
 }
 
@@ -1046,9 +1187,9 @@ func (c *TestClient) mutate(ctx context.Context, m *TestMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ContainerChild, Problem, Question, Story, Task, Test []ent.Hook
+		ContainerChild, Epic, Problem, Question, Story, Task, Test []ent.Hook
 	}
 	inters struct {
-		ContainerChild, Problem, Question, Story, Task, Test []ent.Interceptor
+		ContainerChild, Epic, Problem, Question, Story, Task, Test []ent.Interceptor
 	}
 )

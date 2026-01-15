@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/schema"
@@ -42,6 +43,28 @@ func init() {
 	containerchildDescID := containerchildFields[0].Descriptor()
 	// containerchild.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	containerchild.IDValidator = containerchildDescID.Validators[0].(func(int) error)
+	epicFields := schema.Epic{}.Fields()
+	_ = epicFields
+	// epicDescDescription is the schema descriptor for description field.
+	epicDescDescription := epicFields[1].Descriptor()
+	// epic.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	epic.DescriptionValidator = epicDescDescription.Validators[0].(func(string) error)
+	// epicDescTags is the schema descriptor for tags field.
+	epicDescTags := epicFields[2].Descriptor()
+	// epic.DefaultTags holds the default value on creation for the tags field.
+	epic.DefaultTags = epicDescTags.Default.([]string)
+	// epicDescClosed is the schema descriptor for closed field.
+	epicDescClosed := epicFields[3].Descriptor()
+	// epic.DefaultClosed holds the default value on creation for the closed field.
+	epic.DefaultClosed = epicDescClosed.Default.(bool)
+	// epicDescNotes is the schema descriptor for notes field.
+	epicDescNotes := epicFields[4].Descriptor()
+	// epic.DefaultNotes holds the default value on creation for the notes field.
+	epic.DefaultNotes = epicDescNotes.Default.(string)
+	// epicDescID is the schema descriptor for id field.
+	epicDescID := epicFields[0].Descriptor()
+	// epic.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	epic.IDValidator = epicDescID.Validators[0].(func(int) error)
 	problemFields := schema.Problem{}.Fields()
 	_ = problemFields
 	// problemDescDescription is the schema descriptor for description field.

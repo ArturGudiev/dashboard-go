@@ -15,10 +15,23 @@ import (
 )
 
 func runCLI(application *app.App) {
+	args := os.Args[1:]
+
+	// Check if first arg is "epics" or second arg (after "cli") is "epics"
+	if len(args) > 0 && args[0] == "epics" {
+		ctx := context.Background()
+		application.CLIService.ViewEpicsInteractive(ctx)
+		return
+	}
+	if len(args) > 1 && (args[0] == "cli" || args[0] == "interactive") && args[1] == "epics" {
+		ctx := context.Background()
+		application.CLIService.ViewEpicsInteractive(ctx)
+		return
+	}
+
 	fs := flag.NewFlagSet("cli", flag.ContinueOnError)
 	taskID := fs.Int("task", 0, "View task by ID interactively")
 
-	args := os.Args[1:]
 	if len(args) > 0 && (args[0] == "cli" || args[0] == "interactive") {
 		args = args[1:]
 	}

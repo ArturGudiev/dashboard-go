@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/story"
@@ -79,6 +80,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			containerchild.Table: containerchild.ValidColumn,
+			epic.Table:           epic.ValidColumn,
 			problem.Table:        problem.ValidColumn,
 			question.Table:       question.ValidColumn,
 			story.Table:          story.ValidColumn,

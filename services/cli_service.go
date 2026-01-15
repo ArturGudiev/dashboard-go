@@ -3,6 +3,7 @@ package services
 import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/repositories"
 	"arturgudiev/dashboard/utils"
 	"bufio"
 	"context"
@@ -19,13 +20,15 @@ type CLIService struct {
 	client             *ent.Client
 	containerService   *ContainerService
 	problemsRepository *ProblemsRepository
+	epicsRepository    *repositories.EpicsRepository
 }
 
-func NewCLIService(client *ent.Client, containerService *ContainerService, problemsRepository *ProblemsRepository) *CLIService {
+func NewCLIService(client *ent.Client, containerService *ContainerService, problemsRepository *ProblemsRepository, epicsRepository *repositories.EpicsRepository) *CLIService {
 	return &CLIService{
 		client:             client,
 		containerService:   containerService,
 		problemsRepository: problemsRepository,
+		epicsRepository:    epicsRepository,
 	}
 }
 
@@ -276,6 +279,78 @@ func (s *CLIService) checkSelectQuestionCommand(ctx context.Context, line string
 	return false
 }
 
+func (s *CLIService) checkAddStoryCommand(ctx context.Context, line string, containerType schema.ContainerType, id int) bool {
+	if strings.HasPrefix(line, "s+ ") {
+		description := strings.TrimSpace(line[3:])
+		if description == "" {
+			fmt.Println("Error: Description required. Usage: s+ <description>")
+			utils.WaitForUserInput()
+			return true
+		}
+		if err := s.containerService.AddSubstory(ctx, containerType, id, description); err != nil {
+			fmt.Printf("Error adding story: %v\n", err)
+			utils.WaitForUserInput()
+			return true
+		}
+		// Continue loop to refresh and show the new story
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) checkAddEpicCommand(ctx context.Context, line string, containerType schema.ContainerType, id int) bool {
+	if strings.HasPrefix(line, "e+ ") {
+		description := strings.TrimSpace(line[3:])
+		if description == "" {
+			fmt.Println("Error: Description required. Usage: e+ <description>")
+			utils.WaitForUserInput()
+			return true
+		}
+		if err := s.containerService.AddSubepic(ctx, containerType, id, description); err != nil {
+			fmt.Printf("Error adding epic: %v\n", err)
+			utils.WaitForUserInput()
+			return true
+		}
+		// Continue loop to refresh and show the new epic
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) checkSelectStoryCommand(ctx context.Context, line string, stories []*ent.Story) bool {
+	if strings.HasPrefix(line, "s ") {
+		indexPart := strings.TrimSpace(line[2:])
+		if index, err := strconv.Atoi(indexPart); err == nil {
+			// Validate index
+			if index < 1 || index > len(stories) {
+				utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(stories)))
+				return false
+			}
+			selectedStory := stories[index-1]
+			s.ViewStoryInteractive(ctx, selectedStory.ID)
+			return true
+		}
+	}
+	return false
+}
+
+func (s *CLIService) checkSelectEpicCommand(ctx context.Context, line string, epics []*ent.Epic) bool {
+	if strings.HasPrefix(line, "e ") {
+		indexPart := strings.TrimSpace(line[2:])
+		if index, err := strconv.Atoi(indexPart); err == nil {
+			// Validate index
+			if index < 1 || index > len(epics) {
+				utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(epics)))
+				return false
+			}
+			selectedEpic := epics[index-1]
+			s.ViewEpicInteractive(ctx, selectedEpic.ID)
+			return true
+		}
+	}
+	return false
+}
+
 func (s *CLIService) PrintProblemInfo(ctx context.Context, p *ent.Problem, subtasks []*ent.Task, problems []*ent.Problem) {
 	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeProblem, p.ID)
 
@@ -327,7 +402,7 @@ func (s *CLIService) PrintQuestionInfo(ctx context.Context, q *ent.Question, sub
 	fmt.Println()
 }
 
-func (s *CLIService) PrintStoryInfo(ctx context.Context, st *ent.Story, subtasks []*ent.Task, problems []*ent.Problem, questions []*ent.Question) {
+func (s *CLIService) PrintStoryInfo(ctx context.Context, st *ent.Story, subtasks []*ent.Task, problems []*ent.Problem, questions []*ent.Question, stories []*ent.Story, epics []*ent.Epic) {
 	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeStory, st.ID)
 
 	fmt.Println(strings.Repeat("=", 80))
@@ -348,6 +423,43 @@ func (s *CLIService) PrintStoryInfo(ctx context.Context, st *ent.Story, subtasks
 	s.containerService.PrintSubtasks(subtasks)
 	s.containerService.PrintProblems(problems)
 	s.containerService.PrintQuestions(questions)
+	s.containerService.PrintStories(stories)
+	s.containerService.PrintEpics(epics)
+	fmt.Println()
+}
+
+func (s *CLIService) PrintEpicsInfo(epics []*ent.Epic) {
+
+	fmt.Println(strings.Repeat("=", 80))
+	color.Cyan("\tEpics All: %d\n")
+	fmt.Println(strings.Repeat("=", 80))
+	s.containerService.PrintEpics(epics)
+	fmt.Println()
+}
+
+func (s *CLIService) PrintEpicInfo(ctx context.Context, e *ent.Epic, subtasks []*ent.Task, problems []*ent.Problem, questions []*ent.Question, stories []*ent.Story, epics []*ent.Epic) {
+	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeEpic, e.ID)
+
+	fmt.Println(strings.Repeat("=", 80))
+	color.Cyan("\tEpic ID: %d\n", e.ID)
+	fmt.Printf("\tDescription: %s\n", e.Description)
+	fmt.Printf("\tStatus: %s\n", map[bool]string{true: "Closed", false: "Open"}[e.Closed])
+	if e.Notes != "" {
+		fmt.Printf("Notes: %s\n", e.Notes)
+	}
+	if len(e.Tags) > 0 {
+		fmt.Printf("Tags: %s\n", strings.Join(e.Tags, ", "))
+	}
+	if e.DoneDateTime != nil {
+		fmt.Printf("Done Date: %s\n", e.DoneDateTime.Format("2006-01-02 15:04:05"))
+	}
+	fmt.Println(strings.Repeat("=", 80))
+
+	s.containerService.PrintSubtasks(subtasks)
+	s.containerService.PrintProblems(problems)
+	s.containerService.PrintQuestions(questions)
+	s.containerService.PrintStories(stories)
+	s.containerService.PrintEpics(epics)
 	fmt.Println()
 }
 
@@ -574,8 +686,10 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 		subtasks, _ := s.containerService.GetOpenSubtasks(ctx, schema.ContainerTypeStory, currentID)
 		problems, _ := s.containerService.GetOpenProblems(ctx, schema.ContainerTypeStory, currentID)
 		questions, _ := s.containerService.GetOpenQuestions(ctx, schema.ContainerTypeStory, currentID)
+		stories, _ := s.containerService.GetOpenStories(ctx, schema.ContainerTypeStory, currentID)
+		epics, _ := s.containerService.GetOpenEpics(ctx, schema.ContainerTypeStory, currentID)
 
-		s.PrintStoryInfo(ctx, story, subtasks, problems, questions)
+		s.PrintStoryInfo(ctx, story, subtasks, problems, questions, stories, epics)
 
 		line := utils.GetUserInput(scanner)
 		if line == "" {
@@ -594,6 +708,14 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 			continue
 		}
 
+		if goToNextIteration := s.checkAddStoryCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddEpicCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
+			continue
+		}
+
 		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
 			continue
 		}
@@ -603,6 +725,14 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkSelectQuestionCommand(ctx, line, questions); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectStoryCommand(ctx, line, stories); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
 			continue
 		}
 
@@ -646,7 +776,166 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 			// Empty input, refresh
 			continue
 		default:
-			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, 'p+ <description>' to add problem, or 'q+ <description>' to add question.\n", line)
+			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, 'p+ <description>' to add problem, 'q+ <description>' to add question, 's+ <description>' to add story, or 'e+ <description>' to add epic.\n", line)
+			utils.WaitForUserInput()
+		}
+	}
+}
+
+func (s *CLIService) ViewEpicsInteractive(ctx context.Context) {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for {
+		utils.ClearScreen()
+
+		epics, err := s.epicsRepository.GetAllEpics(ctx)
+		s.PrintEpicsInfo(epics)
+		if err != nil {
+			fmt.Printf("Error getting epics: %v\n", err)
+			return
+		}
+
+		line := utils.GetUserInput(scanner)
+		if line == "" {
+			continue
+		}
+
+		//if goToNextIteration := s.checkAddEpicCommand(ctx, line, schema.ContainerTypeEpic, id); goToNextIteration {
+		//	continue
+		//}
+
+		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
+			continue
+		}
+
+		lineLower := strings.ToLower(line)
+		switch lineLower {
+		case "q", "quit", "exit":
+			os.Exit(0)
+			return
+		case "r", "refresh":
+			// Continue loop to refresh (screen will be cleared at start of loop)
+			continue
+		case "":
+			// Empty input, refresh
+			continue
+		default:
+			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, 'p+ <description>' to add problem, 'q+ <description>' to add question, 's+ <description>' to add story, or 'e+ <description>' to add epic.\n", line)
+			utils.WaitForUserInput()
+		}
+	}
+}
+
+func (s *CLIService) ViewEpicInteractive(ctx context.Context, id int) {
+	scanner := bufio.NewScanner(os.Stdin)
+	currentID := id
+
+	for {
+		// Clear screen before printing
+		utils.ClearScreen()
+		epic, err := s.client.Epic.Get(ctx, currentID)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				fmt.Printf("Epic %d not found.\n", currentID)
+			} else {
+				fmt.Printf("Error getting epic: %v\n", err)
+			}
+			return
+		}
+		subtasks, _ := s.containerService.GetOpenSubtasks(ctx, schema.ContainerTypeEpic, currentID)
+		problems, _ := s.containerService.GetOpenProblems(ctx, schema.ContainerTypeEpic, currentID)
+		questions, _ := s.containerService.GetOpenQuestions(ctx, schema.ContainerTypeEpic, currentID)
+		stories, _ := s.containerService.GetOpenStories(ctx, schema.ContainerTypeEpic, currentID)
+		epics, _ := s.containerService.GetOpenEpics(ctx, schema.ContainerTypeEpic, currentID)
+
+		s.PrintEpicInfo(ctx, epic, subtasks, problems, questions, stories, epics)
+
+		line := utils.GetUserInput(scanner)
+		if line == "" {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddTaskCommand(ctx, line, schema.ContainerTypeEpic, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddProblemCommand(ctx, line, schema.ContainerTypeEpic, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddQuestionCommand(ctx, line, schema.ContainerTypeEpic, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddStoryCommand(ctx, line, schema.ContainerTypeEpic, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddEpicCommand(ctx, line, schema.ContainerTypeEpic, id); goToNextIteration {
+			continue
+		}
+
+		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectProblemCommand(ctx, line, problems); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectQuestionCommand(ctx, line, questions); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectStoryCommand(ctx, line, stories); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
+			continue
+		}
+
+		if line == "u" {
+			err := s.NavigateToParent(ctx, schema.ContainerTypeEpic, currentID)
+			if err != nil {
+			}
+			continue
+		}
+
+		if strings.HasPrefix(line, "ft ") {
+			indexStr := strings.TrimSpace(line[3:])
+			if indexStr == "" {
+				fmt.Println("Error: index required. Usage: ft <id>")
+				utils.WaitForUserInput()
+				continue
+			}
+
+			var taskDescriptions []string
+			mapper := func(el *ent.Task) string { return el.Description }
+			for _, el := range subtasks {
+				taskDescriptions = append(taskDescriptions, mapper(el))
+			}
+
+			fmt.Println(strings.Join(taskDescriptions, ", "))
+
+			utils.WaitForUserInput()
+			// Continue loop to refresh and show the new subtask
+			continue
+		}
+
+		lineLower := strings.ToLower(line)
+		switch lineLower {
+		case "q", "quit", "exit":
+			os.Exit(0)
+			return
+		case "r", "refresh":
+			// Continue loop to refresh (screen will be cleared at start of loop)
+			continue
+		case "":
+			// Empty input, refresh
+			continue
+		default:
+			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, 'p+ <description>' to add problem, 'q+ <description>' to add question, 's+ <description>' to add story, or 'e+ <description>' to add epic.\n", line)
 			utils.WaitForUserInput()
 		}
 	}
@@ -662,6 +951,8 @@ func (s *CLIService) ViewContainerInteractive(ctx context.Context, containerType
 		s.ViewQuestionInteractive(ctx, ID)
 	case schema.ContainerTypeStory:
 		s.ViewStoryInteractive(ctx, ID)
+	case schema.ContainerTypeEpic:
+		s.ViewEpicInteractive(ctx, ID)
 	}
 
 }

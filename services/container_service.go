@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/ddddddO/gtree"
+	"github.com/fatih/color"
 )
 
 type ContainerService struct {
@@ -59,6 +60,44 @@ func (s *ContainerService) GetOpenSubtasks(ctx context.Context, containerType sc
 		}
 	}
 	return openTasks, nil
+}
+
+func (s *ContainerService) GetOpenStories(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Story, error) {
+	openStories := []*ent.Story{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeStory)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, relation := range childRelations {
+		childStory, err := s.client.Story.Get(ctx, relation.ChildID)
+		if err != nil {
+			continue
+		}
+		if !childStory.Closed {
+			openStories = append(openStories, childStory)
+		}
+	}
+	return openStories, nil
+}
+
+func (s *ContainerService) GetOpenEpics(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Epic, error) {
+	openEpics := []*ent.Epic{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeEpic)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, relation := range childRelations {
+		childEpic, err := s.client.Epic.Get(ctx, relation.ChildID)
+		if err != nil {
+			continue
+		}
+		if !childEpic.Closed {
+			openEpics = append(openEpics, childEpic)
+		}
+	}
+	return openEpics, nil
 }
 
 func (s *ContainerService) GetOpenProblems(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Problem, error) {
@@ -271,6 +310,34 @@ func (s *ContainerService) PrintQuestions(questions []*ent.Question) {
 	}
 }
 
+func (s *ContainerService) PrintStories(stories []*ent.Story) {
+	if len(stories) > 0 {
+		fmt.Println("\nChild Stories:")
+		for i, childStory := range stories {
+			status := "Open"
+			if childStory.Closed {
+				status = "Closed"
+			}
+			fmt.Printf("  %d. [ID: %d] %s - %s\n", i+1, childStory.ID, status, childStory.Description)
+		}
+	}
+}
+
+func (s *ContainerService) PrintEpics(epics []*ent.Epic) {
+
+	if len(epics) > 0 {
+		color.RGB(15, 82, 186).Println("foreground orange")
+		fmt.Println("\nChild Epics:")
+		for i, childEpic := range epics {
+			status := "Open"
+			if childEpic.Closed {
+				status = "Closed"
+			}
+			color.RGB(15, 82, 186).Printf(fmt.Sprintf("  %d. [ID: %d] %s - %s\n", i+1, childEpic.ID, status, childEpic.Description))
+		}
+	}
+}
+
 func (s *ContainerService) AddSubproblem(ctx context.Context, parentType schema.ContainerType, parentID int, description string) error {
 	// Create the new problem (not done - solution is null by default)
 	newProblem, err := s.client.Problem.Create().
@@ -425,4 +492,110 @@ func (s *ContainerService) AddSubtask(ctx context.Context, parentType schema.Con
 	}
 
 	return newTask, nil
+}
+
+func (s *ContainerService) AddSubstory(ctx context.Context, parentType schema.ContainerType, parentID int, description string) error {
+	// Create the new story (not closed by default)
+	newStory, err := s.client.Story.Create().
+		SetDescription(description).
+		SetTags([]string{}).
+		SetNotes("").
+		SetClosed(false).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create story: %v", err)
+	}
+
+	// Get the count of existing children to set child_order
+	childCount, err := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ParentTypeEQ(parentType),
+			containerchild.ParentID(parentID),
+			containerchild.ChildTypeEQ(schema.ContainerTypeStory),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count children: %v", err)
+	}
+
+	// Get the count of existing parents to set parent_order
+	parentCount, err := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ChildTypeEQ(parentType),
+			containerchild.ChildID(parentID),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count parents: %v", err)
+	}
+
+	// Create the parent-child relationship
+	_, err = s.client.ContainerChild.Create().
+		SetParentType(parentType).
+		SetParentID(parentID).
+		SetChildType(schema.ContainerTypeStory).
+		SetChildID(newStory.ID).
+		SetChildOrder(childCount).
+		SetParentOrder(parentCount).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create relationship: %v", err)
+	}
+
+	fmt.Printf("Story created successfully! ID: %d\n", newStory.ID)
+	return nil
+}
+
+func (s *ContainerService) AddSubepic(ctx context.Context, parentType schema.ContainerType, parentID int, description string) error {
+	// Create the new epic (not closed by default)
+	newEpic, err := s.client.Epic.Create().
+		SetDescription(description).
+		SetTags([]string{}).
+		SetNotes("").
+		SetClosed(false).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create epic: %v", err)
+	}
+
+	// Get the count of existing children to set child_order
+	childCount, err := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ParentTypeEQ(parentType),
+			containerchild.ParentID(parentID),
+			containerchild.ChildTypeEQ(schema.ContainerTypeEpic),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count children: %v", err)
+	}
+
+	// Get the count of existing parents to set parent_order
+	parentCount, err := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ChildTypeEQ(parentType),
+			containerchild.ChildID(parentID),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count parents: %v", err)
+	}
+
+	// Create the parent-child relationship
+	_, err = s.client.ContainerChild.Create().
+		SetParentType(parentType).
+		SetParentID(parentID).
+		SetChildType(schema.ContainerTypeEpic).
+		SetChildID(newEpic.ID).
+		SetChildOrder(childCount).
+		SetParentOrder(parentCount).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create relationship: %v", err)
+	}
+
+	fmt.Printf("Epic created successfully! ID: %d\n", newEpic.ID)
+	return nil
 }

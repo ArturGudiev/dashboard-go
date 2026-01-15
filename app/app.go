@@ -21,6 +21,8 @@ type App struct {
 	QuestionsService         *services.QuestionService
 	StoriesRepository        *repositories.StoriesRepository
 	StoriesService           *services.StoriesService
+	EpicsRepository          *repositories.EpicsRepository
+	EpicsService             *services.EpicsService
 	ChildContainerRepository *services.ChildContainerRepository
 	ctx                      context.Context // Default context for CLI operations
 }
