@@ -16,6 +16,8 @@ type Tx struct {
 	ContainerChild *ContainerChildClient
 	// Epic is the client for interacting with the Epic builders.
 	Epic *EpicClient
+	// KnowledgeNode is the client for interacting with the KnowledgeNode builders.
+	KnowledgeNode *KnowledgeNodeClient
 	// Problem is the client for interacting with the Problem builders.
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
@@ -159,6 +161,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.ContainerChild = NewContainerChildClient(tx.config)
 	tx.Epic = NewEpicClient(tx.config)
+	tx.KnowledgeNode = NewKnowledgeNodeClient(tx.config)
 	tx.Problem = NewProblemClient(tx.config)
 	tx.Question = NewQuestionClient(tx.config)
 	tx.Story = NewStoryClient(tx.config)

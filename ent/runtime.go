@@ -5,6 +5,7 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
+	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/schema"
@@ -65,6 +66,24 @@ func init() {
 	epicDescID := epicFields[0].Descriptor()
 	// epic.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	epic.IDValidator = epicDescID.Validators[0].(func(int) error)
+	knowledgenodeFields := schema.KnowledgeNode{}.Fields()
+	_ = knowledgenodeFields
+	// knowledgenodeDescName is the schema descriptor for name field.
+	knowledgenodeDescName := knowledgenodeFields[1].Descriptor()
+	// knowledgenode.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	knowledgenode.NameValidator = knowledgenodeDescName.Validators[0].(func(string) error)
+	// knowledgenodeDescTags is the schema descriptor for tags field.
+	knowledgenodeDescTags := knowledgenodeFields[2].Descriptor()
+	// knowledgenode.DefaultTags holds the default value on creation for the tags field.
+	knowledgenode.DefaultTags = knowledgenodeDescTags.Default.([]string)
+	// knowledgenodeDescNotes is the schema descriptor for notes field.
+	knowledgenodeDescNotes := knowledgenodeFields[3].Descriptor()
+	// knowledgenode.DefaultNotes holds the default value on creation for the notes field.
+	knowledgenode.DefaultNotes = knowledgenodeDescNotes.Default.(string)
+	// knowledgenodeDescID is the schema descriptor for id field.
+	knowledgenodeDescID := knowledgenodeFields[0].Descriptor()
+	// knowledgenode.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	knowledgenode.IDValidator = knowledgenodeDescID.Validators[0].(func(int) error)
 	problemFields := schema.Problem{}.Fields()
 	_ = problemFields
 	// problemDescDescription is the schema descriptor for description field.

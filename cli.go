@@ -23,6 +23,13 @@ func runCLI(application *app.App) {
 		application.CLIService.ViewEpicsInteractive(ctx)
 		return
 	}
+	// if len(args) == 2 && args[0] == "knowledge-node" {
+	// 	if id, err := strconv.Atoi(args[1]); err == nil {
+	// 		ctx := context.Background()
+	// 		application.CLIService.ViewKnowledgeNodeInteractive(ctx, id)
+	// 		return
+	// 	}
+	// }
 	if len(args) > 1 && (args[0] == "cli" || args[0] == "interactive") && args[1] == "epics" {
 		ctx := context.Background()
 		application.CLIService.ViewEpicsInteractive(ctx)
@@ -31,6 +38,7 @@ func runCLI(application *app.App) {
 
 	fs := flag.NewFlagSet("cli", flag.ContinueOnError)
 	taskID := fs.Int("task", 0, "View task by ID interactively")
+	knowledgeNodeID := fs.Int("knowledge-node", 0, "View knowledge node by ID interactively")
 
 	if len(args) > 0 && (args[0] == "cli" || args[0] == "interactive") {
 		args = args[1:]
@@ -44,6 +52,12 @@ func runCLI(application *app.App) {
 	}
 
 	ctx := context.Background()
+
+	// If --knowledge-node flag is provided, enter interactive knowledge node view
+	if *knowledgeNodeID > 0 {
+		application.CLIService.ViewKnowledgeNodeInteractive(ctx, *knowledgeNodeID)
+		return
+	}
 
 	// If --task flag is provided, enter interactive task view
 	if *taskID > 0 {

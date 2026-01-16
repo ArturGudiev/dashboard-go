@@ -46,7 +46,7 @@ func main() {
 			runCLI(application)
 			return
 		case "import":
-			// Import tasks/epics/stories from JSON file
+			// Import tasks/epics/stories/knowledge-nodes from JSON file
 			importType := "tasks"
 			jsonPath := ""
 			if len(os.Args) > 2 {
@@ -63,8 +63,10 @@ func main() {
 				err = importEpics(jsonPath)
 			case "stories":
 				err = importStories(jsonPath)
+			case "knowledge-nodes", "knowledgenodes":
+				err = importKnowledgeNodes(jsonPath)
 			default:
-				log.Fatalf("Unknown import type: %s. Use 'tasks', 'epics', or 'stories'", importType)
+				log.Fatalf("Unknown import type: %s. Use 'tasks', 'epics', 'stories', or 'knowledge-nodes'", importType)
 			}
 			if err != nil {
 				log.Fatalf("Import failed: %v", err)

@@ -160,6 +160,35 @@ func (s *ContainerService) GetOpenProblemsIDs(ctx context.Context, containerType
 	return openProblems, nil
 }
 
+func (s *ContainerService) GetChildKnowledgeNodesIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	knowledgeNodes := []int{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeKnowledgeNode)
+
+	if err == nil && len(childRelations) > 0 {
+		for _, relation := range childRelations {
+			knowledgeNodes = append(knowledgeNodes, relation.ChildID)
+		}
+	}
+	return knowledgeNodes, nil
+}
+
+func (s *ContainerService) GetOpenKnowledgeNodes(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.KnowledgeNode, error) {
+	knowledgeNodes := []*ent.KnowledgeNode{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeKnowledgeNode)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, relation := range childRelations {
+		childKnowledgeNode, err := s.client.KnowledgeNode.Get(ctx, relation.ChildID)
+		if err != nil {
+			continue
+		}
+		knowledgeNodes = append(knowledgeNodes, childKnowledgeNode)
+	}
+	return knowledgeNodes, nil
+}
+
 func (s *ContainerService) GetParentCommon(ctx context.Context, containerType schema.ContainerType, ID int) (*schema.ContainerType, int, error) {
 	parentRelations, err := s.client.ContainerChild.Query().
 		Where(
@@ -210,6 +239,20 @@ func (s *ContainerService) GetDescription(ctx context.Context, containerType sch
 			return nil, err
 		}
 		result := fmt.Sprintf("%s-%d %s", containerType, ID, story.Description)
+		return &result, nil
+	case schema.ContainerTypeEpic:
+		epic, err := s.client.Epic.Get(ctx, ID)
+		if err != nil {
+			return nil, err
+		}
+		result := fmt.Sprintf("%s-%d %s", containerType, ID, epic.Description)
+		return &result, nil
+	case schema.ContainerTypeKnowledgeNode:
+		knowledgeNode, err := s.client.KnowledgeNode.Get(ctx, ID)
+		if err != nil {
+			return nil, err
+		}
+		result := fmt.Sprintf("%s-%d %s", containerType, ID, knowledgeNode.Name)
 		return &result, nil
 	default:
 		return nil, fmt.Errorf("unsupported container type: %s", containerType)
@@ -333,7 +376,16 @@ func (s *ContainerService) PrintEpics(epics []*ent.Epic) {
 			if childEpic.Closed {
 				status = "Closed"
 			}
-			color.RGB(15, 82, 186).Printf(fmt.Sprintf("  %d. [ID: %d] %s - %s\n", i+1, childEpic.ID, status, childEpic.Description))
+			color.RGB(15, 82, 186).Printf("  %d. [ID: %d] %s - %s\n", i+1, childEpic.ID, status, childEpic.Description)
+		}
+	}
+}
+
+func (s *ContainerService) PrintKnowledgeNodes(knowledgeNodes []*ent.KnowledgeNode) {
+	if len(knowledgeNodes) > 0 {
+		fmt.Println("\nChild Knowledge Nodes:")
+		for i, childKnowledgeNode := range knowledgeNodes {
+			fmt.Printf("  %d. [ID: %d] %s\n", i+1, childKnowledgeNode.ID, childKnowledgeNode.Name)
 		}
 	}
 }
@@ -597,5 +649,57 @@ func (s *ContainerService) AddSubepic(ctx context.Context, parentType schema.Con
 	}
 
 	fmt.Printf("Epic created successfully! ID: %d\n", newEpic.ID)
+	return nil
+}
+
+func (s *ContainerService) AddSubknowledgeNode(ctx context.Context, parentType schema.ContainerType, parentID int, name string) error {
+	// Create the new knowledge node
+	newKnowledgeNode, err := s.client.KnowledgeNode.Create().
+		SetName(name).
+		SetTags([]string{}).
+		SetNotes("").
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create knowledge node: %v", err)
+	}
+
+	// Get the count of existing children to set child_order
+	childCount, err := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ParentTypeEQ(parentType),
+			containerchild.ParentID(parentID),
+			containerchild.ChildTypeEQ(schema.ContainerTypeKnowledgeNode),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count children: %v", err)
+	}
+
+	// Get the count of existing parents to set parent_order
+	parentCount, err := s.client.ContainerChild.Query().
+		Where(
+			containerchild.ChildTypeEQ(parentType),
+			containerchild.ChildID(parentID),
+			containerchild.ParentTypeEQ(schema.ContainerTypeTask),
+		).
+		Count(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to count parents: %v", err)
+	}
+
+	// Create the parent-child relationship
+	_, err = s.client.ContainerChild.Create().
+		SetParentType(parentType).
+		SetParentID(parentID).
+		SetChildType(schema.ContainerTypeKnowledgeNode).
+		SetChildID(newKnowledgeNode.ID).
+		SetChildOrder(childCount).
+		SetParentOrder(parentCount).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create relationship: %v", err)
+	}
+
+	fmt.Printf("Knowledge Node created successfully! ID: %d\n", newKnowledgeNode.ID)
 	return nil
 }

@@ -351,6 +351,42 @@ func (s *CLIService) checkSelectEpicCommand(ctx context.Context, line string, ep
 	return false
 }
 
+func (s *CLIService) checkSelectKnowledgeNodeCommand(ctx context.Context, line string, knowledgeNodes []*ent.KnowledgeNode) bool {
+	if strings.HasPrefix(line, "kn ") {
+		indexPart := strings.TrimSpace(line[3:])
+		if index, err := strconv.Atoi(indexPart); err == nil {
+			// Validate index
+			if index < 1 || index > len(knowledgeNodes) {
+				utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(knowledgeNodes)))
+				return false
+			}
+			selectedKnowledgeNode := knowledgeNodes[index-1]
+			s.ViewKnowledgeNodeInteractive(ctx, selectedKnowledgeNode.ID)
+			return true
+		}
+	}
+	return false
+}
+
+func (s *CLIService) checkAddKnowledgeNodeCommand(ctx context.Context, line string, containerType schema.ContainerType, id int) bool {
+	if strings.HasPrefix(line, "kn+ ") {
+		name := strings.TrimSpace(line[4:])
+		if name == "" {
+			fmt.Println("Error: Name required. Usage: kn+ <name>")
+			utils.WaitForUserInput()
+			return true
+		}
+		if err := s.containerService.AddSubknowledgeNode(ctx, containerType, id, name); err != nil {
+			fmt.Printf("Error adding knowledge node: %v\n", err)
+			utils.WaitForUserInput()
+			return true
+		}
+		// Continue loop to refresh and show the new knowledge node
+		return true
+	}
+	return false
+}
+
 func (s *CLIService) PrintProblemInfo(ctx context.Context, p *ent.Problem, subtasks []*ent.Task, problems []*ent.Problem) {
 	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeProblem, p.ID)
 
@@ -460,6 +496,29 @@ func (s *CLIService) PrintEpicInfo(ctx context.Context, e *ent.Epic, subtasks []
 	s.containerService.PrintQuestions(questions)
 	s.containerService.PrintStories(stories)
 	s.containerService.PrintEpics(epics)
+	fmt.Println()
+}
+
+func (s *CLIService) printKnowledgeNodeInfo(ctx context.Context, kn *ent.KnowledgeNode, subtasks []*ent.Task, problems []*ent.Problem, questions []*ent.Question, stories []*ent.Story, epics []*ent.Epic, knowledgeNodes []*ent.KnowledgeNode) {
+	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeKnowledgeNode, kn.ID)
+
+	fmt.Println(strings.Repeat("=", 80))
+	color.Cyan("\tKnowledge Node ID: %d\n", kn.ID)
+	fmt.Printf("\tName: %s\n", kn.Name)
+	if kn.Notes != "" {
+		fmt.Printf("Notes: %s\n", kn.Notes)
+	}
+	if len(kn.Tags) > 0 {
+		fmt.Printf("Tags: %s\n", strings.Join(kn.Tags, ", "))
+	}
+	fmt.Println(strings.Repeat("=", 80))
+
+	s.containerService.PrintSubtasks(subtasks)
+	s.containerService.PrintProblems(problems)
+	s.containerService.PrintQuestions(questions)
+	s.containerService.PrintStories(stories)
+	s.containerService.PrintEpics(epics)
+	s.containerService.PrintKnowledgeNodes(knowledgeNodes)
 	fmt.Println()
 }
 
@@ -800,10 +859,6 @@ func (s *CLIService) ViewEpicsInteractive(ctx context.Context) {
 			continue
 		}
 
-		//if goToNextIteration := s.checkAddEpicCommand(ctx, line, schema.ContainerTypeEpic, id); goToNextIteration {
-		//	continue
-		//}
-
 		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
 			continue
 		}
@@ -953,8 +1008,133 @@ func (s *CLIService) ViewContainerInteractive(ctx context.Context, containerType
 		s.ViewStoryInteractive(ctx, ID)
 	case schema.ContainerTypeEpic:
 		s.ViewEpicInteractive(ctx, ID)
+	case schema.ContainerTypeKnowledgeNode:
+		s.ViewKnowledgeNodeInteractive(ctx, ID)
 	}
+}
 
+func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
+	scanner := bufio.NewScanner(os.Stdin)
+	currentID := id
+
+	for {
+		// Clear screen before printing
+		utils.ClearScreen()
+		knowledgeNode, err := s.client.KnowledgeNode.Get(ctx, currentID)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				fmt.Printf("Knowledge Node %d not found.\n", currentID)
+			} else {
+				fmt.Printf("Error getting knowledge node: %v\n", err)
+			}
+			return
+		}
+		subtasks, _ := s.containerService.GetOpenSubtasks(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+		problems, _ := s.containerService.GetOpenProblems(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+		questions, _ := s.containerService.GetOpenQuestions(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+		stories, _ := s.containerService.GetOpenStories(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+		epics, _ := s.containerService.GetOpenEpics(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+		knowledgeNodes, _ := s.containerService.GetOpenKnowledgeNodes(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+
+		s.printKnowledgeNodeInfo(ctx, knowledgeNode, subtasks, problems, questions, stories, epics, knowledgeNodes)
+
+		line := utils.GetUserInput(scanner)
+		if line == "" {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddTaskCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddProblemCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddQuestionCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddStoryCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddEpicCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
+			continue
+		}
+
+		if goToNextIteration := s.checkAddKnowledgeNodeCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
+			continue
+		}
+
+		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectProblemCommand(ctx, line, problems); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectQuestionCommand(ctx, line, questions); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectStoryCommand(ctx, line, stories); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkSelectKnowledgeNodeCommand(ctx, line, knowledgeNodes); wasIt {
+			continue
+		}
+
+		if line == "u" {
+			err := s.NavigateToParent(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+			if err != nil {
+			}
+			continue
+		}
+
+		if strings.HasPrefix(line, "ft ") {
+			indexStr := strings.TrimSpace(line[3:])
+			if indexStr == "" {
+				fmt.Println("Error: index required. Usage: ft <id>")
+				utils.WaitForUserInput()
+				continue
+			}
+
+			var taskDescriptions []string
+			mapper := func(el *ent.Task) string { return el.Description }
+			for _, el := range subtasks {
+				taskDescriptions = append(taskDescriptions, mapper(el))
+			}
+
+			fmt.Println(strings.Join(taskDescriptions, ", "))
+
+			utils.WaitForUserInput()
+			// Continue loop to refresh and show the new subtask
+			continue
+		}
+
+		lineLower := strings.ToLower(line)
+		switch lineLower {
+		case "q", "quit", "exit":
+			os.Exit(0)
+			return
+		case "r", "refresh":
+			// Continue loop to refresh (screen will be cleared at start of loop)
+			continue
+		case "":
+			// Empty input, refresh
+			continue
+		default:
+			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, 'p+ <description>' to add problem, 'q+ <description>' to add question, 's+ <description>' to add story, 'e+ <description>' to add epic, or 'kn+ <name>' to add knowledge node.\n", line)
+			utils.WaitForUserInput()
+		}
+	}
 }
 
 func (s *CLIService) NavigateToParent(ctx context.Context, containerType schema.ContainerType, ID int) error {

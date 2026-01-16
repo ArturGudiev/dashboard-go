@@ -11,6 +11,9 @@ import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
+	"arturgudiev/dashboard/ent/knowledgenode"
+	"arturgudiev/dashboard/ent/problem"
+	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
@@ -775,6 +778,258 @@ func importStories(jsonPath string) error {
 	fmt.Printf("\nSummary:\n")
 	fmt.Printf("  Stories inserted: %d\n", inserted)
 	fmt.Printf("  Stories skipped (already exist): %d\n", skipped)
+	fmt.Printf("  Relationships created: %d\n", relationshipsCreated)
+	fmt.Printf("  Relationships skipped (already exist): %d\n", relationshipsSkipped)
+
+	return nil
+}
+
+// KnowledgeNodeJSON represents the structure of knowledge nodes in the JSON file
+type KnowledgeNodeJSON struct {
+	ID               int             `json:"_id"`
+	Name             string          `json:"name"`
+	Description      string          `json:"description"` // Not used in DB schema, but present in JSON
+	Tags             []string        `json:"tags"`
+	Notes            string          `json:"notes"`
+	KnowledgeNodes   []int           `json:"knowledgeNodes"` // Child knowledge node IDs
+	Tasks            []int           `json:"tasks"`          // Child task IDs
+	Problems         []int           `json:"problems"`       // Child problem IDs
+	Questions        []int           `json:"questions"`      // Child question IDs
+	Actions          []int           `json:"actions"`        // Not in DB schema
+	Definitions      []int           `json:"definitions"`    // Not in DB schema
+	KnowledgeBits    []int           `json:"knowledgeBits"`  // Not in DB schema
+	ParentContainers [][]interface{} `json:"parents"`
+}
+
+// importKnowledgeNodes imports knowledge nodes from a JSON file
+func importKnowledgeNodes(jsonPath string) error {
+	// Database connection
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		dbURL = "postgres://postgres:postgres@localhost/dashboard?sslmode=disable"
+	}
+
+	// Create Ent client
+	client, err := ent.Open("postgres", dbURL)
+	if err != nil {
+		return fmt.Errorf("failed opening connection to postgres: %v", err)
+	}
+	defer client.Close()
+
+	ctx := context.Background()
+
+	// Use provided path or default
+	if jsonPath == "" {
+		jsonPath = `C:\Programming\NodeJS\dashboard\data\knowledge-nodes.json`
+	}
+	log.Printf("Reading knowledge nodes from: %s", jsonPath)
+
+	jsonData, err := os.ReadFile(jsonPath)
+	if err != nil {
+		return fmt.Errorf("failed to read JSON file: %v", err)
+	}
+
+	// Parse JSON
+	var knowledgeNodes []KnowledgeNodeJSON
+	if err := json.Unmarshal(jsonData, &knowledgeNodes); err != nil {
+		return fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	log.Printf("Found %d knowledge nodes to import", len(knowledgeNodes))
+
+	// Create a map to track which knowledge nodes have been inserted
+	knowledgeNodeMap := make(map[int]bool)
+
+	// First pass: Insert all knowledge nodes
+	log.Println("Step 1: Inserting knowledge nodes into database...")
+	inserted := 0
+	skipped := 0
+
+	for _, knJSON := range knowledgeNodes {
+		// Check if knowledge node already exists
+		exists, err := client.KnowledgeNode.Query().
+			Where(knowledgenode.ID(knJSON.ID)).
+			Exist(ctx)
+		if err != nil {
+			log.Printf("Error checking if knowledge node %d exists: %v", knJSON.ID, err)
+			continue
+		}
+
+		if exists {
+			log.Printf("Knowledge node %d already exists, skipping...", knJSON.ID)
+			skipped++
+			knowledgeNodeMap[knJSON.ID] = true
+			continue
+		}
+
+		// Create knowledge node
+		_, err = client.KnowledgeNode.Create().
+			SetID(knJSON.ID).
+			SetName(knJSON.Name).
+			SetTags(knJSON.Tags).
+			SetNotes(knJSON.Notes).
+			Save(ctx)
+		if err != nil {
+			log.Printf("Error inserting knowledge node %d: %v", knJSON.ID, err)
+			continue
+		}
+
+		knowledgeNodeMap[knJSON.ID] = true
+		inserted++
+
+		if inserted%100 == 0 {
+			log.Printf("Inserted %d knowledge nodes...", inserted)
+		}
+	}
+
+	log.Printf("Step 1 complete: Inserted %d knowledge nodes, skipped %d existing knowledge nodes", inserted, skipped)
+
+	// Create a map of knowledge nodes by ID for quick lookup of parent_order
+	knowledgeNodeByID := make(map[int]*KnowledgeNodeJSON)
+	for i := range knowledgeNodes {
+		knowledgeNodeByID[knowledgeNodes[i].ID] = &knowledgeNodes[i]
+	}
+
+	// Second pass: Create parent-child relationships in container_children
+	log.Println("Step 2: Creating parent-child relationships...")
+	relationshipsCreated := 0
+	relationshipsSkipped := 0
+
+	// Helper function to create relationships for a child type
+	createRelationships := func(parentID int, childIDs []int, childType schema.ContainerType, parentType schema.ContainerType) {
+		for childOrder, childID := range childIDs {
+			// Check if child exists in database
+			var childExists bool
+			switch childType {
+			case schema.ContainerTypeKnowledgeNode:
+				exists, err := client.KnowledgeNode.Query().Where(knowledgenode.ID(childID)).Exist(ctx)
+				if err != nil {
+					log.Printf("Error checking if knowledge node %d exists: %v", childID, err)
+					continue
+				}
+				childExists = exists
+			case schema.ContainerTypeTask:
+				exists, err := client.Task.Query().Where(task.ID(childID)).Exist(ctx)
+				if err != nil {
+					log.Printf("Error checking if task %d exists: %v", childID, err)
+					continue
+				}
+				childExists = exists
+			case schema.ContainerTypeProblem:
+				exists, err := client.Problem.Query().Where(problem.ID(childID)).Exist(ctx)
+				if err != nil {
+					log.Printf("Error checking if problem %d exists: %v", childID, err)
+					continue
+				}
+				childExists = exists
+			case schema.ContainerTypeQuestion:
+				exists, err := client.Question.Query().Where(question.ID(childID)).Exist(ctx)
+				if err != nil {
+					log.Printf("Error checking if question %d exists: %v", childID, err)
+					continue
+				}
+				childExists = exists
+			default:
+				log.Printf("Unknown child type: %v", childType)
+				continue
+			}
+
+			if !childExists {
+				log.Printf("Warning: Child %s %d does not exist, skipping relationship", childType, childID)
+				continue
+			}
+
+			// Find parent_order: look for this parent in the child's parents array
+			// Only works if child is same type (knowledge-node->knowledge-node), otherwise default to 0
+			parentOrder := 0
+			if childType == schema.ContainerTypeKnowledgeNode {
+				if childKN, exists := knowledgeNodeByID[childID]; exists {
+					for idx, parentDesc := range childKN.ParentContainers {
+						if len(parentDesc) >= 2 {
+							var parentIDFromDesc int
+							switch v := parentDesc[1].(type) {
+							case float64:
+								parentIDFromDesc = int(v)
+							case int:
+								parentIDFromDesc = v
+							}
+
+							if parentIDFromDesc == parentID {
+								parentOrder = idx
+								break
+							}
+						}
+					}
+				}
+			}
+
+			// Check if relationship already exists
+			exists, err := client.ContainerChild.Query().
+				Where(
+					containerchild.ParentTypeEQ(parentType),
+					containerchild.ParentID(parentID),
+					containerchild.ChildTypeEQ(childType),
+					containerchild.ChildID(childID),
+				).
+				Exist(ctx)
+			if err != nil {
+				log.Printf("Error checking relationship %d -> %d: %v", parentID, childID, err)
+				continue
+			}
+
+			if exists {
+				relationshipsSkipped++
+				continue
+			}
+
+			// Create relationship with both order fields
+			_, err = client.ContainerChild.Create().
+				SetParentType(parentType).
+				SetParentID(parentID).
+				SetChildType(childType).
+				SetChildID(childID).
+				SetChildOrder(childOrder).
+				SetParentOrder(parentOrder).
+				Save(ctx)
+			if err != nil {
+				log.Printf("Error creating relationship %d -> %d: %v", parentID, childID, err)
+				continue
+			}
+
+			relationshipsCreated++
+
+			if relationshipsCreated%100 == 0 {
+				log.Printf("Created %d relationships...", relationshipsCreated)
+			}
+		}
+	}
+
+	for _, knJSON := range knowledgeNodes {
+		// Only process if this knowledge node exists in the database
+		if !knowledgeNodeMap[knJSON.ID] {
+			continue
+		}
+
+		// Create relationships for child knowledge nodes
+		createRelationships(knJSON.ID, knJSON.KnowledgeNodes, schema.ContainerTypeKnowledgeNode, schema.ContainerTypeKnowledgeNode)
+
+		// Create relationships for child tasks
+		createRelationships(knJSON.ID, knJSON.Tasks, schema.ContainerTypeTask, schema.ContainerTypeKnowledgeNode)
+
+		// Create relationships for child problems
+		createRelationships(knJSON.ID, knJSON.Problems, schema.ContainerTypeProblem, schema.ContainerTypeKnowledgeNode)
+
+		// Create relationships for child questions
+		createRelationships(knJSON.ID, knJSON.Questions, schema.ContainerTypeQuestion, schema.ContainerTypeKnowledgeNode)
+	}
+
+	log.Printf("Step 2 complete: Created %d relationships, skipped %d existing relationships",
+		relationshipsCreated, relationshipsSkipped)
+
+	log.Println("Import completed successfully!")
+	fmt.Printf("\nSummary:\n")
+	fmt.Printf("  Knowledge nodes inserted: %d\n", inserted)
+	fmt.Printf("  Knowledge nodes skipped (already exist): %d\n", skipped)
 	fmt.Printf("  Relationships created: %d\n", relationshipsCreated)
 	fmt.Printf("  Relationships skipped (already exist): %d\n", relationshipsSkipped)
 

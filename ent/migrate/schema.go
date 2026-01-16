@@ -67,6 +67,19 @@ var (
 		Columns:    EpicsColumns,
 		PrimaryKey: []*schema.Column{EpicsColumns[0]},
 	}
+	// KnowledgeNodesColumns holds the columns for the "knowledge_nodes" table.
+	KnowledgeNodesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+	}
+	// KnowledgeNodesTable holds the schema information for the "knowledge_nodes" table.
+	KnowledgeNodesTable = &schema.Table{
+		Name:       "knowledge_nodes",
+		Columns:    KnowledgeNodesColumns,
+		PrimaryKey: []*schema.Column{KnowledgeNodesColumns[0]},
+	}
 	// ProblemsColumns holds the columns for the "problems" table.
 	ProblemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -143,6 +156,7 @@ var (
 	Tables = []*schema.Table{
 		ContainerChildrenTable,
 		EpicsTable,
+		KnowledgeNodesTable,
 		ProblemsTable,
 		QuestionsTable,
 		StoriesTable,

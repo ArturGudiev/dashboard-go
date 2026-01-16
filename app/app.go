@@ -23,6 +23,8 @@ type App struct {
 	StoriesService           *services.StoriesService
 	EpicsRepository          *repositories.EpicsRepository
 	EpicsService             *services.EpicsService
+	KnowledgeNodesRepository *repositories.KnowledgeNodesRepository
+	KnowledgeNodesService    *services.KnowledgeNodesService
 	ChildContainerRepository *services.ChildContainerRepository
 	ctx                      context.Context // Default context for CLI operations
 }

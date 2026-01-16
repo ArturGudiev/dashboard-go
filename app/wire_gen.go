@@ -42,7 +42,9 @@ func InitializeApp() (*App, error) {
 	storiesRepository := repositories.NewStoriesRepository(client)
 	storiesService := services.NewStoriesService(client, containerService, storiesRepository, childContainerRepository)
 	epicsService := services.NewEpicsService(client, containerService, epicsRepository, childContainerRepository)
-	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, childContainerRepository)
+	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
+	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
+	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository)
 	return app, nil
 }
 
@@ -94,6 +96,8 @@ func provideApp(
 	storiesService *services.StoriesService,
 	epicsRepository *repositories.EpicsRepository,
 	epicsService *services.EpicsService,
+	knowledgeNodesRepository *repositories.KnowledgeNodesRepository,
+	knowledgeNodesService *services.KnowledgeNodesService,
 	childContainerRepository *services.ChildContainerRepository,
 ) *App {
 	return &App{
@@ -110,6 +114,8 @@ func provideApp(
 		StoriesService:           storiesService,
 		EpicsRepository:          epicsRepository,
 		EpicsService:             epicsService,
+		KnowledgeNodesRepository: knowledgeNodesRepository,
+		KnowledgeNodesService:    knowledgeNodesService,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(),
 	}
