@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
@@ -80,6 +81,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			alias.Table:          alias.ValidColumn,
 			containerchild.Table: containerchild.ValidColumn,
 			epic.Table:           epic.ValidColumn,
 			knowledgenode.Table:  knowledgenode.ValidColumn,

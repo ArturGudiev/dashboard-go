@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"arturgudiev/dashboard/ent"
+	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
@@ -1032,6 +1033,113 @@ func importKnowledgeNodes(jsonPath string) error {
 	fmt.Printf("  Knowledge nodes skipped (already exist): %d\n", skipped)
 	fmt.Printf("  Relationships created: %d\n", relationshipsCreated)
 	fmt.Printf("  Relationships skipped (already exist): %d\n", relationshipsSkipped)
+
+	return nil
+}
+
+// ParsedAliasJSON represents the structure of aliases in the parsed JSON file
+type ParsedAliasJSON struct {
+	Type   string `json:"type"`
+	ItemID int    `json:"itemId"`
+	Alias  string `json:"alias"`
+}
+
+// importAliases imports aliases from the parsed JSON file
+func importAliases(jsonPath string) error {
+	// Database connection
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		dbURL = "postgres://postgres:postgres@localhost/dashboard?sslmode=disable"
+	}
+
+	// Create Ent client
+	client, err := ent.Open("postgres", dbURL)
+	if err != nil {
+		return fmt.Errorf("failed opening connection to postgres: %v", err)
+	}
+	defer client.Close()
+
+	ctx := context.Background()
+
+	// Use provided path or default
+	if jsonPath == "" {
+		jsonPath = `C:\Programming\NodeJS\dashboard\data\aliases_parsed.json`
+	}
+	log.Printf("Reading aliases from: %s", jsonPath)
+
+	jsonData, err := os.ReadFile(jsonPath)
+	if err != nil {
+		return fmt.Errorf("failed to read JSON file: %v", err)
+	}
+
+	// Parse JSON
+	var aliases []ParsedAliasJSON
+	if err := json.Unmarshal(jsonData, &aliases); err != nil {
+		return fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	log.Printf("Found %d aliases to import", len(aliases))
+
+	// Insert aliases
+	log.Println("Inserting aliases into database...")
+	inserted := 0
+	skipped := 0
+
+	for _, aliasJSON := range aliases {
+		// Convert string type to ContainerType
+		containerType := schema.ContainerType(aliasJSON.Type)
+
+		// Validate the container type
+		switch containerType {
+		case schema.ContainerTypeEpic, schema.ContainerTypeStory, schema.ContainerTypeTask,
+			schema.ContainerTypeQuestion, schema.ContainerTypeProblem, schema.ContainerTypeKnowledgeNode,
+			schema.ContainerTypeKnowledgeBit, schema.ContainerTypeDefinition, schema.ContainerTypeAction,
+			schema.ContainerTypeScheduledTask, schema.ContainerTypeState:
+			// Valid type
+		default:
+			log.Printf("Warning: Invalid container type '%s' for alias '%s', skipping", aliasJSON.Type, aliasJSON.Alias)
+			skipped++
+			continue
+		}
+
+		// Check if alias already exists (since it's unique)
+		exists, err := client.Alias.Query().
+			Where(alias.AliasEQ(aliasJSON.Alias)).
+			Exist(ctx)
+		if err != nil {
+			log.Printf("Error checking if alias '%s' exists: %v", aliasJSON.Alias, err)
+			continue
+		}
+
+		if exists {
+			log.Printf("Alias '%s' already exists, skipping...", aliasJSON.Alias)
+			skipped++
+			continue
+		}
+
+		// Create alias
+		_, err = client.Alias.Create().
+			SetType(containerType).
+			SetItemID(aliasJSON.ItemID).
+			SetAlias(aliasJSON.Alias).
+			Save(ctx)
+		if err != nil {
+			log.Printf("Error inserting alias '%s': %v", aliasJSON.Alias, err)
+			skipped++
+			continue
+		}
+
+		inserted++
+
+		if inserted%100 == 0 {
+			log.Printf("Inserted %d aliases...", inserted)
+		}
+	}
+
+	log.Println("Import completed successfully!")
+	fmt.Printf("\nSummary:\n")
+	fmt.Printf("  Aliases inserted: %d\n", inserted)
+	fmt.Printf("  Aliases skipped (already exist or invalid): %d\n", skipped)
 
 	return nil
 }

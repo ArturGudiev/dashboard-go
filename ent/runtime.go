@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
@@ -18,6 +19,20 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	aliasFields := schema.Alias{}.Fields()
+	_ = aliasFields
+	// aliasDescItemID is the schema descriptor for item_id field.
+	aliasDescItemID := aliasFields[2].Descriptor()
+	// alias.ItemIDValidator is a validator for the "item_id" field. It is called by the builders before save.
+	alias.ItemIDValidator = aliasDescItemID.Validators[0].(func(int) error)
+	// aliasDescAlias is the schema descriptor for alias field.
+	aliasDescAlias := aliasFields[3].Descriptor()
+	// alias.AliasValidator is a validator for the "alias" field. It is called by the builders before save.
+	alias.AliasValidator = aliasDescAlias.Validators[0].(func(string) error)
+	// aliasDescID is the schema descriptor for id field.
+	aliasDescID := aliasFields[0].Descriptor()
+	// alias.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	alias.IDValidator = aliasDescID.Validators[0].(func(int) error)
 	containerchildFields := schema.ContainerChild{}.Fields()
 	_ = containerchildFields
 	// containerchildDescParentID is the schema descriptor for parent_id field.

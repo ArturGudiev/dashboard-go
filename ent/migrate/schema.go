@@ -9,6 +9,19 @@ import (
 )
 
 var (
+	// AliasesColumns holds the columns for the "aliases" table.
+	AliasesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state"}},
+		{Name: "item_id", Type: field.TypeInt},
+		{Name: "alias", Type: field.TypeString, Unique: true},
+	}
+	// AliasesTable holds the schema information for the "aliases" table.
+	AliasesTable = &schema.Table{
+		Name:       "aliases",
+		Columns:    AliasesColumns,
+		PrimaryKey: []*schema.Column{AliasesColumns[0]},
+	}
 	// ContainerChildrenColumns holds the columns for the "container_children" table.
 	ContainerChildrenColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -154,6 +167,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AliasesTable,
 		ContainerChildrenTable,
 		EpicsTable,
 		KnowledgeNodesTable,
@@ -166,6 +180,9 @@ var (
 )
 
 func init() {
+	AliasesTable.Annotation = &entsql.Annotation{
+		Table: "aliases",
+	}
 	ContainerChildrenTable.Annotation = &entsql.Annotation{
 		Table: "container_children",
 	}

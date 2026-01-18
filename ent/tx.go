@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Alias is the client for interacting with the Alias builders.
+	Alias *AliasClient
 	// ContainerChild is the client for interacting with the ContainerChild builders.
 	ContainerChild *ContainerChildClient
 	// Epic is the client for interacting with the Epic builders.
@@ -159,6 +161,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Alias = NewAliasClient(tx.config)
 	tx.ContainerChild = NewContainerChildClient(tx.config)
 	tx.Epic = NewEpicClient(tx.config)
 	tx.KnowledgeNode = NewKnowledgeNodeClient(tx.config)
@@ -176,7 +179,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: ContainerChild.QueryXXX(), the query will be executed
+// applies a query, for example: Alias.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

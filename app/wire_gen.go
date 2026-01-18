@@ -44,6 +44,8 @@ func InitializeApp() (*App, error) {
 	epicsService := services.NewEpicsService(client, containerService, epicsRepository, childContainerRepository)
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
+	aliasesRepository := repositories.NewAliasesRepository(client)
+	aliasesService := services.NewAliasesService(client)
 	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository)
 	return app, nil
 }

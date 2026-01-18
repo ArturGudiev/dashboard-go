@@ -8,6 +8,18 @@ import (
 	"fmt"
 )
 
+// The AliasFunc type is an adapter to allow the use of ordinary
+// function as Alias mutator.
+type AliasFunc func(context.Context, *ent.AliasMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AliasFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AliasMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AliasMutation", m)
+}
+
 // The ContainerChildFunc type is an adapter to allow the use of ordinary
 // function as ContainerChild mutator.
 type ContainerChildFunc func(context.Context, *ent.ContainerChildMutation) (ent.Value, error)

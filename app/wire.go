@@ -94,6 +94,8 @@ func provideApp(
 	storiesService *services.StoriesService,
 	epicsRepository *repositories.EpicsRepository,
 	epicsService *services.EpicsService,
+	aliasesRepository *repositories.AliasesRepository,
+	aliasesService *services.AliasesService,
 	knowledgeNodesRepository *repositories.KnowledgeNodesRepository,
 	knowledgeNodesService *services.KnowledgeNodesService,
 	childContainerRepository *services.ChildContainerRepository,
@@ -114,6 +116,8 @@ func provideApp(
 		EpicsService:             epicsService,
 		KnowledgeNodesRepository: knowledgeNodesRepository,
 		KnowledgeNodesService:    knowledgeNodesService,
+		AliasesRepository:        aliasesRepository,
+		aliasesService:           aliasesService,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(), // Default context for CLI
 	}

@@ -39,6 +39,7 @@ func runCLI(application *app.App) {
 	fs := flag.NewFlagSet("cli", flag.ContinueOnError)
 	taskID := fs.Int("task", 0, "View task by ID interactively")
 	knowledgeNodeID := fs.Int("knowledge-node", 0, "View knowledge node by ID interactively")
+	tempFlag := fs.Bool("temp", false, "Run temporary method")
 
 	if len(args) > 0 && (args[0] == "cli" || args[0] == "interactive") {
 		args = args[1:]
@@ -52,6 +53,12 @@ func runCLI(application *app.App) {
 	}
 
 	ctx := context.Background()
+
+	// If --temp flag is provided, run temporary method
+	if *tempFlag {
+		tempMethod(application)
+		return
+	}
 
 	// If --knowledge-node flag is provided, enter interactive knowledge node view
 	if *knowledgeNodeID > 0 {
@@ -379,4 +386,9 @@ func deleteTask(ctx context.Context, application *app.App, args []string) {
 	}
 
 	fmt.Printf("Task %d deleted successfully.\n", id)
+}
+
+// tempMethod is a temporary method for testing
+func tempMethod(a *app.App) {
+
 }
