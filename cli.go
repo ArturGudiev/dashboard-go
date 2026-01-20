@@ -12,6 +12,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/niemeyer/pretty"
 )
 
 func runCLI(application *app.App) {
@@ -40,6 +42,7 @@ func runCLI(application *app.App) {
 	taskID := fs.Int("task", 0, "View task by ID interactively")
 	knowledgeNodeID := fs.Int("knowledge-node", 0, "View knowledge node by ID interactively")
 	tempFlag := fs.Bool("temp", false, "Run temporary method")
+	alias := fs.String("alias", "", "Open item interactive by alias")
 
 	if len(args) > 0 && (args[0] == "cli" || args[0] == "interactive") {
 		args = args[1:]
@@ -56,8 +59,12 @@ func runCLI(application *app.App) {
 
 	// If --temp flag is provided, run temporary method
 	if *tempFlag {
-		tempMethod(application)
+		tempMethod(ctx, application)
 		return
+	}
+
+	if *alias != "" {
+		application.CLIService.ViewContainerByAlias(ctx, *alias)
 	}
 
 	// If --knowledge-node flag is provided, enter interactive knowledge node view
@@ -389,6 +396,9 @@ func deleteTask(ctx context.Context, application *app.App, args []string) {
 }
 
 // tempMethod is a temporary method for testing
-func tempMethod(a *app.App) {
-
+func tempMethod(ctx context.Context, a *app.App) {
+	res, err := a.AliasesService.GetAlias(ctx, "mine")
+	if err == nil {
+		pretty.Print(*res)
+	}
 }

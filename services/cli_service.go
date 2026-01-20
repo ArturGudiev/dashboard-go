@@ -21,14 +21,17 @@ type CLIService struct {
 	containerService   *ContainerService
 	problemsRepository *ProblemsRepository
 	epicsRepository    *repositories.EpicsRepository
+	aliasesRepository  *repositories.AliasesRepository
 }
 
-func NewCLIService(client *ent.Client, containerService *ContainerService, problemsRepository *ProblemsRepository, epicsRepository *repositories.EpicsRepository) *CLIService {
+func NewCLIService(client *ent.Client, containerService *ContainerService, problemsRepository *ProblemsRepository,
+	epicsRepository *repositories.EpicsRepository, aliasesRepository *repositories.AliasesRepository) *CLIService {
 	return &CLIService{
 		client:             client,
 		containerService:   containerService,
 		problemsRepository: problemsRepository,
 		epicsRepository:    epicsRepository,
+		aliasesRepository:  aliasesRepository,
 	}
 }
 
@@ -1011,6 +1014,16 @@ func (s *CLIService) ViewContainerInteractive(ctx context.Context, containerType
 	case schema.ContainerTypeKnowledgeNode:
 		s.ViewKnowledgeNodeInteractive(ctx, ID)
 	}
+}
+
+func (s *CLIService) ViewContainerByAlias(ctx context.Context, alias string) {
+	aliasModel, err := s.aliasesRepository.GetAliasByAliasString(ctx, alias)
+
+	if err != nil {
+		print(err)
+		return
+	}
+	s.ViewContainerInteractive(ctx, aliasModel.Type, aliasModel.ItemID)
 }
 
 func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {

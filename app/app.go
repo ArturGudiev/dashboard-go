@@ -25,6 +25,8 @@ type App struct {
 	EpicsService             *services.EpicsService
 	KnowledgeNodesRepository *repositories.KnowledgeNodesRepository
 	KnowledgeNodesService    *services.KnowledgeNodesService
+	AliasesRepository        *repositories.AliasesRepository
+	AliasesService           *services.AliasesService
 	ChildContainerRepository *services.ChildContainerRepository
 	ctx                      context.Context // Default context for CLI operations
 }

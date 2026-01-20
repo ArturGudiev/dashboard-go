@@ -30,23 +30,23 @@ func InitializeApp() (*App, error) {
 		return nil, err
 	}
 	childContainerRepository := services.NewChildContainerRepository(client)
-	containerService := services.NewContainerService(client, childContainerRepository)
+	aliasesRepository := repositories.NewAliasesRepository(client)
+	containerService := services.NewContainerService(client, childContainerRepository, aliasesRepository)
 	problemsRepository := services.NewProblemsRepository(client)
 	problemService := services.NewProblemService(client, containerService, problemsRepository, childContainerRepository)
 	tasksRepository := services.NewTasksRepository(client)
 	taskService := services.NewTaskService(client, containerService, problemService, tasksRepository, childContainerRepository)
 	epicsRepository := repositories.NewEpicsRepository(client)
-	cliService := services.NewCLIService(client, containerService, problemsRepository, epicsRepository)
+	cliService := services.NewCLIService(client, containerService, problemsRepository, epicsRepository, aliasesRepository)
 	questionsRepository := repositories.NewQuestionsRepository(client)
 	questionService := services.NewQuestionService(client, containerService, questionsRepository, childContainerRepository)
 	storiesRepository := repositories.NewStoriesRepository(client)
 	storiesService := services.NewStoriesService(client, containerService, storiesRepository, childContainerRepository)
 	epicsService := services.NewEpicsService(client, containerService, epicsRepository, childContainerRepository)
+	aliasesService := services.NewAliasesService(client, containerService, aliasesRepository, childContainerRepository)
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
-	aliasesRepository := repositories.NewAliasesRepository(client)
-	aliasesService := services.NewAliasesService(client)
-	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository)
+	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository)
 	return app, nil
 }
 
@@ -98,6 +98,8 @@ func provideApp(
 	storiesService *services.StoriesService,
 	epicsRepository *repositories.EpicsRepository,
 	epicsService *services.EpicsService,
+	aliasesRepository *repositories.AliasesRepository,
+	aliasesService *services.AliasesService,
 	knowledgeNodesRepository *repositories.KnowledgeNodesRepository,
 	knowledgeNodesService *services.KnowledgeNodesService,
 	childContainerRepository *services.ChildContainerRepository,
@@ -118,6 +120,8 @@ func provideApp(
 		EpicsService:             epicsService,
 		KnowledgeNodesRepository: knowledgeNodesRepository,
 		KnowledgeNodesService:    knowledgeNodesService,
+		AliasesRepository:        aliasesRepository,
+		AliasesService:           aliasesService,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(),
 	}

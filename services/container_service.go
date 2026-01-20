@@ -4,6 +4,7 @@ import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/repositories"
 	"context"
 	"fmt"
 	"os"
@@ -15,12 +16,14 @@ import (
 type ContainerService struct {
 	client                   *ent.Client
 	childContainerRepository *ChildContainerRepository
+	aliasesRepository        *repositories.AliasesRepository
 }
 
-func NewContainerService(client *ent.Client, childContainerRepository *ChildContainerRepository) *ContainerService {
+func NewContainerService(client *ent.Client, childContainerRepository *ChildContainerRepository, aliasesRepository *repositories.AliasesRepository) *ContainerService {
 	return &ContainerService{
 		client:                   client,
 		childContainerRepository: childContainerRepository,
+		aliasesRepository:        aliasesRepository,
 	}
 }
 

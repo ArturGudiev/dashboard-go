@@ -32,10 +32,12 @@ func InitializeApp() (*App, error) {
 		services.NewStoriesService,
 		services.NewEpicsService,
 		services.NewKnowledgeNodesService,
+		services.NewAliasesService,
 		repositories.NewQuestionsRepository,
 		repositories.NewStoriesRepository,
 		repositories.NewEpicsRepository,
 		repositories.NewKnowledgeNodesRepository,
+		repositories.NewAliasesRepository,
 		services.NewChildContainerRepository,
 		// App provider
 		provideApp,
@@ -117,7 +119,7 @@ func provideApp(
 		KnowledgeNodesRepository: knowledgeNodesRepository,
 		KnowledgeNodesService:    knowledgeNodesService,
 		AliasesRepository:        aliasesRepository,
-		aliasesService:           aliasesService,
+		AliasesService:           aliasesService,
 		ChildContainerRepository: childContainerRepository,
 		ctx:                      context.Background(), // Default context for CLI
 	}
