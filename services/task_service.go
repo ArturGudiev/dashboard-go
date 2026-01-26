@@ -93,9 +93,9 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 	if errTask != nil {
 		return nil, errTask
 	}
-	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeProblem, ID)
-	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeProblem, ID)
-	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeProblem, ID)
+	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeTask, ID)
+	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeTask, ID)
+	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeTask, ID)
 	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil {
 		return nil, errors.New("problem not found")
 	}
@@ -126,6 +126,7 @@ func (s *TaskService) GetTasksFull(ctx context.Context, IDs []int) ([]*models.Ta
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	results := make([]*models.TaskFull, 0, len(IDs))
+	tempStruct := map[int]*models.TaskFull{}
 	var firstErr error
 
 	for _, id := range IDs {
@@ -144,15 +145,20 @@ func (s *TaskService) GetTasksFull(ctx context.Context, IDs []int) ([]*models.Ta
 				}
 				return
 			}
-
-			results = append(results, taskFull)
+			tempStruct[taskID] = taskFull
 		}(id)
 	}
 
 	wg.Wait()
 
-	if firstErr != nil && len(results) == 0 {
+	if firstErr != nil && len(tempStruct) == 0 {
 		return nil, firstErr
+	}
+
+	for _, ID := range IDs {
+		if tempStruct[ID] != nil {
+			results = append(results, tempStruct[ID])
+		}
 	}
 
 	return results, firstErr

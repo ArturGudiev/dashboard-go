@@ -29,16 +29,63 @@ func (_u *AliasUpdate) Where(ps ...predicate.Alias) *AliasUpdate {
 }
 
 // SetType sets the "type" field.
-func (_u *AliasUpdate) SetType(v schema.ContainerType) *AliasUpdate {
+func (_u *AliasUpdate) SetType(v schema.AliasType) *AliasUpdate {
 	_u.mutation.SetType(v)
 	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (_u *AliasUpdate) SetNillableType(v *schema.ContainerType) *AliasUpdate {
+func (_u *AliasUpdate) SetNillableType(v *schema.AliasType) *AliasUpdate {
 	if v != nil {
 		_u.SetType(*v)
 	}
+	return _u
+}
+
+// SetItemID sets the "item_id" field.
+func (_u *AliasUpdate) SetItemID(v int) *AliasUpdate {
+	_u.mutation.ResetItemID()
+	_u.mutation.SetItemID(v)
+	return _u
+}
+
+// SetNillableItemID sets the "item_id" field if the given value is not nil.
+func (_u *AliasUpdate) SetNillableItemID(v *int) *AliasUpdate {
+	if v != nil {
+		_u.SetItemID(*v)
+	}
+	return _u
+}
+
+// AddItemID adds value to the "item_id" field.
+func (_u *AliasUpdate) AddItemID(v int) *AliasUpdate {
+	_u.mutation.AddItemID(v)
+	return _u
+}
+
+// ClearItemID clears the value of the "item_id" field.
+func (_u *AliasUpdate) ClearItemID() *AliasUpdate {
+	_u.mutation.ClearItemID()
+	return _u
+}
+
+// SetFilePath sets the "file_path" field.
+func (_u *AliasUpdate) SetFilePath(v string) *AliasUpdate {
+	_u.mutation.SetFilePath(v)
+	return _u
+}
+
+// SetNillableFilePath sets the "file_path" field if the given value is not nil.
+func (_u *AliasUpdate) SetNillableFilePath(v *string) *AliasUpdate {
+	if v != nil {
+		_u.SetFilePath(*v)
+	}
+	return _u
+}
+
+// ClearFilePath clears the value of the "file_path" field.
+func (_u *AliasUpdate) ClearFilePath() *AliasUpdate {
+	_u.mutation.ClearFilePath()
 	return _u
 }
 
@@ -95,6 +142,11 @@ func (_u *AliasUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Alias.type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ItemID(); ok {
+		if err := alias.ItemIDValidator(v); err != nil {
+			return &ValidationError{Name: "item_id", err: fmt.Errorf(`ent: validator failed for field "Alias.item_id": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Alias(); ok {
 		if err := alias.AliasValidator(v); err != nil {
 			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Alias.alias": %w`, err)}
@@ -117,6 +169,21 @@ func (_u *AliasUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(alias.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ItemID(); ok {
+		_spec.SetField(alias.FieldItemID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedItemID(); ok {
+		_spec.AddField(alias.FieldItemID, field.TypeInt, value)
+	}
+	if _u.mutation.ItemIDCleared() {
+		_spec.ClearField(alias.FieldItemID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.FilePath(); ok {
+		_spec.SetField(alias.FieldFilePath, field.TypeString, value)
+	}
+	if _u.mutation.FilePathCleared() {
+		_spec.ClearField(alias.FieldFilePath, field.TypeString)
 	}
 	if value, ok := _u.mutation.Alias(); ok {
 		_spec.SetField(alias.FieldAlias, field.TypeString, value)
@@ -142,16 +209,63 @@ type AliasUpdateOne struct {
 }
 
 // SetType sets the "type" field.
-func (_u *AliasUpdateOne) SetType(v schema.ContainerType) *AliasUpdateOne {
+func (_u *AliasUpdateOne) SetType(v schema.AliasType) *AliasUpdateOne {
 	_u.mutation.SetType(v)
 	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (_u *AliasUpdateOne) SetNillableType(v *schema.ContainerType) *AliasUpdateOne {
+func (_u *AliasUpdateOne) SetNillableType(v *schema.AliasType) *AliasUpdateOne {
 	if v != nil {
 		_u.SetType(*v)
 	}
+	return _u
+}
+
+// SetItemID sets the "item_id" field.
+func (_u *AliasUpdateOne) SetItemID(v int) *AliasUpdateOne {
+	_u.mutation.ResetItemID()
+	_u.mutation.SetItemID(v)
+	return _u
+}
+
+// SetNillableItemID sets the "item_id" field if the given value is not nil.
+func (_u *AliasUpdateOne) SetNillableItemID(v *int) *AliasUpdateOne {
+	if v != nil {
+		_u.SetItemID(*v)
+	}
+	return _u
+}
+
+// AddItemID adds value to the "item_id" field.
+func (_u *AliasUpdateOne) AddItemID(v int) *AliasUpdateOne {
+	_u.mutation.AddItemID(v)
+	return _u
+}
+
+// ClearItemID clears the value of the "item_id" field.
+func (_u *AliasUpdateOne) ClearItemID() *AliasUpdateOne {
+	_u.mutation.ClearItemID()
+	return _u
+}
+
+// SetFilePath sets the "file_path" field.
+func (_u *AliasUpdateOne) SetFilePath(v string) *AliasUpdateOne {
+	_u.mutation.SetFilePath(v)
+	return _u
+}
+
+// SetNillableFilePath sets the "file_path" field if the given value is not nil.
+func (_u *AliasUpdateOne) SetNillableFilePath(v *string) *AliasUpdateOne {
+	if v != nil {
+		_u.SetFilePath(*v)
+	}
+	return _u
+}
+
+// ClearFilePath clears the value of the "file_path" field.
+func (_u *AliasUpdateOne) ClearFilePath() *AliasUpdateOne {
+	_u.mutation.ClearFilePath()
 	return _u
 }
 
@@ -221,6 +335,11 @@ func (_u *AliasUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Alias.type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ItemID(); ok {
+		if err := alias.ItemIDValidator(v); err != nil {
+			return &ValidationError{Name: "item_id", err: fmt.Errorf(`ent: validator failed for field "Alias.item_id": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Alias(); ok {
 		if err := alias.AliasValidator(v); err != nil {
 			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Alias.alias": %w`, err)}
@@ -260,6 +379,21 @@ func (_u *AliasUpdateOne) sqlSave(ctx context.Context) (_node *Alias, err error)
 	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(alias.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ItemID(); ok {
+		_spec.SetField(alias.FieldItemID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedItemID(); ok {
+		_spec.AddField(alias.FieldItemID, field.TypeInt, value)
+	}
+	if _u.mutation.ItemIDCleared() {
+		_spec.ClearField(alias.FieldItemID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.FilePath(); ok {
+		_spec.SetField(alias.FieldFilePath, field.TypeString, value)
+	}
+	if _u.mutation.FilePathCleared() {
+		_spec.ClearField(alias.FieldFilePath, field.TypeString)
 	}
 	if value, ok := _u.mutation.Alias(); ok {
 		_spec.SetField(alias.FieldAlias, field.TypeString, value)

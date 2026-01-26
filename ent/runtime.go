@@ -26,7 +26,7 @@ func init() {
 	// alias.ItemIDValidator is a validator for the "item_id" field. It is called by the builders before save.
 	alias.ItemIDValidator = aliasDescItemID.Validators[0].(func(int) error)
 	// aliasDescAlias is the schema descriptor for alias field.
-	aliasDescAlias := aliasFields[3].Descriptor()
+	aliasDescAlias := aliasFields[4].Descriptor()
 	// alias.AliasValidator is a validator for the "alias" field. It is called by the builders before save.
 	alias.AliasValidator = aliasDescAlias.Validators[0].(func(string) error)
 	// aliasDescID is the schema descriptor for id field.

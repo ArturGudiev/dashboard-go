@@ -21,7 +21,7 @@ type AliasCreate struct {
 }
 
 // SetType sets the "type" field.
-func (_c *AliasCreate) SetType(v schema.ContainerType) *AliasCreate {
+func (_c *AliasCreate) SetType(v schema.AliasType) *AliasCreate {
 	_c.mutation.SetType(v)
 	return _c
 }
@@ -29,6 +29,28 @@ func (_c *AliasCreate) SetType(v schema.ContainerType) *AliasCreate {
 // SetItemID sets the "item_id" field.
 func (_c *AliasCreate) SetItemID(v int) *AliasCreate {
 	_c.mutation.SetItemID(v)
+	return _c
+}
+
+// SetNillableItemID sets the "item_id" field if the given value is not nil.
+func (_c *AliasCreate) SetNillableItemID(v *int) *AliasCreate {
+	if v != nil {
+		_c.SetItemID(*v)
+	}
+	return _c
+}
+
+// SetFilePath sets the "file_path" field.
+func (_c *AliasCreate) SetFilePath(v string) *AliasCreate {
+	_c.mutation.SetFilePath(v)
+	return _c
+}
+
+// SetNillableFilePath sets the "file_path" field if the given value is not nil.
+func (_c *AliasCreate) SetNillableFilePath(v *string) *AliasCreate {
+	if v != nil {
+		_c.SetFilePath(*v)
+	}
 	return _c
 }
 
@@ -86,9 +108,6 @@ func (_c *AliasCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Alias.type": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ItemID(); !ok {
-		return &ValidationError{Name: "item_id", err: errors.New(`ent: missing required field "Alias.item_id"`)}
-	}
 	if v, ok := _c.mutation.ItemID(); ok {
 		if err := alias.ItemIDValidator(v); err != nil {
 			return &ValidationError{Name: "item_id", err: fmt.Errorf(`ent: validator failed for field "Alias.item_id": %w`, err)}
@@ -145,7 +164,11 @@ func (_c *AliasCreate) createSpec() (*Alias, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.ItemID(); ok {
 		_spec.SetField(alias.FieldItemID, field.TypeInt, value)
-		_node.ItemID = value
+		_node.ItemID = &value
+	}
+	if value, ok := _c.mutation.FilePath(); ok {
+		_spec.SetField(alias.FieldFilePath, field.TypeString, value)
+		_node.FilePath = &value
 	}
 	if value, ok := _c.mutation.Alias(); ok {
 		_spec.SetField(alias.FieldAlias, field.TypeString, value)

@@ -29,6 +29,7 @@ func (s *AliasesService) GetAlias(ctx context.Context, aliasString string) (*mod
 		Type:   alias.Type,
 		Alias:  alias.Alias,
 		ItemID: alias.ItemID,
+		FilePath: alias.FilePath,
 	}
 	return AliasModel, nil
 }

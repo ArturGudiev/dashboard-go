@@ -28,8 +28,10 @@ func (s *EpicsService) GetEpicFull(ctx context.Context, ID int) (*models.EpicFul
 	}
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeEpic, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeEpic, ID)
+	stories, errStories := s.containerService.GetOpenStoriesIDs(ctx, schema.ContainerTypeEpic, ID)
+
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeEpic, ID)
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil {
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errStories != nil {
 		return nil, errors.New("epic not found")
 	}
 	EpicFull := &models.EpicFull{
@@ -39,7 +41,7 @@ func (s *EpicsService) GetEpicFull(ctx context.Context, ID int) (*models.EpicFul
 		Notes:            epic.Notes,
 		Closed:           epic.Closed,
 		Epics:            []int{},
-		Stories:          []int{},
+		Stories:          stories,
 		Tasks:            subtasks,
 		Problems:         subproblems,
 		Questions:        []int{},
@@ -82,6 +84,44 @@ func (s *EpicsService) GetEpicsFull(ctx context.Context, IDs []int) ([]*models.E
 
 			results = append(results, epicFull)
 		}(id)
+	}
+
+	wg.Wait()
+
+	if firstErr != nil && len(results) == 0 {
+		return nil, firstErr
+	}
+
+	return results, firstErr
+}
+
+func (s *EpicsService) GetAllOpenEpicsFull(ctx context.Context) ([]*models.EpicFull, error) {
+
+	allOpenEpics, err := s.epicsRepository.GetAllOpenEpics(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	results := make([]*models.EpicFull, 0, len(allOpenEpics))
+	var firstErr error
+
+	for _, epic := range allOpenEpics {
+		wg.Add(1)
+		go func(epic *ent.Epic) {
+			defer wg.Done()
+			epicFull, err := s.GetEpicFull(ctx, epic.ID)
+			if err != nil {
+				if firstErr == nil {
+					firstErr = err
+				}
+				return
+			}
+			mu.Lock()
+			defer mu.Unlock()
+			results = append(results, epicFull)
+		}(epic)
 	}
 
 	wg.Wait()

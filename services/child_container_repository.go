@@ -33,7 +33,7 @@ func (s *ChildContainerRepository) GetChildContainers(ctx context.Context, paren
 }
 
 func (s *ChildContainerRepository) GetParentContainers(ctx context.Context, childType schema.ContainerType, childID int) ([]models.ContainerDescription, error) {
-	var parentContainers []models.ContainerDescription
+	parentContainers := []models.ContainerDescription{}
 
 	parentRelations, err := s.client.ContainerChild.Query().
 		Where(

@@ -50,9 +50,10 @@ type AliasMutation struct {
 	op            Op
 	typ           string
 	id            *int
-	_type         *schema.ContainerType
+	_type         *schema.AliasType
 	item_id       *int
 	additem_id    *int
+	file_path     *string
 	alias         *string
 	clearedFields map[string]struct{}
 	done          bool
@@ -165,12 +166,12 @@ func (m *AliasMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetType sets the "type" field.
-func (m *AliasMutation) SetType(st schema.ContainerType) {
+func (m *AliasMutation) SetType(st schema.AliasType) {
 	m._type = &st
 }
 
 // GetType returns the value of the "type" field in the mutation.
-func (m *AliasMutation) GetType() (r schema.ContainerType, exists bool) {
+func (m *AliasMutation) GetType() (r schema.AliasType, exists bool) {
 	v := m._type
 	if v == nil {
 		return
@@ -181,7 +182,7 @@ func (m *AliasMutation) GetType() (r schema.ContainerType, exists bool) {
 // OldType returns the old "type" field's value of the Alias entity.
 // If the Alias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AliasMutation) OldType(ctx context.Context) (v schema.ContainerType, err error) {
+func (m *AliasMutation) OldType(ctx context.Context) (v schema.AliasType, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldType is only allowed on UpdateOne operations")
 	}
@@ -218,7 +219,7 @@ func (m *AliasMutation) ItemID() (r int, exists bool) {
 // OldItemID returns the old "item_id" field's value of the Alias entity.
 // If the Alias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AliasMutation) OldItemID(ctx context.Context) (v int, err error) {
+func (m *AliasMutation) OldItemID(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldItemID is only allowed on UpdateOne operations")
 	}
@@ -250,10 +251,73 @@ func (m *AliasMutation) AddedItemID() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearItemID clears the value of the "item_id" field.
+func (m *AliasMutation) ClearItemID() {
+	m.item_id = nil
+	m.additem_id = nil
+	m.clearedFields[alias.FieldItemID] = struct{}{}
+}
+
+// ItemIDCleared returns if the "item_id" field was cleared in this mutation.
+func (m *AliasMutation) ItemIDCleared() bool {
+	_, ok := m.clearedFields[alias.FieldItemID]
+	return ok
+}
+
 // ResetItemID resets all changes to the "item_id" field.
 func (m *AliasMutation) ResetItemID() {
 	m.item_id = nil
 	m.additem_id = nil
+	delete(m.clearedFields, alias.FieldItemID)
+}
+
+// SetFilePath sets the "file_path" field.
+func (m *AliasMutation) SetFilePath(s string) {
+	m.file_path = &s
+}
+
+// FilePath returns the value of the "file_path" field in the mutation.
+func (m *AliasMutation) FilePath() (r string, exists bool) {
+	v := m.file_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFilePath returns the old "file_path" field's value of the Alias entity.
+// If the Alias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AliasMutation) OldFilePath(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFilePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFilePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFilePath: %w", err)
+	}
+	return oldValue.FilePath, nil
+}
+
+// ClearFilePath clears the value of the "file_path" field.
+func (m *AliasMutation) ClearFilePath() {
+	m.file_path = nil
+	m.clearedFields[alias.FieldFilePath] = struct{}{}
+}
+
+// FilePathCleared returns if the "file_path" field was cleared in this mutation.
+func (m *AliasMutation) FilePathCleared() bool {
+	_, ok := m.clearedFields[alias.FieldFilePath]
+	return ok
+}
+
+// ResetFilePath resets all changes to the "file_path" field.
+func (m *AliasMutation) ResetFilePath() {
+	m.file_path = nil
+	delete(m.clearedFields, alias.FieldFilePath)
 }
 
 // SetAlias sets the "alias" field.
@@ -326,12 +390,15 @@ func (m *AliasMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AliasMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m._type != nil {
 		fields = append(fields, alias.FieldType)
 	}
 	if m.item_id != nil {
 		fields = append(fields, alias.FieldItemID)
+	}
+	if m.file_path != nil {
+		fields = append(fields, alias.FieldFilePath)
 	}
 	if m.alias != nil {
 		fields = append(fields, alias.FieldAlias)
@@ -348,6 +415,8 @@ func (m *AliasMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case alias.FieldItemID:
 		return m.ItemID()
+	case alias.FieldFilePath:
+		return m.FilePath()
 	case alias.FieldAlias:
 		return m.Alias()
 	}
@@ -363,6 +432,8 @@ func (m *AliasMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldType(ctx)
 	case alias.FieldItemID:
 		return m.OldItemID(ctx)
+	case alias.FieldFilePath:
+		return m.OldFilePath(ctx)
 	case alias.FieldAlias:
 		return m.OldAlias(ctx)
 	}
@@ -375,7 +446,7 @@ func (m *AliasMutation) OldField(ctx context.Context, name string) (ent.Value, e
 func (m *AliasMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case alias.FieldType:
-		v, ok := value.(schema.ContainerType)
+		v, ok := value.(schema.AliasType)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -387,6 +458,13 @@ func (m *AliasMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetItemID(v)
+		return nil
+	case alias.FieldFilePath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFilePath(v)
 		return nil
 	case alias.FieldAlias:
 		v, ok := value.(string)
@@ -439,7 +517,14 @@ func (m *AliasMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AliasMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(alias.FieldItemID) {
+		fields = append(fields, alias.FieldItemID)
+	}
+	if m.FieldCleared(alias.FieldFilePath) {
+		fields = append(fields, alias.FieldFilePath)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -452,6 +537,14 @@ func (m *AliasMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AliasMutation) ClearField(name string) error {
+	switch name {
+	case alias.FieldItemID:
+		m.ClearItemID()
+		return nil
+	case alias.FieldFilePath:
+		m.ClearFilePath()
+		return nil
+	}
 	return fmt.Errorf("unknown Alias nullable field %s", name)
 }
 
@@ -464,6 +557,9 @@ func (m *AliasMutation) ResetField(name string) error {
 		return nil
 	case alias.FieldItemID:
 		m.ResetItemID()
+		return nil
+	case alias.FieldFilePath:
+		m.ResetFilePath()
 		return nil
 	case alias.FieldAlias:
 		m.ResetAlias()

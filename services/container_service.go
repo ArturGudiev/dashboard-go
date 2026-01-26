@@ -1,6 +1,7 @@
 package services
 
 import (
+	"arturgudiev/dashboard/constants"
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/schema"
@@ -8,6 +9,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/ddddddO/gtree"
 	"github.com/fatih/color"
@@ -163,6 +166,25 @@ func (s *ContainerService) GetOpenProblemsIDs(ctx context.Context, containerType
 	return openProblems, nil
 }
 
+func (s *ContainerService) GetOpenStoriesIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	openStories := []int{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeStory)
+
+	if err == nil && len(childRelations) > 0 {
+		for _, relation := range childRelations {
+			childStory, err := s.client.Story.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+
+			if !childStory.Closed {
+				openStories = append(openStories, childStory.ID)
+			}
+		}
+	}
+	return openStories, nil
+}
+
 func (s *ContainerService) GetChildKnowledgeNodesIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
 	knowledgeNodes := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeKnowledgeNode)
@@ -214,48 +236,49 @@ func (s *ContainerService) GetParentCommon(ctx context.Context, containerType sc
 }
 
 func (s *ContainerService) GetDescription(ctx context.Context, containerType schema.ContainerType, ID int) (*string, error) {
+	capitalContainerType := constants.CapitalisedContainerTypes[containerType]
 	switch containerType {
 	case schema.ContainerTypeTask:
 		task, err := s.client.Task.Get(ctx, ID)
 		if err != nil {
 			return nil, err
 		}
-		result := fmt.Sprintf("%s-%d %s", containerType, ID, task.Description)
+		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, task.Description)
 		return &result, nil
 	case schema.ContainerTypeProblem:
 		problem, err := s.client.Problem.Get(ctx, ID)
 		if err != nil {
 			return nil, err
 		}
-		result := fmt.Sprintf("%s-%d %s", containerType, ID, problem.Description)
+		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, problem.Description)
 		return &result, nil
 	case schema.ContainerTypeQuestion:
 		question, err := s.client.Question.Get(ctx, ID)
 		if err != nil {
 			return nil, err
 		}
-		result := fmt.Sprintf("%s-%d %s", containerType, ID, question.Description)
+		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, question.Description)
 		return &result, nil
 	case schema.ContainerTypeStory:
 		story, err := s.client.Story.Get(ctx, ID)
 		if err != nil {
 			return nil, err
 		}
-		result := fmt.Sprintf("%s-%d %s", containerType, ID, story.Description)
+		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, story.Description)
 		return &result, nil
 	case schema.ContainerTypeEpic:
 		epic, err := s.client.Epic.Get(ctx, ID)
 		if err != nil {
 			return nil, err
 		}
-		result := fmt.Sprintf("%s-%d %s", containerType, ID, epic.Description)
+		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, epic.Description)
 		return &result, nil
 	case schema.ContainerTypeKnowledgeNode:
 		knowledgeNode, err := s.client.KnowledgeNode.Get(ctx, ID)
 		if err != nil {
 			return nil, err
 		}
-		result := fmt.Sprintf("%s-%d %s", containerType, ID, knowledgeNode.Name)
+		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, knowledgeNode.Name)
 		return &result, nil
 	default:
 		return nil, fmt.Errorf("unsupported container type: %s", containerType)
@@ -705,4 +728,60 @@ func (s *ContainerService) AddSubknowledgeNode(ctx context.Context, parentType s
 
 	fmt.Printf("Knowledge Node created successfully! ID: %d\n", newKnowledgeNode.ID)
 	return nil
+}
+
+func (s *ContainerService) GetFilesFolder(ctx context.Context, containerType schema.ContainerType, ID int) *string {
+	filesDir := s.GetFilesFolderPrefix(ctx, containerType, ID)
+	if filesDir == nil {
+		return nil
+	}
+
+	// Extract directory path from prefix (everything before the filename part)
+	prefix := *filesDir
+	dir := filepath.Dir(prefix)
+	prefixBase := filepath.Base(prefix)
+
+	// Read directory
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil
+	}
+
+	// Check if any directory starts with the prefix and return the full path
+	for _, entry := range entries {
+		if entry.IsDir() && strings.HasPrefix(entry.Name(), prefixBase) {
+			fullPath := filepath.Join(dir, entry.Name())
+			return &fullPath
+		}
+	}
+
+	return nil
+}
+
+func (s *ContainerService) GetFilesFolderPrefix(ctx context.Context, containerType schema.ContainerType, ID int) *string {
+	folderPath := "C:\\Programming\\NodeJS\\dashboard\\files"
+	var result string
+	switch containerType {
+	case schema.ContainerTypeTask:
+		result = fmt.Sprintf("%s\\tasks\\%d_", folderPath, ID)
+	case schema.ContainerTypeProblem:
+		result = fmt.Sprintf("%s\\problems\\%d_", folderPath, ID)
+	case schema.ContainerTypeQuestion:
+		result = fmt.Sprintf("%s\\questions\\%d_", folderPath, ID)
+	case schema.ContainerTypeAction:
+		result = fmt.Sprintf("%s\\actions\\%d_", folderPath, ID)
+	case schema.ContainerTypeDefinition:
+		result = fmt.Sprintf("%s\\definitions\\%d_", folderPath, ID)
+	case schema.ContainerTypeKnowledgeBit:
+		result = fmt.Sprintf("%s\\knowledge-bits\\%d_", folderPath, ID)
+	case schema.ContainerTypeKnowledgeNode:
+		result = fmt.Sprintf("%s\\knowledge-nodes\\%d_", folderPath, ID)
+	case schema.ContainerTypeStory:
+		result = fmt.Sprintf("%s\\stories\\%d_", folderPath, ID)
+	case schema.ContainerTypeEpic:
+		result = fmt.Sprintf("%s\\epics\\%d_", folderPath, ID)
+	default:
+		return nil
+	}
+	return &result
 }

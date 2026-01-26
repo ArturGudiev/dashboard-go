@@ -17,10 +17,14 @@ func (Alias) Fields() []ent.Field {
 			Positive().
 			Immutable(),
 		field.Enum("type").
-			GoType(ContainerType("")),
+			GoType(AliasType("")),
 		field.Int("item_id").
 			Positive().
-			Immutable(),
+			Optional().
+			Nillable(),
+		field.String("file_path").
+			Optional().
+			Nillable(),
 		field.String("alias").
 			NotEmpty().
 			Unique(),

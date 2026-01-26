@@ -8,6 +8,7 @@ import (
 	_ "arturgudiev/dashboard/docs" // Swagger docs
 	"arturgudiev/dashboard/handlers"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -67,6 +68,8 @@ func main() {
 				err = importKnowledgeNodes(jsonPath)
 			case "aliases":
 				err = importAliases(jsonPath)
+			case "aliases-files":
+				err = importFileAliases(jsonPath)
 			default:
 				log.Fatalf("Unknown import type: %s. Use 'tasks', 'epics', 'stories', 'knowledge-nodes', or 'aliases'", importType)
 			}
@@ -74,11 +77,78 @@ func main() {
 				log.Fatalf("Import failed: %v", err)
 			}
 			return
+		case "parse-file-aliases":
+			// Parse file aliases from aliases.json and create aliases_parsed_files.json
+			inputPath := ""
+			outputPath := ""
+			if len(os.Args) > 2 {
+				inputPath = os.Args[2]
+			}
+			if len(os.Args) > 3 {
+				outputPath = os.Args[3]
+			}
+			if err := parseFileAliases(inputPath, outputPath); err != nil {
+				log.Fatalf("Parse failed: %v", err)
+			}
+			return
 		}
 	}
 
 	// Setup Gin router
 	router := gin.Default()
+
+	// Configure CORS middleware - matching NodeJS server behavior
+	config := cors.DefaultConfig()
+
+	// Use a function to allow any origin (like NodeJS server does)
+	// This is required when credentials: true (Firefox requirement)
+	config.AllowOriginFunc = func(origin string) bool {
+		// Allow requests with no origin (like mobile apps, curl, Postman)
+		if origin == "" {
+			log.Println("CORS: No origin header, allowing request")
+			return true
+		}
+		// Log the origin for debugging
+		log.Printf("CORS: Allowing origin: %s", origin)
+		// Allow all origins (return true for any origin)
+		return true
+	}
+
+	// Allow credentials (cookies, authorization headers)
+	config.AllowCredentials = true
+	// Allow all methods
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"}
+	// Allow common headers
+	config.AllowHeaders = []string{
+		"Origin",
+		"Content-Type",
+		"Content-Length",
+		"Accept-Encoding",
+		"X-CSRF-Token",
+		"Authorization",
+		"Accept",
+		"X-Requested-With",
+		"X-HTTP-Method-Override",
+		"Access-Control-Request-Method",
+		"Access-Control-Request-Headers",
+	}
+	// Cache preflight requests for 24 hours
+	config.MaxAge = 86400
+
+	// Apply CORS middleware
+	router.Use(cors.New(config))
+
+	// Explicitly handle OPTIONS requests for better compatibility (like NodeJS server)
+	router.OPTIONS("/*path", func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+		log.Printf("OPTIONS preflight request: %s %s Origin: %s", c.Request.Method, c.Request.URL.Path, origin)
+		c.Header("Access-Control-Allow-Origin", origin)
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, X-HTTP-Method-Override")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Max-Age", "86400")
+		c.Status(204)
+	})
 
 	// Swagger UI route
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -88,6 +158,7 @@ func main() {
 
 	router.GET("/", h.Root)
 	router.GET("/tests", h.GetTests)
+	router.POST("/parents-path", h.GetParentsPath)
 
 	// Task routes
 	router.GET("/task/:id", h.GetTaskByID)
@@ -125,6 +196,7 @@ func main() {
 	router.POST("/get-epics", h.GetEpicsByIDs)
 	router.POST("/new-epic", h.NewEpic)
 	router.PUT("/update-epic", h.UpdateEpic)
+	router.GET("/epics", h.GetAllOpenEpics)
 
 	// Start server
 	port := os.Getenv("PORT")
@@ -132,6 +204,8 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server starting on port %s", port)
-	log.Fatal(router.Run(":" + port))
+	// Bind to all interfaces (0.0.0.0) to allow access from other machines
+	address := "0.0.0.0:" + port
+	log.Printf("Server starting on %s (accessible from network)", address)
+	log.Fatal(router.Run(address))
 }

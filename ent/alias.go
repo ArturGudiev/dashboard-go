@@ -18,9 +18,11 @@ type Alias struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Type holds the value of the "type" field.
-	Type schema.ContainerType `json:"type,omitempty"`
+	Type schema.AliasType `json:"type,omitempty"`
 	// ItemID holds the value of the "item_id" field.
-	ItemID int `json:"item_id,omitempty"`
+	ItemID *int `json:"item_id,omitempty"`
+	// FilePath holds the value of the "file_path" field.
+	FilePath *string `json:"file_path,omitempty"`
 	// Alias holds the value of the "alias" field.
 	Alias        string `json:"alias,omitempty"`
 	selectValues sql.SelectValues
@@ -33,7 +35,7 @@ func (*Alias) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case alias.FieldID, alias.FieldItemID:
 			values[i] = new(sql.NullInt64)
-		case alias.FieldType, alias.FieldAlias:
+		case alias.FieldType, alias.FieldFilePath, alias.FieldAlias:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -60,13 +62,21 @@ func (_m *Alias) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				_m.Type = schema.ContainerType(value.String)
+				_m.Type = schema.AliasType(value.String)
 			}
 		case alias.FieldItemID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field item_id", values[i])
 			} else if value.Valid {
-				_m.ItemID = int(value.Int64)
+				_m.ItemID = new(int)
+				*_m.ItemID = int(value.Int64)
+			}
+		case alias.FieldFilePath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field file_path", values[i])
+			} else if value.Valid {
+				_m.FilePath = new(string)
+				*_m.FilePath = value.String
 			}
 		case alias.FieldAlias:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -113,8 +123,15 @@ func (_m *Alias) String() string {
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
-	builder.WriteString("item_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ItemID))
+	if v := _m.ItemID; v != nil {
+		builder.WriteString("item_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.FilePath; v != nil {
+		builder.WriteString("file_path=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("alias=")
 	builder.WriteString(_m.Alias)

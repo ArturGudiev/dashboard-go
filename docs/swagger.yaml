@@ -62,6 +62,16 @@ definitions:
       task:
         $ref: '#/definitions/models.TaskShort'
     type: object
+  handlers.ParentsPathRequest:
+    properties:
+      id:
+        type: integer
+      type:
+        type: string
+    required:
+    - id
+    - type
+    type: object
   handlers.SolveProblemRequest:
     properties:
       solution:
@@ -759,6 +769,35 @@ paths:
       summary: Get epic by ID
       tags:
       - epics
+  /epics:
+    get:
+      consumes:
+      - application/json
+      description: Returns all epics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.EpicFull'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get epics
+      tags:
+      - epics
   /finish-task/{id}:
     put:
       consumes:
@@ -1252,6 +1291,42 @@ paths:
       summary: Create new task
       tags:
       - tasks
+  /parents-path:
+    post:
+      consumes:
+      - application/json
+      description: Returns the path of parent containers for a given container
+      parameters:
+      - description: Parents path request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ParentsPathRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get parents path
+      tags:
+      - general
   /problem/{id}:
     get:
       consumes:

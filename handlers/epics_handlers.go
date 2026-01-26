@@ -141,3 +141,24 @@ func (h *Handler) UpdateEpic(c *gin.Context) {
 
 	c.JSON(200, epicFull)
 }
+
+// GetAllOpenEpics handles GET /epics
+// @Summary      Get epics
+// @Description  Returns all epics
+// @Tags         epics
+// @Accept       json
+// @Produce      json
+// @Success      200      {array}   models.EpicFull
+// @Failure      400      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /epics [get]
+func (h *Handler) GetAllOpenEpics(c *gin.Context) {
+	epicsFull, err := h.App.EpicsService.GetAllOpenEpicsFull(c.Request.Context())
+
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, epicsFull)
+}

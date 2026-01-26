@@ -10,6 +10,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -51,11 +53,18 @@ func (s *CLIService) printTaskInfo(ctx context.Context, t *ent.Task, subtasks []
 	if t.DoneDateTime != nil {
 		fmt.Printf("Done Date: %s\n", t.DoneDateTime.Format("2006-01-02 15:04:05"))
 	}
+	filesDir := s.containerService.GetFilesFolder(ctx, schema.ContainerTypeTask, t.ID)
+	if filesDir != nil {
+		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
+	}
 	fmt.Println(strings.Repeat("=", 80))
 
 	s.containerService.PrintSubtasks(subtasks)
 	s.containerService.PrintProblems(problems)
 	s.containerService.PrintQuestions(questions)
+	if filesDir != nil {
+		s.printDirectoryContents(*filesDir)
+	}
 	fmt.Println()
 }
 
@@ -131,6 +140,10 @@ func (s *CLIService) ViewTaskInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkSelectQuestionCommand(ctx, line, questions); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeTask, id); wasIt {
 			continue
 		}
 
@@ -390,6 +403,84 @@ func (s *CLIService) checkAddKnowledgeNodeCommand(ctx context.Context, line stri
 	return false
 }
 
+func (s *CLIService) checkOpenDirCommand(ctx context.Context, line string, containerType schema.ContainerType, ID int) bool {
+	if line == "o" || line == "open" || line == "dir" {
+		filesDir := s.containerService.GetFilesFolder(ctx, containerType, ID)
+		if filesDir == nil {
+			fmt.Println("No files directory found for this item.")
+			utils.WaitForUserInput()
+			return true
+		}
+
+		// Open directory in file explorer based on OS
+		var cmd *exec.Cmd
+		switch runtime.GOOS {
+		case "windows":
+			cmd = exec.Command("explorer", *filesDir)
+		case "darwin":
+			cmd = exec.Command("open", *filesDir)
+		case "linux":
+			cmd = exec.Command("xdg-open", *filesDir)
+		default:
+			fmt.Printf("Unsupported operating system: %s\n", runtime.GOOS)
+			utils.WaitForUserInput()
+			return true
+		}
+
+		err := cmd.Run()
+		if err != nil {
+			fmt.Printf("Error opening directory: %v\n", err)
+			utils.WaitForUserInput()
+			return true
+		}
+
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) printDirectoryContents(dirPath string) {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return
+	}
+
+	if len(entries) == 0 {
+		return
+	}
+
+	fmt.Println("\nFiles:")
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			continue
+		}
+
+		mode := info.Mode()
+		size := info.Size()
+		modTime := info.ModTime()
+
+		// Format permissions similar to ls -l
+		permStr := mode.String()
+		if len(permStr) > 10 {
+			permStr = permStr[len(permStr)-10:]
+		}
+
+		// Format similar to ls -l: permissions size date name
+		// Example: -rw-r--r--     1234 Jan 15 14:30 filename.txt
+		dirMark := " "
+		if entry.IsDir() {
+			dirMark = "d"
+		}
+		fmt.Printf("%s%s %8d %s %s\n",
+			dirMark,
+			permStr,
+			size,
+			modTime.Format("Jan 02 15:04"),
+			entry.Name())
+	}
+}
+
 func (s *CLIService) PrintProblemInfo(ctx context.Context, p *ent.Problem, subtasks []*ent.Task, problems []*ent.Problem) {
 	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeProblem, p.ID)
 
@@ -407,10 +498,17 @@ func (s *CLIService) PrintProblemInfo(ctx context.Context, p *ent.Problem, subta
 	if p.DoneDateTime != nil {
 		fmt.Printf("Done Date: %s\n", p.DoneDateTime.Format("2006-01-02 15:04:05"))
 	}
+	filesDir := s.containerService.GetFilesFolder(ctx, schema.ContainerTypeProblem, p.ID)
+	if filesDir != nil {
+		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
+	}
 	fmt.Println(strings.Repeat("=", 80))
 
 	s.containerService.PrintSubtasks(subtasks)
 	s.containerService.PrintProblems(problems)
+	if filesDir != nil {
+		s.printDirectoryContents(*filesDir)
+	}
 	fmt.Println()
 }
 
@@ -433,11 +531,18 @@ func (s *CLIService) PrintQuestionInfo(ctx context.Context, q *ent.Question, sub
 	if q.Answer != nil {
 		fmt.Printf("Answer: %s\n", *q.Answer)
 	}
+	filesDir := s.containerService.GetFilesFolder(ctx, schema.ContainerTypeQuestion, q.ID)
+	if filesDir != nil {
+		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
+	}
 	fmt.Println(strings.Repeat("=", 80))
 
 	s.containerService.PrintSubtasks(subtasks)
 	s.containerService.PrintProblems(problems)
 	s.containerService.PrintQuestions(questions)
+	if filesDir != nil {
+		s.printDirectoryContents(*filesDir)
+	}
 	fmt.Println()
 }
 
@@ -457,6 +562,10 @@ func (s *CLIService) PrintStoryInfo(ctx context.Context, st *ent.Story, subtasks
 	if st.DoneDateTime != nil {
 		fmt.Printf("Done Date: %s\n", st.DoneDateTime.Format("2006-01-02 15:04:05"))
 	}
+	filesDir := s.containerService.GetFilesFolder(ctx, schema.ContainerTypeStory, st.ID)
+	if filesDir != nil {
+		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
+	}
 	fmt.Println(strings.Repeat("=", 80))
 
 	s.containerService.PrintSubtasks(subtasks)
@@ -464,6 +573,9 @@ func (s *CLIService) PrintStoryInfo(ctx context.Context, st *ent.Story, subtasks
 	s.containerService.PrintQuestions(questions)
 	s.containerService.PrintStories(stories)
 	s.containerService.PrintEpics(epics)
+	if filesDir != nil {
+		s.printDirectoryContents(*filesDir)
+	}
 	fmt.Println()
 }
 
@@ -484,13 +596,17 @@ func (s *CLIService) PrintEpicInfo(ctx context.Context, e *ent.Epic, subtasks []
 	fmt.Printf("\tDescription: %s\n", e.Description)
 	fmt.Printf("\tStatus: %s\n", map[bool]string{true: "Closed", false: "Open"}[e.Closed])
 	if e.Notes != "" {
-		fmt.Printf("Notes: %s\n", e.Notes)
+		fmt.Printf("\tNotes: %s\n", e.Notes)
 	}
 	if len(e.Tags) > 0 {
-		fmt.Printf("Tags: %s\n", strings.Join(e.Tags, ", "))
+		fmt.Printf("\tTags: %s\n", strings.Join(e.Tags, ", "))
 	}
 	if e.DoneDateTime != nil {
-		fmt.Printf("Done Date: %s\n", e.DoneDateTime.Format("2006-01-02 15:04:05"))
+		fmt.Printf("\tDone Date: %s\n", e.DoneDateTime.Format("2006-01-02 15:04:05"))
+	}
+	filesDir := s.containerService.GetFilesFolder(ctx, schema.ContainerTypeEpic, e.ID)
+	if filesDir != nil {
+		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
 	}
 	fmt.Println(strings.Repeat("=", 80))
 
@@ -499,6 +615,9 @@ func (s *CLIService) PrintEpicInfo(ctx context.Context, e *ent.Epic, subtasks []
 	s.containerService.PrintQuestions(questions)
 	s.containerService.PrintStories(stories)
 	s.containerService.PrintEpics(epics)
+	if filesDir != nil {
+		s.printDirectoryContents(*filesDir)
+	}
 	fmt.Println()
 }
 
@@ -514,6 +633,10 @@ func (s *CLIService) printKnowledgeNodeInfo(ctx context.Context, kn *ent.Knowled
 	if len(kn.Tags) > 0 {
 		fmt.Printf("Tags: %s\n", strings.Join(kn.Tags, ", "))
 	}
+	filesDir := s.containerService.GetFilesFolder(ctx, schema.ContainerTypeKnowledgeNode, kn.ID)
+	if filesDir != nil {
+		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
+	}
 	fmt.Println(strings.Repeat("=", 80))
 
 	s.containerService.PrintSubtasks(subtasks)
@@ -522,6 +645,9 @@ func (s *CLIService) printKnowledgeNodeInfo(ctx context.Context, kn *ent.Knowled
 	s.containerService.PrintStories(stories)
 	s.containerService.PrintEpics(epics)
 	s.containerService.PrintKnowledgeNodes(knowledgeNodes)
+	if filesDir != nil {
+		s.printDirectoryContents(*filesDir)
+	}
 	fmt.Println()
 }
 
@@ -556,6 +682,10 @@ func (s *CLIService) ViewProblemInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkSelectProblemCommand(ctx, line, problems); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeProblem, id); wasIt {
 			continue
 		}
 
@@ -667,6 +797,10 @@ func (s *CLIService) ViewQuestionInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkSelectQuestionCommand(ctx, line, questions); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeQuestion, id); wasIt {
 			continue
 		}
 
@@ -795,6 +929,10 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeStory, id); wasIt {
 			continue
 		}
 
@@ -953,9 +1091,14 @@ func (s *CLIService) ViewEpicInteractive(ctx context.Context, id int) {
 			continue
 		}
 
+		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeEpic, id); wasIt {
+			continue
+		}
+
 		if line == "u" {
 			err := s.NavigateToParent(ctx, schema.ContainerTypeEpic, currentID)
 			if err != nil {
+				s.ViewEpicsInteractive(ctx)
 			}
 			continue
 		}
@@ -1023,7 +1166,34 @@ func (s *CLIService) ViewContainerByAlias(ctx context.Context, alias string) {
 		print(err)
 		return
 	}
-	s.ViewContainerInteractive(ctx, aliasModel.Type, aliasModel.ItemID)
+
+	// Handle file type aliases
+	if aliasModel.Type == schema.AliasTypeFile {
+		if aliasModel.FilePath != nil {
+			fmt.Printf("File alias '%s' points to: %s\n", alias, *aliasModel.FilePath)
+			utils.OpenFile(*aliasModel.FilePath)
+			os.Exit(0)
+			// TODO: Open file or show file contents
+		} else {
+			fmt.Printf("File alias '%s' has no file path specified\n", alias)
+		}
+		return
+	}
+
+	// Convert AliasType to ContainerType
+	containerType, ok := aliasModel.Type.ToContainerType()
+	if !ok {
+		fmt.Printf("Invalid alias type: %s\n", aliasModel.Type)
+		return
+	}
+
+	// Check if ItemID is provided
+	if aliasModel.ItemID == nil {
+		fmt.Printf("Alias '%s' has no item ID specified\n", alias)
+		return
+	}
+
+	s.ViewContainerInteractive(ctx, containerType, *aliasModel.ItemID)
 }
 
 func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
@@ -1104,6 +1274,10 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 			continue
 		}
 
+		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); wasIt {
+			continue
+		}
+
 		if line == "u" {
 			err := s.NavigateToParent(ctx, schema.ContainerTypeKnowledgeNode, currentID)
 			if err != nil {
@@ -1153,8 +1327,6 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 func (s *CLIService) NavigateToParent(ctx context.Context, containerType schema.ContainerType, ID int) error {
 	parentType, parentID, err := s.containerService.GetParentCommon(ctx, containerType, ID)
 	if parentType == nil || err != nil {
-		fmt.Println("This task has no parent.")
-		utils.WaitForUserInput()
 		return errors.New("Error, cant get parent")
 	}
 	s.ViewContainerInteractive(ctx, *parentType, parentID)

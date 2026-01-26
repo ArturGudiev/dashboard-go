@@ -4,6 +4,7 @@ import (
 	"arturgudiev/dashboard/app"
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/task"
+	"arturgudiev/dashboard/utils"
 	"bufio"
 	"context"
 	"flag"
@@ -12,8 +13,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/niemeyer/pretty"
 )
 
 func runCLI(application *app.App) {
@@ -41,6 +40,7 @@ func runCLI(application *app.App) {
 	fs := flag.NewFlagSet("cli", flag.ContinueOnError)
 	taskID := fs.Int("task", 0, "View task by ID interactively")
 	knowledgeNodeID := fs.Int("knowledge-node", 0, "View knowledge node by ID interactively")
+	epicInteractiveID := fs.Int("epic-interactive", 0, "View epic by ID interactively")
 	tempFlag := fs.Bool("temp", false, "Run temporary method")
 	alias := fs.String("alias", "", "Open item interactive by alias")
 
@@ -65,6 +65,12 @@ func runCLI(application *app.App) {
 
 	if *alias != "" {
 		application.CLIService.ViewContainerByAlias(ctx, *alias)
+	}
+
+	// If --epic-interactive flag is provided, enter interactive epic view
+	if *epicInteractiveID > 0 {
+		application.CLIService.ViewEpicInteractive(ctx, *epicInteractiveID)
+		return
 	}
 
 	// If --knowledge-node flag is provided, enter interactive knowledge node view
@@ -397,8 +403,7 @@ func deleteTask(ctx context.Context, application *app.App, args []string) {
 
 // tempMethod is a temporary method for testing
 func tempMethod(ctx context.Context, a *app.App) {
-	res, err := a.AliasesService.GetAlias(ctx, "mine")
-	if err == nil {
-		pretty.Print(*res)
-	}
+	epicFull, _ := a.EpicsService.GetEpicFull(ctx, 3)
+	utils.PrettyPrint(epicFull)
+
 }

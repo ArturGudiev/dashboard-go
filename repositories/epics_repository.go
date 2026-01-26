@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"arturgudiev/dashboard/ent"
+	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/models"
 	"context"
 )
@@ -19,6 +20,16 @@ func (r *EpicsRepository) GetAllEpics(ctx context.Context) ([]*ent.Epic, error) 
 	if err != nil {
 		return nil, err
 	}
+	return epics, nil
+}
+
+func (r *EpicsRepository) GetAllOpenEpics(ctx context.Context) ([]*ent.Epic, error) {
+	epics, err := r.client.Epic.Query().Where(epic.ClosedEQ(false)).All(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return epics, nil
 }
 

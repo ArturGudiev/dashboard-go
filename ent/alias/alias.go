@@ -18,6 +18,8 @@ const (
 	FieldType = "type"
 	// FieldItemID holds the string denoting the item_id field in the database.
 	FieldItemID = "item_id"
+	// FieldFilePath holds the string denoting the file_path field in the database.
+	FieldFilePath = "file_path"
 	// FieldAlias holds the string denoting the alias field in the database.
 	FieldAlias = "alias"
 	// Table holds the table name of the alias in the database.
@@ -29,6 +31,7 @@ var Columns = []string{
 	FieldID,
 	FieldType,
 	FieldItemID,
+	FieldFilePath,
 	FieldAlias,
 }
 
@@ -52,9 +55,9 @@ var (
 )
 
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
-func TypeValidator(_type schema.ContainerType) error {
+func TypeValidator(_type schema.AliasType) error {
 	switch _type {
-	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state":
+	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state", "file":
 		return nil
 	default:
 		return fmt.Errorf("alias: invalid enum value for type field: %q", _type)
@@ -77,6 +80,11 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 // ByItemID orders the results by the item_id field.
 func ByItemID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldItemID, opts...).ToFunc()
+}
+
+// ByFilePath orders the results by the file_path field.
+func ByFilePath(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFilePath, opts...).ToFunc()
 }
 
 // ByAlias orders the results by the alias field.

@@ -262,7 +262,7 @@ func (_q *AliasQuery) Clone() *AliasQuery {
 // Example:
 //
 //	var v []struct {
-//		Type schema.ContainerType `json:"type,omitempty"`
+//		Type schema.AliasType `json:"type,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -285,7 +285,7 @@ func (_q *AliasQuery) GroupBy(field string, fields ...string) *AliasGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Type schema.ContainerType `json:"type,omitempty"`
+//		Type schema.AliasType `json:"type,omitempty"`
 //	}
 //
 //	client.Alias.Query().

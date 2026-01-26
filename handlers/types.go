@@ -105,3 +105,9 @@ type NewQuestionRequest struct {
 type AnswerQuestionRequest struct {
 	Answer string `json:"answer" binding:"required"`
 }
+
+// ParentsPathRequest represents a request to get parents path
+type ParentsPathRequest struct {
+	ID   int    `json:"id" binding:"required"`
+	Type string `json:"type" binding:"required"`
+}

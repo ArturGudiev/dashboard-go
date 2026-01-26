@@ -59,25 +59,30 @@ func ItemID(v int) predicate.Alias {
 	return predicate.Alias(sql.FieldEQ(FieldItemID, v))
 }
 
+// FilePath applies equality check predicate on the "file_path" field. It's identical to FilePathEQ.
+func FilePath(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldEQ(FieldFilePath, v))
+}
+
 // Alias applies equality check predicate on the "alias" field. It's identical to AliasEQ.
 func Alias(v string) predicate.Alias {
 	return predicate.Alias(sql.FieldEQ(FieldAlias, v))
 }
 
 // TypeEQ applies the EQ predicate on the "type" field.
-func TypeEQ(v schema.ContainerType) predicate.Alias {
+func TypeEQ(v schema.AliasType) predicate.Alias {
 	vc := v
 	return predicate.Alias(sql.FieldEQ(FieldType, vc))
 }
 
 // TypeNEQ applies the NEQ predicate on the "type" field.
-func TypeNEQ(v schema.ContainerType) predicate.Alias {
+func TypeNEQ(v schema.AliasType) predicate.Alias {
 	vc := v
 	return predicate.Alias(sql.FieldNEQ(FieldType, vc))
 }
 
 // TypeIn applies the In predicate on the "type" field.
-func TypeIn(vs ...schema.ContainerType) predicate.Alias {
+func TypeIn(vs ...schema.AliasType) predicate.Alias {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -86,7 +91,7 @@ func TypeIn(vs ...schema.ContainerType) predicate.Alias {
 }
 
 // TypeNotIn applies the NotIn predicate on the "type" field.
-func TypeNotIn(vs ...schema.ContainerType) predicate.Alias {
+func TypeNotIn(vs ...schema.AliasType) predicate.Alias {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -132,6 +137,91 @@ func ItemIDLT(v int) predicate.Alias {
 // ItemIDLTE applies the LTE predicate on the "item_id" field.
 func ItemIDLTE(v int) predicate.Alias {
 	return predicate.Alias(sql.FieldLTE(FieldItemID, v))
+}
+
+// ItemIDIsNil applies the IsNil predicate on the "item_id" field.
+func ItemIDIsNil() predicate.Alias {
+	return predicate.Alias(sql.FieldIsNull(FieldItemID))
+}
+
+// ItemIDNotNil applies the NotNil predicate on the "item_id" field.
+func ItemIDNotNil() predicate.Alias {
+	return predicate.Alias(sql.FieldNotNull(FieldItemID))
+}
+
+// FilePathEQ applies the EQ predicate on the "file_path" field.
+func FilePathEQ(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldEQ(FieldFilePath, v))
+}
+
+// FilePathNEQ applies the NEQ predicate on the "file_path" field.
+func FilePathNEQ(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldNEQ(FieldFilePath, v))
+}
+
+// FilePathIn applies the In predicate on the "file_path" field.
+func FilePathIn(vs ...string) predicate.Alias {
+	return predicate.Alias(sql.FieldIn(FieldFilePath, vs...))
+}
+
+// FilePathNotIn applies the NotIn predicate on the "file_path" field.
+func FilePathNotIn(vs ...string) predicate.Alias {
+	return predicate.Alias(sql.FieldNotIn(FieldFilePath, vs...))
+}
+
+// FilePathGT applies the GT predicate on the "file_path" field.
+func FilePathGT(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldGT(FieldFilePath, v))
+}
+
+// FilePathGTE applies the GTE predicate on the "file_path" field.
+func FilePathGTE(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldGTE(FieldFilePath, v))
+}
+
+// FilePathLT applies the LT predicate on the "file_path" field.
+func FilePathLT(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldLT(FieldFilePath, v))
+}
+
+// FilePathLTE applies the LTE predicate on the "file_path" field.
+func FilePathLTE(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldLTE(FieldFilePath, v))
+}
+
+// FilePathContains applies the Contains predicate on the "file_path" field.
+func FilePathContains(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldContains(FieldFilePath, v))
+}
+
+// FilePathHasPrefix applies the HasPrefix predicate on the "file_path" field.
+func FilePathHasPrefix(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldHasPrefix(FieldFilePath, v))
+}
+
+// FilePathHasSuffix applies the HasSuffix predicate on the "file_path" field.
+func FilePathHasSuffix(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldHasSuffix(FieldFilePath, v))
+}
+
+// FilePathIsNil applies the IsNil predicate on the "file_path" field.
+func FilePathIsNil() predicate.Alias {
+	return predicate.Alias(sql.FieldIsNull(FieldFilePath))
+}
+
+// FilePathNotNil applies the NotNil predicate on the "file_path" field.
+func FilePathNotNil() predicate.Alias {
+	return predicate.Alias(sql.FieldNotNull(FieldFilePath))
+}
+
+// FilePathEqualFold applies the EqualFold predicate on the "file_path" field.
+func FilePathEqualFold(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldEqualFold(FieldFilePath, v))
+}
+
+// FilePathContainsFold applies the ContainsFold predicate on the "file_path" field.
+func FilePathContainsFold(v string) predicate.Alias {
+	return predicate.Alias(sql.FieldContainsFold(FieldFilePath, v))
 }
 
 // AliasEQ applies the EQ predicate on the "alias" field.

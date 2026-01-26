@@ -772,15 +772,155 @@ func importStories(jsonPath string) error {
 		createRelationships(storyJSON.ID, storyJSON.Tasks, schema.ContainerTypeTask, schema.ContainerTypeStory)
 	}
 
+	// Third pass: Create parent relationships for stories (where stories are children)
+	log.Println("Step 3: Creating parent relationships for stories...")
+	parentRelationshipsCreated := 0
+	parentRelationshipsSkipped := 0
+
+	for _, storyJSON := range stories {
+		// Only process if this story exists in the database
+		if !storyMap[storyJSON.ID] {
+			continue
+		}
+
+		// Process parent containers
+		for parentOrder, parentDesc := range storyJSON.ParentContainers {
+			if len(parentDesc) < 2 {
+				continue
+			}
+
+			// Extract parent type and ID
+			var parentTypeStr string
+			var parentID int
+
+			// Parent type is first element
+			switch v := parentDesc[0].(type) {
+			case string:
+				parentTypeStr = v
+			default:
+				log.Printf("Warning: Invalid parent type for story %d, skipping", storyJSON.ID)
+				continue
+			}
+
+			// Parent ID is second element
+			switch v := parentDesc[1].(type) {
+			case float64:
+				parentID = int(v)
+			case int:
+				parentID = v
+			default:
+				log.Printf("Warning: Invalid parent ID for story %d, skipping", storyJSON.ID)
+				continue
+			}
+
+			// Convert parent type string to ContainerType
+			var parentType schema.ContainerType
+			switch parentTypeStr {
+			case "epic":
+				parentType = schema.ContainerTypeEpic
+			case "story":
+				parentType = schema.ContainerTypeStory
+			default:
+				log.Printf("Warning: Unknown parent type '%s' for story %d, skipping", parentTypeStr, storyJSON.ID)
+				continue
+			}
+
+			// Check if parent exists in database
+			var parentExists bool
+			switch parentType {
+			case schema.ContainerTypeEpic:
+				exists, err := client.Epic.Query().Where(epic.ID(parentID)).Exist(ctx)
+				if err != nil {
+					log.Printf("Error checking if epic %d exists: %v", parentID, err)
+					continue
+				}
+				parentExists = exists
+			case schema.ContainerTypeStory:
+				exists, err := client.Story.Query().Where(story.ID(parentID)).Exist(ctx)
+				if err != nil {
+					log.Printf("Error checking if story %d exists: %v", parentID, err)
+					continue
+				}
+				parentExists = exists
+			}
+
+			if !parentExists {
+				log.Printf("Warning: Parent %s %d does not exist for story %d, skipping relationship", parentTypeStr, parentID, storyJSON.ID)
+				continue
+			}
+
+			// Check if relationship already exists
+			exists, err := client.ContainerChild.Query().
+				Where(
+					containerchild.ParentTypeEQ(parentType),
+					containerchild.ParentID(parentID),
+					containerchild.ChildTypeEQ(schema.ContainerTypeStory),
+					containerchild.ChildID(storyJSON.ID),
+				).
+				Exist(ctx)
+			if err != nil {
+				log.Printf("Error checking relationship %s %d -> story %d: %v", parentTypeStr, parentID, storyJSON.ID, err)
+				continue
+			}
+
+			if exists {
+				parentRelationshipsSkipped++
+				continue
+			}
+
+			// Find child_order: look for this story in the parent's children array
+			childOrder := 0
+			if parentType == schema.ContainerTypeEpic {
+				// For epics, we'd need to check epic's stories array, but we don't have that in the current structure
+				// Default to 0 for now
+				childOrder = 0
+			} else if parentType == schema.ContainerTypeStory {
+				// For story parents, check if this story is in the parent's stories array
+				if parentStory, exists := storyByID[parentID]; exists {
+					for idx, childStoryID := range parentStory.Stories {
+						if childStoryID == storyJSON.ID {
+							childOrder = idx
+							break
+						}
+					}
+				}
+			}
+
+			// Create relationship
+			_, err = client.ContainerChild.Create().
+				SetParentType(parentType).
+				SetParentID(parentID).
+				SetChildType(schema.ContainerTypeStory).
+				SetChildID(storyJSON.ID).
+				SetChildOrder(childOrder).
+				SetParentOrder(parentOrder).
+				Save(ctx)
+			if err != nil {
+				log.Printf("Error creating relationship %s %d -> story %d: %v", parentTypeStr, parentID, storyJSON.ID, err)
+				continue
+			}
+
+			parentRelationshipsCreated++
+
+			if parentRelationshipsCreated%100 == 0 {
+				log.Printf("Created %d parent relationships...", parentRelationshipsCreated)
+			}
+		}
+	}
+
 	log.Printf("Step 2 complete: Created %d relationships, skipped %d existing relationships",
 		relationshipsCreated, relationshipsSkipped)
+	log.Printf("Step 3 complete: Created %d parent relationships, skipped %d existing parent relationships",
+		parentRelationshipsCreated, parentRelationshipsSkipped)
 
 	log.Println("Import completed successfully!")
 	fmt.Printf("\nSummary:\n")
 	fmt.Printf("  Stories inserted: %d\n", inserted)
 	fmt.Printf("  Stories skipped (already exist): %d\n", skipped)
-	fmt.Printf("  Relationships created: %d\n", relationshipsCreated)
-	fmt.Printf("  Relationships skipped (already exist): %d\n", relationshipsSkipped)
+	fmt.Printf("  Child relationships created: %d\n", relationshipsCreated)
+	fmt.Printf("  Child relationships skipped (already exist): %d\n", relationshipsSkipped)
+	fmt.Printf("  Parent relationships created: %d\n", parentRelationshipsCreated)
+	fmt.Printf("  Parent relationships skipped (already exist): %d\n", parentRelationshipsSkipped)
 
 	return nil
 }
@@ -1086,18 +1226,18 @@ func importAliases(jsonPath string) error {
 	skipped := 0
 
 	for _, aliasJSON := range aliases {
-		// Convert string type to ContainerType
-		containerType := schema.ContainerType(aliasJSON.Type)
+		// Convert string type to AliasType
+		aliasType := schema.AliasType(aliasJSON.Type)
 
-		// Validate the container type
-		switch containerType {
-		case schema.ContainerTypeEpic, schema.ContainerTypeStory, schema.ContainerTypeTask,
-			schema.ContainerTypeQuestion, schema.ContainerTypeProblem, schema.ContainerTypeKnowledgeNode,
-			schema.ContainerTypeKnowledgeBit, schema.ContainerTypeDefinition, schema.ContainerTypeAction,
-			schema.ContainerTypeScheduledTask, schema.ContainerTypeState:
+		// Validate the alias type
+		switch aliasType {
+		case schema.AliasTypeEpic, schema.AliasTypeStory, schema.AliasTypeTask,
+			schema.AliasTypeQuestion, schema.AliasTypeProblem, schema.AliasTypeKnowledgeNode,
+			schema.AliasTypeKnowledgeBit, schema.AliasTypeDefinition, schema.AliasTypeAction,
+			schema.AliasTypeScheduledTask, schema.AliasTypeState, schema.AliasTypeFile:
 			// Valid type
 		default:
-			log.Printf("Warning: Invalid container type '%s' for alias '%s', skipping", aliasJSON.Type, aliasJSON.Alias)
+			log.Printf("Warning: Invalid alias type '%s' for alias '%s', skipping", aliasJSON.Type, aliasJSON.Alias)
 			skipped++
 			continue
 		}
@@ -1117,12 +1257,18 @@ func importAliases(jsonPath string) error {
 			continue
 		}
 
+		// Create alias builder
+		createBuilder := client.Alias.Create().
+			SetType(aliasType).
+			SetAlias(aliasJSON.Alias)
+
+		// Set ItemID only if it's not zero (for file type, ItemID might be zero/not provided)
+		if aliasJSON.ItemID > 0 {
+			createBuilder = createBuilder.SetItemID(aliasJSON.ItemID)
+		}
+
 		// Create alias
-		_, err = client.Alias.Create().
-			SetType(containerType).
-			SetItemID(aliasJSON.ItemID).
-			SetAlias(aliasJSON.Alias).
-			Save(ctx)
+		_, err = createBuilder.Save(ctx)
 		if err != nil {
 			log.Printf("Error inserting alias '%s': %v", aliasJSON.Alias, err)
 			skipped++
@@ -1140,6 +1286,196 @@ func importAliases(jsonPath string) error {
 	fmt.Printf("\nSummary:\n")
 	fmt.Printf("  Aliases inserted: %d\n", inserted)
 	fmt.Printf("  Aliases skipped (already exist or invalid): %d\n", skipped)
+
+	return nil
+}
+
+// AliasJSON represents the structure of aliases in the original JSON file
+type AliasJSON struct {
+	Type     string  `json:"type"`
+	ItemID   *int    `json:"itemId,omitempty"`
+	FilePath *string `json:"filePath,omitempty"`
+	Alias    string  `json:"alias"`
+}
+
+// RawAliasJSON represents the structure of aliases in the original aliases.json file
+type RawAliasJSON struct {
+	ID          int      `json:"_id"`
+	Aliases     []string `json:"aliases"`
+	Destination string   `json:"destination"`
+	Path        string   `json:"path"`
+}
+
+// ParsedFileAliasJSON represents the parsed file alias structure
+type ParsedFileAliasJSON struct {
+	Type     string `json:"type"`
+	FilePath string `json:"filePath"`
+	Alias    string `json:"alias"`
+}
+
+// importFileAliases imports file aliases from the parsed file aliases_parsed_files.json
+// and adds them to the database
+func importFileAliases(jsonPath string) error {
+	// Database connection
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		dbURL = "postgres://postgres:postgres@localhost/dashboard?sslmode=disable"
+	}
+
+	// Create Ent client
+	client, err := ent.Open("postgres", dbURL)
+	if err != nil {
+		return fmt.Errorf("failed opening connection to postgres: %v", err)
+	}
+	defer client.Close()
+
+	ctx := context.Background()
+
+	// Use provided path or default to parsed file
+	if jsonPath == "" {
+		jsonPath = `C:\Programming\NodeJS\dashboard\data\aliases_parsed_files.json`
+	}
+	log.Printf("Reading file aliases from: %s", jsonPath)
+
+	jsonData, err := os.ReadFile(jsonPath)
+	if err != nil {
+		return fmt.Errorf("failed to read JSON file: %v", err)
+	}
+
+	// Parse JSON using ParsedFileAliasJSON structure
+	var fileAliases []ParsedFileAliasJSON
+	if err := json.Unmarshal(jsonData, &fileAliases); err != nil {
+		return fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	log.Printf("Found %d file aliases to import", len(fileAliases))
+
+	// Insert file aliases
+	log.Println("Inserting file aliases into database...")
+	inserted := 0
+	skipped := 0
+
+	for _, aliasJSON := range fileAliases {
+		// Convert string type to AliasType
+		aliasType := schema.AliasType(aliasJSON.Type)
+
+		// Validate the alias type (should be file)
+		if aliasType != schema.AliasTypeFile {
+			log.Printf("Warning: Expected file type but got '%s' for alias '%s', skipping", aliasJSON.Type, aliasJSON.Alias)
+			skipped++
+			continue
+		}
+
+		// Check if alias already exists (since it's unique)
+		exists, err := client.Alias.Query().
+			Where(alias.AliasEQ(aliasJSON.Alias)).
+			Exist(ctx)
+		if err != nil {
+			log.Printf("Error checking if alias '%s' exists: %v", aliasJSON.Alias, err)
+			continue
+		}
+
+		if exists {
+			log.Printf("Alias '%s' already exists, skipping...", aliasJSON.Alias)
+			skipped++
+			continue
+		}
+
+		// Create alias builder
+		createBuilder := client.Alias.Create().
+			SetType(aliasType).
+			SetAlias(aliasJSON.Alias)
+
+		// Set FilePath (required for file aliases)
+		if aliasJSON.FilePath != "" {
+			createBuilder = createBuilder.SetFilePath(aliasJSON.FilePath)
+		} else {
+			log.Printf("Warning: FilePath is empty for alias '%s', skipping", aliasJSON.Alias)
+			skipped++
+			continue
+		}
+
+		// Create alias
+		_, err = createBuilder.Save(ctx)
+		if err != nil {
+			log.Printf("Error inserting alias '%s': %v", aliasJSON.Alias, err)
+			skipped++
+			continue
+		}
+
+		inserted++
+
+		if inserted%100 == 0 {
+			log.Printf("Inserted %d file aliases...", inserted)
+		}
+	}
+
+	log.Println("Import completed successfully!")
+	fmt.Printf("\nSummary:\n")
+	fmt.Printf("  File aliases inserted: %d\n", inserted)
+	fmt.Printf("  File aliases skipped (already exist or invalid): %d\n", skipped)
+
+	return nil
+}
+
+// parseFileAliases reads aliases.json, filters file items, and creates parsed file aliases
+func parseFileAliases(inputPath, outputPath string) error {
+	// Use provided paths or defaults
+	if inputPath == "" {
+		inputPath = `C:\Programming\NodeJS\dashboard\data\aliases.json`
+	}
+	if outputPath == "" {
+		outputPath = `C:\Programming\NodeJS\dashboard\data\aliases_parsed_files.json`
+	}
+
+	log.Printf("Reading aliases from: %s", inputPath)
+
+	jsonData, err := os.ReadFile(inputPath)
+	if err != nil {
+		return fmt.Errorf("failed to read JSON file: %v", err)
+	}
+
+	// Parse JSON
+	var rawAliases []RawAliasJSON
+	if err := json.Unmarshal(jsonData, &rawAliases); err != nil {
+		return fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	log.Printf("Found %d total items in file", len(rawAliases))
+
+	// Filter items where destination == "file" and create parsed aliases
+	var parsedAliases []ParsedFileAliasJSON
+	for _, rawAlias := range rawAliases {
+		if rawAlias.Destination == "file" {
+			// Create one record for each alias in the aliases array
+			for _, aliasStr := range rawAlias.Aliases {
+				parsedAlias := ParsedFileAliasJSON{
+					Type:     "file",
+					FilePath: rawAlias.Path,
+					Alias:    aliasStr,
+				}
+				parsedAliases = append(parsedAliases, parsedAlias)
+			}
+		}
+	}
+
+	log.Printf("Created %d parsed file alias records", len(parsedAliases))
+
+	// Write parsed aliases to output file
+	outputData, err := json.MarshalIndent(parsedAliases, "", "\t")
+	if err != nil {
+		return fmt.Errorf("failed to marshal parsed aliases: %v", err)
+	}
+
+	if err := os.WriteFile(outputPath, outputData, 0644); err != nil {
+		return fmt.Errorf("failed to write output file: %v", err)
+	}
+
+	log.Printf("Successfully wrote parsed file aliases to: %s", outputPath)
+	fmt.Printf("\nSummary:\n")
+	fmt.Printf("  Total items processed: %d\n", len(rawAliases))
+	fmt.Printf("  Parsed file aliases created: %d\n", len(parsedAliases))
+	fmt.Printf("  Output file: %s\n", outputPath)
 
 	return nil
 }

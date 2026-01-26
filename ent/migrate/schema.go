@@ -12,8 +12,9 @@ var (
 	// AliasesColumns holds the columns for the "aliases" table.
 	AliasesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state"}},
-		{Name: "item_id", Type: field.TypeInt},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state", "file"}},
+		{Name: "item_id", Type: field.TypeInt, Nullable: true},
+		{Name: "file_path", Type: field.TypeString, Nullable: true},
 		{Name: "alias", Type: field.TypeString, Unique: true},
 	}
 	// AliasesTable holds the schema information for the "aliases" table.
