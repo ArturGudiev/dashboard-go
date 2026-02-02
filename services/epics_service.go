@@ -28,10 +28,12 @@ func (s *EpicsService) GetEpicFull(ctx context.Context, ID int) (*models.EpicFul
 	}
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeEpic, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeEpic, ID)
+	subquestions, errSubquestions := s.containerService.GetOpenQuestionsIDs(ctx, schema.ContainerTypeEpic, ID)
 	stories, errStories := s.containerService.GetOpenStoriesIDs(ctx, schema.ContainerTypeEpic, ID)
+	epics, errEpics := s.containerService.GetOpenEpicsIDs(ctx, schema.ContainerTypeEpic, ID)
 
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeEpic, ID)
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errStories != nil {
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errStories != nil || errSubquestions != nil || errEpics != nil {
 		return nil, errors.New("epic not found")
 	}
 	EpicFull := &models.EpicFull{
@@ -40,11 +42,11 @@ func (s *EpicsService) GetEpicFull(ctx context.Context, ID int) (*models.EpicFul
 		Tags:             epic.Tags,
 		Notes:            epic.Notes,
 		Closed:           epic.Closed,
-		Epics:            []int{},
+		Epics:            epics,
 		Stories:          stories,
 		Tasks:            subtasks,
 		Problems:         subproblems,
-		Questions:        []int{},
+		Questions:        subquestions,
 		Actions:          []int{},
 		Definitions:      []int{},
 		KnowledgeBits:    []int{},

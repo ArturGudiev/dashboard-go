@@ -112,8 +112,9 @@ func (s *QuestionService) GetQuestionFull(ctx context.Context, ID int) (*models.
 	}
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeQuestion, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeQuestion, ID)
+	subquestions, errSubquestions := s.containerService.GetOpenQuestionsIDs(ctx, schema.ContainerTypeQuestion, ID)
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeQuestion, ID)
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil {
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errSubquestions != nil {
 		return nil, errors.New("question not found")
 	}
 	QuestionFull := &models.QuestionFull{
@@ -124,7 +125,7 @@ func (s *QuestionService) GetQuestionFull(ctx context.Context, ID int) (*models.
 		Answer:           question.Answer,
 		Tasks:            subtasks,
 		Problems:         subproblems,
-		Questions:        []int{},
+		Questions:        subquestions,
 		Actions:          []int{},
 		Definitions:      []int{},
 		KnowledgeBits:    []int{},

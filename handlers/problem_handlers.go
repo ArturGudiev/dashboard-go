@@ -74,7 +74,7 @@ func (h *Handler) GetProblemsByIDs(c *gin.Context) {
 	c.JSON(200, problemsFull)
 }
 
-// SolveProblem handles PUT /solve-problem/:id
+// SolveProblem handles POST /solve-problem/:id
 // @Summary      Solve problem
 // @Description  Sets the solution for a problem
 // @Tags         problems

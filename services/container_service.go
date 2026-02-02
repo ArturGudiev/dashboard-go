@@ -166,6 +166,27 @@ func (s *ContainerService) GetOpenProblemsIDs(ctx context.Context, containerType
 	return openProblems, nil
 }
 
+
+func (s *ContainerService) GetOpenQuestionsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	openQuestions := []int{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeQuestion)
+
+	if err == nil && len(childRelations) > 0 {
+		// Filter to only open problems - load problems manually since edges don't exist
+		for _, relation := range childRelations {
+			childProblem, err := s.client.Question.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+			// Only include problems that don't have a solution (open problems)
+			if childProblem.Answer == nil {
+				openQuestions = append(openQuestions, childProblem.ID)
+			}
+		}
+	}
+	return openQuestions, nil
+}
+
 func (s *ContainerService) GetOpenStoriesIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
 	openStories := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeStory)
@@ -183,6 +204,25 @@ func (s *ContainerService) GetOpenStoriesIDs(ctx context.Context, containerType 
 		}
 	}
 	return openStories, nil
+}
+
+func (s *ContainerService) GetOpenEpicsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	openEpics := []int{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeEpic)
+
+	if err == nil && len(childRelations) > 0 {
+		for _, relation := range childRelations {
+			childEpic, err := s.client.Story.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+
+			if !childEpic.Closed {
+				openEpics = append(openEpics, childEpic.ID)
+			}
+		}
+	}
+	return openEpics, nil
 }
 
 func (s *ContainerService) GetChildKnowledgeNodesIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {

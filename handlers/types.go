@@ -82,6 +82,10 @@ type TaskResponse struct {
 	DoneDateTime     *time.Time      `json:"done_date_time"`
 }
 
+type DoneTasksResponse struct {
+	DoneTasks 	int 		`json:"doneTasks"`
+}
+
 // NewProblemRequest represents a request to create a new problem with optional parent
 // @Description Request to create a new problem with optional parent container
 type NewProblemRequest struct {

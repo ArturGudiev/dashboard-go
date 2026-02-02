@@ -95,8 +95,11 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 	}
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeTask, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeTask, ID)
+	subquestions, errQuestions := s.containerService.GetOpenQuestionsIDs(ctx, schema.ContainerTypeTask, ID)
+
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeTask, ID)
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil {
+
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errQuestions != nil {
 		return nil, errors.New("problem not found")
 	}
 	TaskFull := &models.TaskFull{
@@ -106,7 +109,7 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 		Notes:            task.Notes,
 		Tasks:            subtasks,
 		Problems:         subproblems,
-		Questions:        []int{},
+		Questions:        subquestions,
 		Actions:          []int{},
 		Definitions:      []int{},
 		KnowledgeBits:    []int{},

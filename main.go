@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -32,6 +33,9 @@ import (
 // @schemes   http https
 
 func main() {
+	// Load .env file (ignore error if file doesn't exist)
+	_ = godotenv.Load()
+
 	// Initialize app with all dependencies
 	application, err := app.NewApp()
 	if err != nil {
@@ -174,7 +178,7 @@ func main() {
 	// Problem routes
 	router.GET("/problem/:id", h.GetProblemByID)
 	router.POST("/get-problems", h.GetProblemsByIDs)
-	router.PUT("/solve-problem/:id", h.SolveProblem)
+	router.POST("/solve-problem/:id", h.SolveProblem)
 	router.POST("/new-problem", h.NewProblem)
 	router.PUT("/update-problem", h.UpdateProblem)
 

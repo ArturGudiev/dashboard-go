@@ -101,12 +101,18 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 func (h *Handler) GetDoneTasks(c *gin.Context) {
 	tasksCount, err := h.App.TaskService.GetDoneTasksCount(c.Request.Context())
 
+	
+
 	if err != nil {
 		log.Printf("Error querying done tasksCount: %v", err)
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, tasksCount)
+
+	response := DoneTasksResponse{
+		DoneTasks: tasksCount,
+	}
+	c.JSON(200, response)
 }
 
 // FinishTask handles PUT /finish-task/:id
