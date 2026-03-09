@@ -13,6 +13,7 @@ import (
 	"arturgudiev/dashboard/services"
 	"context"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -54,10 +55,34 @@ func InitializeApp() (*App, error) {
 
 // provideEntClient creates and migrates the ent client
 func provideEntClient() (*ent.Client, error) {
-
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		dbURL = "postgres://postgres:postgres@localhost/dashboard?sslmode=disable"
+		dbName := os.Getenv("DB_NAME")
+		if dbName == "" {
+			dbName = "postgres"
+		}
+		dbPassword := os.Getenv("DB_PASSWORD")
+		if dbPassword == "" {
+			dbPassword = "postgres"
+		}
+		dbHost := os.Getenv("DB_HOST")
+		if dbHost == "" {
+			dbHost = "localhost"
+		}
+		dbUser := os.Getenv("DB_USER")
+		if dbUser == "" {
+			dbUser = "postgres"
+		}
+		u := &url.URL{
+			Scheme:   "postgres",
+			User:     url.UserPassword(dbUser, dbPassword),
+			Host:     dbHost,
+			Path:     "/" + url.PathEscape(dbName),
+			RawQuery: "sslmode=disable",
+		}
+		dbURL = u.String()
+		print("=======================================")
+		print(dbURL)
 	}
 
 	client, err := ent.Open("postgres", dbURL)
