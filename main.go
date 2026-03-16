@@ -202,6 +202,9 @@ func main() {
 	router.PUT("/update-epic", h.UpdateEpic)
 	router.GET("/epics", h.GetAllOpenEpics)
 
+	// Aliase routes
+	router.GET("/aliases/:alias", h.GetAliasByString)
+
 	// Start server
 	port := os.Getenv("PORT")
 	if port == "" {

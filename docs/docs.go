@@ -82,6 +82,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/aliases/{alias}": {
+            "get": {
+                "description": "Returns an alias by its string",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aliases"
+                ],
+                "summary": "Get alias by string",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Alias",
+                        "name": "alias",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AliasModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/answer-question/{id}": {
             "post": {
                 "description": "Sets the answer for a question",
@@ -1952,6 +2011,31 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AliasModel": {
+            "type": "object",
+            "required": [
+                "alias",
+                "id",
+                "type"
+            ],
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "filePath": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "itemId": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/schema.AliasType"
+                }
+            }
+        },
         "models.ContainerDescription": {
             "description": "Container description with ID and type",
             "type": "object",
@@ -2616,6 +2700,37 @@ const docTemplate = `{
                     ]
                 }
             }
+        },
+        "schema.AliasType": {
+            "type": "string",
+            "enum": [
+                "epic",
+                "story",
+                "task",
+                "question",
+                "problem",
+                "knowledge-node",
+                "knowledge-bit",
+                "definition",
+                "action",
+                "scheduled-task",
+                "state",
+                "file"
+            ],
+            "x-enum-varnames": [
+                "AliasTypeEpic",
+                "AliasTypeStory",
+                "AliasTypeTask",
+                "AliasTypeQuestion",
+                "AliasTypeProblem",
+                "AliasTypeKnowledgeNode",
+                "AliasTypeKnowledgeBit",
+                "AliasTypeDefinition",
+                "AliasTypeAction",
+                "AliasTypeScheduledTask",
+                "AliasTypeState",
+                "AliasTypeFile"
+            ]
         },
         "schema.ContainerType": {
             "type": "string",

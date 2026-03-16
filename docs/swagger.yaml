@@ -141,6 +141,23 @@ definitions:
           type: string
         type: array
     type: object
+  models.AliasModel:
+    properties:
+      alias:
+        type: string
+      filePath:
+        type: string
+      id:
+        type: integer
+      itemId:
+        type: integer
+      type:
+        $ref: '#/definitions/schema.AliasType'
+    required:
+    - alias
+    - id
+    - type
+    type: object
   models.ContainerDescription:
     description: Container description with ID and type
     properties:
@@ -584,6 +601,34 @@ definitions:
           type: string
         type: array
     type: object
+  schema.AliasType:
+    enum:
+    - epic
+    - story
+    - task
+    - question
+    - problem
+    - knowledge-node
+    - knowledge-bit
+    - definition
+    - action
+    - scheduled-task
+    - state
+    - file
+    type: string
+    x-enum-varnames:
+    - AliasTypeEpic
+    - AliasTypeStory
+    - AliasTypeTask
+    - AliasTypeQuestion
+    - AliasTypeProblem
+    - AliasTypeKnowledgeNode
+    - AliasTypeKnowledgeBit
+    - AliasTypeDefinition
+    - AliasTypeAction
+    - AliasTypeScheduledTask
+    - AliasTypeState
+    - AliasTypeFile
   schema.ContainerType:
     enum:
     - epic
@@ -662,6 +707,45 @@ paths:
       summary: Create anonymous task
       tags:
       - tasks
+  /aliases/{alias}:
+    get:
+      consumes:
+      - application/json
+      description: Returns an alias by its string
+      parameters:
+      - description: Alias
+        in: path
+        name: alias
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AliasModel'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get alias by string
+      tags:
+      - aliases
   /answer-question/{id}:
     post:
       consumes:
