@@ -141,32 +141,34 @@ func (s *QuestionService) GetQuestionsFull(ctx context.Context, IDs []int) ([]*m
 	}
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
-	results := make([]*models.QuestionFull, 0, len(IDs))
 	var firstErr error
+	var firstErrOnce sync.Once
+	byIndex := make([]*models.QuestionFull, len(IDs))
 
-	for _, id := range IDs {
+	for i, id := range IDs {
 		wg.Add(1)
-		go func(problemID int) {
+		go func(idx int, problemID int) {
 			defer wg.Done()
 
 			questionFull, err := s.GetQuestionFull(ctx, problemID)
 
-			mu.Lock()
-			defer mu.Unlock()
-
 			if err != nil {
-				if firstErr == nil {
-					firstErr = err
-				}
+				firstErrOnce.Do(func() { firstErr = err })
 				return
 			}
 
-			results = append(results, questionFull)
-		}(id)
+			byIndex[idx] = questionFull
+		}(i, id)
 	}
 
 	wg.Wait()
+
+	results := make([]*models.QuestionFull, 0, len(IDs))
+	for _, questionFull := range byIndex {
+		if questionFull != nil {
+			results = append(results, questionFull)
+		}
+	}
 
 	if firstErr != nil && len(results) == 0 {
 		return nil, firstErr

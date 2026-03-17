@@ -175,32 +175,34 @@ func (s *ProblemService) GetProblemsFull(ctx context.Context, IDs []int) ([]*mod
 	}
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
-	results := make([]*models.ProblemFull, 0, len(IDs))
 	var firstErr error
+	var firstErrOnce sync.Once
+	byIndex := make([]*models.ProblemFull, len(IDs))
 
-	for _, id := range IDs {
+	for i, id := range IDs {
 		wg.Add(1)
-		go func(problemID int) {
+		go func(idx int, problemID int) {
 			defer wg.Done()
 
 			problemFull, err := s.GetProblemFull(ctx, problemID)
 
-			mu.Lock()
-			defer mu.Unlock()
-
 			if err != nil {
-				if firstErr == nil {
-					firstErr = err
-				}
+				firstErrOnce.Do(func() { firstErr = err })
 				return
 			}
 
-			results = append(results, problemFull)
-		}(id)
+			byIndex[idx] = problemFull
+		}(i, id)
 	}
 
 	wg.Wait()
+
+	results := make([]*models.ProblemFull, 0, len(IDs))
+	for _, problemFull := range byIndex {
+		if problemFull != nil {
+			results = append(results, problemFull)
+		}
+	}
 
 	if firstErr != nil && len(results) == 0 {
 		return nil, firstErr

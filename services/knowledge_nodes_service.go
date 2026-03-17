@@ -56,32 +56,34 @@ func (s *KnowledgeNodesService) GetKnowledgeNodesFull(ctx context.Context, IDs [
 	}
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
-	results := make([]*models.KnowledgeNodeFull, 0, len(IDs))
 	var firstErr error
+	var firstErrOnce sync.Once
+	byIndex := make([]*models.KnowledgeNodeFull, len(IDs))
 
-	for _, id := range IDs {
+	for i, id := range IDs {
 		wg.Add(1)
-		go func(problemID int) {
+		go func(idx int, problemID int) {
 			defer wg.Done()
 
 			knowledgeNodeFull, err := s.GetKnowledgeNodeFull(ctx, problemID)
 
-			mu.Lock()
-			defer mu.Unlock()
-
 			if err != nil {
-				if firstErr == nil {
-					firstErr = err
-				}
+				firstErrOnce.Do(func() { firstErr = err })
 				return
 			}
 
-			results = append(results, knowledgeNodeFull)
-		}(id)
+			byIndex[idx] = knowledgeNodeFull
+		}(i, id)
 	}
 
 	wg.Wait()
+
+	results := make([]*models.KnowledgeNodeFull, 0, len(IDs))
+	for _, knowledgeNodeFull := range byIndex {
+		if knowledgeNodeFull != nil {
+			results = append(results, knowledgeNodeFull)
+		}
+	}
 
 	if firstErr != nil && len(results) == 0 {
 		return nil, firstErr

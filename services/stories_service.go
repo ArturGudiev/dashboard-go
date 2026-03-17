@@ -58,32 +58,34 @@ func (s *StoriesService) GetStoriesFull(ctx context.Context, IDs []int) ([]*mode
 	}
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
-	results := make([]*models.StoryFull, 0, len(IDs))
 	var firstErr error
+	var firstErrOnce sync.Once
+	byIndex := make([]*models.StoryFull, len(IDs))
 
-	for _, id := range IDs {
+	for i, id := range IDs {
 		wg.Add(1)
-		go func(problemID int) {
+		go func(idx int, storyID int) {
 			defer wg.Done()
 
-			storyFull, err := s.GetStoryFull(ctx, problemID)
-
-			mu.Lock()
-			defer mu.Unlock()
+			storyFull, err := s.GetStoryFull(ctx, storyID)
 
 			if err != nil {
-				if firstErr == nil {
-					firstErr = err
-				}
+				firstErrOnce.Do(func() { firstErr = err })
 				return
 			}
 
-			results = append(results, storyFull)
-		}(id)
+			byIndex[idx] = storyFull
+		}(i, id)
 	}
 
 	wg.Wait()
+
+	results := make([]*models.StoryFull, 0, len(IDs))
+	for _, s := range byIndex {
+		if s != nil {
+			results = append(results, s)
+		}
+	}
 
 	if firstErr != nil && len(results) == 0 {
 		return nil, firstErr
