@@ -3,7 +3,6 @@ package services
 import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
-	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/models"
 	"arturgudiev/dashboard/repositories"
@@ -34,7 +33,7 @@ func (s *QuestionService) GetOpenDescendantQuestions(ctx context.Context, parent
 		Where(
 			containerchild.ParentTypeEQ(schema.ContainerTypeQuestion),
 			containerchild.ParentID(parentQuestion.ID),
-			containerchild.ChildTypeEQ(schema.ContainerTypeProblem),
+			containerchild.ChildTypeEQ(schema.ContainerTypeQuestion),
 		).
 		All(ctx)
 
@@ -72,12 +71,11 @@ func (s *QuestionService) FinishQuestionRecursively(ctx context.Context, questio
 		_ = s.FinishQuestionRecursively(ctx, problemToFinish)
 	}
 
-	// Mark problem as done by setting solution to empty string if not already set
-	updateBuilder := s.client.Problem.UpdateOneID(question.ID).
+	updateBuilder := s.client.Question.UpdateOneID(question.ID).
 		SetDoneDateTime(now)
 
-	if problem.Solution == nil {
-		updateBuilder = updateBuilder.SetSolution("")
+	if question.Answer == nil {
+		updateBuilder = updateBuilder.SetAnswer("")
 	}
 
 	_, err := updateBuilder.Save(ctx)

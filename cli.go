@@ -209,7 +209,7 @@ func printTask(ctx context.Context, application *app.App, id int) {
 	}
 
 	fmt.Println(strings.Repeat("=", 80))
-	fmt.Println("Task-%d %s\n", t.ID, t.Description)
+	fmt.Printf("Task-%d %s\n", t.ID, t.Description)
 	fmt.Printf("Description: %s\n", t.Description)
 	fmt.Printf("Status: %s\n", map[bool]string{true: "Done", false: "Open"}[t.Done])
 	if t.Notes != "" {

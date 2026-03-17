@@ -63,32 +63,34 @@ func (s *EpicsService) GetEpicsFull(ctx context.Context, IDs []int) ([]*models.E
 	}
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
-	results := make([]*models.EpicFull, 0, len(IDs))
 	var firstErr error
+	var firstErrOnce sync.Once
+	byIndex := make([]*models.EpicFull, len(IDs))
 
-	for _, id := range IDs {
+	for i, id := range IDs {
 		wg.Add(1)
-		go func(problemID int) {
+		go func(idx int, problemID int) {
 			defer wg.Done()
 
 			epicFull, err := s.GetEpicFull(ctx, problemID)
 
-			mu.Lock()
-			defer mu.Unlock()
-
 			if err != nil {
-				if firstErr == nil {
-					firstErr = err
-				}
+				firstErrOnce.Do(func() { firstErr = err })
 				return
 			}
 
-			results = append(results, epicFull)
-		}(id)
+			byIndex[idx] = epicFull
+		}(i, id)
 	}
 
 	wg.Wait()
+
+	results := make([]*models.EpicFull, 0, len(IDs))
+	for _, epicFull := range byIndex {
+		if epicFull != nil {
+			results = append(results, epicFull)
+		}
+	}
 
 	if firstErr != nil && len(results) == 0 {
 		return nil, firstErr
@@ -105,28 +107,31 @@ func (s *EpicsService) GetAllOpenEpicsFull(ctx context.Context) ([]*models.EpicF
 	}
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
-	results := make([]*models.EpicFull, 0, len(allOpenEpics))
 	var firstErr error
+	var firstErrOnce sync.Once
+	byIndex := make([]*models.EpicFull, len(allOpenEpics))
 
-	for _, epic := range allOpenEpics {
+	for i, epic := range allOpenEpics {
 		wg.Add(1)
-		go func(epic *ent.Epic) {
+		go func(idx int, epic *ent.Epic) {
 			defer wg.Done()
 			epicFull, err := s.GetEpicFull(ctx, epic.ID)
 			if err != nil {
-				if firstErr == nil {
-					firstErr = err
-				}
+				firstErrOnce.Do(func() { firstErr = err })
 				return
 			}
-			mu.Lock()
-			defer mu.Unlock()
-			results = append(results, epicFull)
-		}(epic)
+			byIndex[idx] = epicFull
+		}(i, epic)
 	}
 
 	wg.Wait()
+
+	results := make([]*models.EpicFull, 0, len(allOpenEpics))
+	for _, epicFull := range byIndex {
+		if epicFull != nil {
+			results = append(results, epicFull)
+		}
+	}
 
 	if firstErr != nil && len(results) == 0 {
 		return nil, firstErr

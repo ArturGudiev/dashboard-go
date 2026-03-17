@@ -5,6 +5,8 @@ import (
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/models"
 	"context"
+
+	"entgo.io/ent/dialect/sql"
 )
 
 type EpicsRepository struct {
@@ -24,7 +26,7 @@ func (r *EpicsRepository) GetAllEpics(ctx context.Context) ([]*ent.Epic, error) 
 }
 
 func (r *EpicsRepository) GetAllOpenEpics(ctx context.Context) ([]*ent.Epic, error) {
-	epics, err := r.client.Epic.Query().Where(epic.ClosedEQ(false)).All(ctx)
+	epics, err := r.client.Epic.Query().Where(epic.ClosedEQ(false)).Order(epic.ByID(sql.OrderAsc())).All(ctx)
 
 	if err != nil {
 		return nil, err
