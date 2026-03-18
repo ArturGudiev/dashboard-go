@@ -96,7 +96,7 @@ func (s *EpicsService) GetEpicsFull(ctx context.Context, IDs []int) ([]*models.E
 		return nil, firstErr
 	}
 
-	return results, firstErr
+	return results, nil
 }
 
 func (s *EpicsService) GetAllOpenEpicsFull(ctx context.Context) ([]*models.EpicFull, error) {
