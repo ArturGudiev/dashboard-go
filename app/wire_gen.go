@@ -47,7 +47,8 @@ func InitializeApp() (*App, error) {
 	aliasesService := services.NewAliasesService(client, containerService, aliasesRepository, childContainerRepository)
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
-	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository)
+	logMessagesRepository := repositories.NewLogMessagesRepository(client)
+	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository)
 	return app, nil
 }
 
@@ -128,6 +129,7 @@ func provideApp(
 	knowledgeNodesRepository *repositories.KnowledgeNodesRepository,
 	knowledgeNodesService *services.KnowledgeNodesService,
 	childContainerRepository *services.ChildContainerRepository,
+	logMessagesRepository *repositories.LogMessagesRepository,
 ) *App {
 	return &App{
 		Client:                   client,
@@ -148,6 +150,7 @@ func provideApp(
 		AliasesRepository:        aliasesRepository,
 		AliasesService:           aliasesService,
 		ChildContainerRepository: childContainerRepository,
+		LogMessagesRepository:    logMessagesRepository,
 		ctx:                      context.Background(),
 	}
 }

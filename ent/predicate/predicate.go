@@ -18,6 +18,9 @@ type Epic func(*sql.Selector)
 // KnowledgeNode is the predicate function for knowledgenode builders.
 type KnowledgeNode func(*sql.Selector)
 
+// LogMessage is the predicate function for logmessage builders.
+type LogMessage func(*sql.Selector)
+
 // Problem is the predicate function for problem builders.
 type Problem func(*sql.Selector)
 

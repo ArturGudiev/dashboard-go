@@ -15,6 +15,7 @@ import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
+	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/story"
@@ -39,6 +40,8 @@ type Client struct {
 	Epic *EpicClient
 	// KnowledgeNode is the client for interacting with the KnowledgeNode builders.
 	KnowledgeNode *KnowledgeNodeClient
+	// LogMessage is the client for interacting with the LogMessage builders.
+	LogMessage *LogMessageClient
 	// Problem is the client for interacting with the Problem builders.
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
@@ -64,6 +67,7 @@ func (c *Client) init() {
 	c.ContainerChild = NewContainerChildClient(c.config)
 	c.Epic = NewEpicClient(c.config)
 	c.KnowledgeNode = NewKnowledgeNodeClient(c.config)
+	c.LogMessage = NewLogMessageClient(c.config)
 	c.Problem = NewProblemClient(c.config)
 	c.Question = NewQuestionClient(c.config)
 	c.Story = NewStoryClient(c.config)
@@ -165,6 +169,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ContainerChild: NewContainerChildClient(cfg),
 		Epic:           NewEpicClient(cfg),
 		KnowledgeNode:  NewKnowledgeNodeClient(cfg),
+		LogMessage:     NewLogMessageClient(cfg),
 		Problem:        NewProblemClient(cfg),
 		Question:       NewQuestionClient(cfg),
 		Story:          NewStoryClient(cfg),
@@ -193,6 +198,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ContainerChild: NewContainerChildClient(cfg),
 		Epic:           NewEpicClient(cfg),
 		KnowledgeNode:  NewKnowledgeNodeClient(cfg),
+		LogMessage:     NewLogMessageClient(cfg),
 		Problem:        NewProblemClient(cfg),
 		Question:       NewQuestionClient(cfg),
 		Story:          NewStoryClient(cfg),
@@ -227,8 +233,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alias, c.ContainerChild, c.Epic, c.KnowledgeNode, c.Problem, c.Question,
-		c.Story, c.Task, c.Test,
+		c.Alias, c.ContainerChild, c.Epic, c.KnowledgeNode, c.LogMessage, c.Problem,
+		c.Question, c.Story, c.Task, c.Test,
 	} {
 		n.Use(hooks...)
 	}
@@ -238,8 +244,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alias, c.ContainerChild, c.Epic, c.KnowledgeNode, c.Problem, c.Question,
-		c.Story, c.Task, c.Test,
+		c.Alias, c.ContainerChild, c.Epic, c.KnowledgeNode, c.LogMessage, c.Problem,
+		c.Question, c.Story, c.Task, c.Test,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -256,6 +262,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Epic.mutate(ctx, m)
 	case *KnowledgeNodeMutation:
 		return c.KnowledgeNode.mutate(ctx, m)
+	case *LogMessageMutation:
+		return c.LogMessage.mutate(ctx, m)
 	case *ProblemMutation:
 		return c.Problem.mutate(ctx, m)
 	case *QuestionMutation:
@@ -800,6 +808,139 @@ func (c *KnowledgeNodeClient) mutate(ctx context.Context, m *KnowledgeNodeMutati
 		return (&KnowledgeNodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown KnowledgeNode mutation op: %q", m.Op())
+	}
+}
+
+// LogMessageClient is a client for the LogMessage schema.
+type LogMessageClient struct {
+	config
+}
+
+// NewLogMessageClient returns a client for the LogMessage from the given config.
+func NewLogMessageClient(c config) *LogMessageClient {
+	return &LogMessageClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `logmessage.Hooks(f(g(h())))`.
+func (c *LogMessageClient) Use(hooks ...Hook) {
+	c.hooks.LogMessage = append(c.hooks.LogMessage, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `logmessage.Intercept(f(g(h())))`.
+func (c *LogMessageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LogMessage = append(c.inters.LogMessage, interceptors...)
+}
+
+// Create returns a builder for creating a LogMessage entity.
+func (c *LogMessageClient) Create() *LogMessageCreate {
+	mutation := newLogMessageMutation(c.config, OpCreate)
+	return &LogMessageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LogMessage entities.
+func (c *LogMessageClient) CreateBulk(builders ...*LogMessageCreate) *LogMessageCreateBulk {
+	return &LogMessageCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LogMessageClient) MapCreateBulk(slice any, setFunc func(*LogMessageCreate, int)) *LogMessageCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LogMessageCreateBulk{err: fmt.Errorf("calling to LogMessageClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LogMessageCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LogMessageCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LogMessage.
+func (c *LogMessageClient) Update() *LogMessageUpdate {
+	mutation := newLogMessageMutation(c.config, OpUpdate)
+	return &LogMessageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LogMessageClient) UpdateOne(_m *LogMessage) *LogMessageUpdateOne {
+	mutation := newLogMessageMutation(c.config, OpUpdateOne, withLogMessage(_m))
+	return &LogMessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LogMessageClient) UpdateOneID(id int) *LogMessageUpdateOne {
+	mutation := newLogMessageMutation(c.config, OpUpdateOne, withLogMessageID(id))
+	return &LogMessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LogMessage.
+func (c *LogMessageClient) Delete() *LogMessageDelete {
+	mutation := newLogMessageMutation(c.config, OpDelete)
+	return &LogMessageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LogMessageClient) DeleteOne(_m *LogMessage) *LogMessageDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LogMessageClient) DeleteOneID(id int) *LogMessageDeleteOne {
+	builder := c.Delete().Where(logmessage.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LogMessageDeleteOne{builder}
+}
+
+// Query returns a query builder for LogMessage.
+func (c *LogMessageClient) Query() *LogMessageQuery {
+	return &LogMessageQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLogMessage},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LogMessage entity by its id.
+func (c *LogMessageClient) Get(ctx context.Context, id int) (*LogMessage, error) {
+	return c.Query().Where(logmessage.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LogMessageClient) GetX(ctx context.Context, id int) *LogMessage {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LogMessageClient) Hooks() []Hook {
+	return c.hooks.LogMessage
+}
+
+// Interceptors returns the client interceptors.
+func (c *LogMessageClient) Interceptors() []Interceptor {
+	return c.inters.LogMessage
+}
+
+func (c *LogMessageClient) mutate(ctx context.Context, m *LogMessageMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LogMessageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LogMessageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LogMessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LogMessageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LogMessage mutation op: %q", m.Op())
 	}
 }
 
@@ -1471,11 +1612,11 @@ func (c *TestClient) mutate(ctx context.Context, m *TestMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alias, ContainerChild, Epic, KnowledgeNode, Problem, Question, Story, Task,
-		Test []ent.Hook
+		Alias, ContainerChild, Epic, KnowledgeNode, LogMessage, Problem, Question,
+		Story, Task, Test []ent.Hook
 	}
 	inters struct {
-		Alias, ContainerChild, Epic, KnowledgeNode, Problem, Question, Story, Task,
-		Test []ent.Interceptor
+		Alias, ContainerChild, Epic, KnowledgeNode, LogMessage, Problem, Question,
+		Story, Task, Test []ent.Interceptor
 	}
 )

@@ -202,6 +202,11 @@ func main() {
 	router.PUT("/update-epic", h.UpdateEpic)
 	router.GET("/epics", h.GetAllOpenEpics)
 
+	// Log messages routes
+	router.GET("/log-messages/:id", h.GetLogMessageByID)
+	router.GET("/log-messages", h.GetLogMessages)
+	router.POST("/log-messages", h.NewLogMessage)
+
 	// Aliase routes
 	router.GET("/aliases/:alias", h.GetAliasByString)
 

@@ -28,6 +28,7 @@ type App struct {
 	AliasesRepository        *repositories.AliasesRepository
 	AliasesService           *services.AliasesService
 	ChildContainerRepository *services.ChildContainerRepository
+	LogMessagesRepository    *repositories.LogMessagesRepository
 	ctx                      context.Context // Default context for CLI operations
 }
 

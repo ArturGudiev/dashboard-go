@@ -7,6 +7,7 @@ import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
+	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/predicate"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
@@ -37,6 +38,7 @@ const (
 	TypeContainerChild = "ContainerChild"
 	TypeEpic           = "Epic"
 	TypeKnowledgeNode  = "KnowledgeNode"
+	TypeLogMessage     = "LogMessage"
 	TypeProblem        = "Problem"
 	TypeQuestion       = "Question"
 	TypeStory          = "Story"
@@ -2393,6 +2395,632 @@ func (m *KnowledgeNodeMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *KnowledgeNodeMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown KnowledgeNode edge %s", name)
+}
+
+// LogMessageMutation represents an operation that mutates the LogMessage nodes in the graph.
+type LogMessageMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	description     *string
+	notes           *string
+	created         *time.Time
+	container_type  *schema.ContainerType
+	container_id    *int
+	addcontainer_id *int
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*LogMessage, error)
+	predicates      []predicate.LogMessage
+}
+
+var _ ent.Mutation = (*LogMessageMutation)(nil)
+
+// logmessageOption allows management of the mutation configuration using functional options.
+type logmessageOption func(*LogMessageMutation)
+
+// newLogMessageMutation creates new mutation for the LogMessage entity.
+func newLogMessageMutation(c config, op Op, opts ...logmessageOption) *LogMessageMutation {
+	m := &LogMessageMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLogMessage,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLogMessageID sets the ID field of the mutation.
+func withLogMessageID(id int) logmessageOption {
+	return func(m *LogMessageMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *LogMessage
+		)
+		m.oldValue = func(ctx context.Context) (*LogMessage, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().LogMessage.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLogMessage sets the old LogMessage of the mutation.
+func withLogMessage(node *LogMessage) logmessageOption {
+	return func(m *LogMessageMutation) {
+		m.oldValue = func(context.Context) (*LogMessage, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LogMessageMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LogMessageMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of LogMessage entities.
+func (m *LogMessageMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LogMessageMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LogMessageMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().LogMessage.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDescription sets the "description" field.
+func (m *LogMessageMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *LogMessageMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the LogMessage entity.
+// If the LogMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMessageMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *LogMessageMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *LogMessageMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *LogMessageMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the LogMessage entity.
+// If the LogMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMessageMutation) OldNotes(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *LogMessageMutation) ResetNotes() {
+	m.notes = nil
+}
+
+// SetCreated sets the "created" field.
+func (m *LogMessageMutation) SetCreated(t time.Time) {
+	m.created = &t
+}
+
+// Created returns the value of the "created" field in the mutation.
+func (m *LogMessageMutation) Created() (r time.Time, exists bool) {
+	v := m.created
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreated returns the old "created" field's value of the LogMessage entity.
+// If the LogMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMessageMutation) OldCreated(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreated: %w", err)
+	}
+	return oldValue.Created, nil
+}
+
+// ResetCreated resets all changes to the "created" field.
+func (m *LogMessageMutation) ResetCreated() {
+	m.created = nil
+}
+
+// SetContainerType sets the "container_type" field.
+func (m *LogMessageMutation) SetContainerType(st schema.ContainerType) {
+	m.container_type = &st
+}
+
+// ContainerType returns the value of the "container_type" field in the mutation.
+func (m *LogMessageMutation) ContainerType() (r schema.ContainerType, exists bool) {
+	v := m.container_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerType returns the old "container_type" field's value of the LogMessage entity.
+// If the LogMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMessageMutation) OldContainerType(ctx context.Context) (v *schema.ContainerType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerType: %w", err)
+	}
+	return oldValue.ContainerType, nil
+}
+
+// ClearContainerType clears the value of the "container_type" field.
+func (m *LogMessageMutation) ClearContainerType() {
+	m.container_type = nil
+	m.clearedFields[logmessage.FieldContainerType] = struct{}{}
+}
+
+// ContainerTypeCleared returns if the "container_type" field was cleared in this mutation.
+func (m *LogMessageMutation) ContainerTypeCleared() bool {
+	_, ok := m.clearedFields[logmessage.FieldContainerType]
+	return ok
+}
+
+// ResetContainerType resets all changes to the "container_type" field.
+func (m *LogMessageMutation) ResetContainerType() {
+	m.container_type = nil
+	delete(m.clearedFields, logmessage.FieldContainerType)
+}
+
+// SetContainerID sets the "container_id" field.
+func (m *LogMessageMutation) SetContainerID(i int) {
+	m.container_id = &i
+	m.addcontainer_id = nil
+}
+
+// ContainerID returns the value of the "container_id" field in the mutation.
+func (m *LogMessageMutation) ContainerID() (r int, exists bool) {
+	v := m.container_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerID returns the old "container_id" field's value of the LogMessage entity.
+// If the LogMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMessageMutation) OldContainerID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerID: %w", err)
+	}
+	return oldValue.ContainerID, nil
+}
+
+// AddContainerID adds i to the "container_id" field.
+func (m *LogMessageMutation) AddContainerID(i int) {
+	if m.addcontainer_id != nil {
+		*m.addcontainer_id += i
+	} else {
+		m.addcontainer_id = &i
+	}
+}
+
+// AddedContainerID returns the value that was added to the "container_id" field in this mutation.
+func (m *LogMessageMutation) AddedContainerID() (r int, exists bool) {
+	v := m.addcontainer_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearContainerID clears the value of the "container_id" field.
+func (m *LogMessageMutation) ClearContainerID() {
+	m.container_id = nil
+	m.addcontainer_id = nil
+	m.clearedFields[logmessage.FieldContainerID] = struct{}{}
+}
+
+// ContainerIDCleared returns if the "container_id" field was cleared in this mutation.
+func (m *LogMessageMutation) ContainerIDCleared() bool {
+	_, ok := m.clearedFields[logmessage.FieldContainerID]
+	return ok
+}
+
+// ResetContainerID resets all changes to the "container_id" field.
+func (m *LogMessageMutation) ResetContainerID() {
+	m.container_id = nil
+	m.addcontainer_id = nil
+	delete(m.clearedFields, logmessage.FieldContainerID)
+}
+
+// Where appends a list predicates to the LogMessageMutation builder.
+func (m *LogMessageMutation) Where(ps ...predicate.LogMessage) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the LogMessageMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *LogMessageMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.LogMessage, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *LogMessageMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *LogMessageMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (LogMessage).
+func (m *LogMessageMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LogMessageMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.description != nil {
+		fields = append(fields, logmessage.FieldDescription)
+	}
+	if m.notes != nil {
+		fields = append(fields, logmessage.FieldNotes)
+	}
+	if m.created != nil {
+		fields = append(fields, logmessage.FieldCreated)
+	}
+	if m.container_type != nil {
+		fields = append(fields, logmessage.FieldContainerType)
+	}
+	if m.container_id != nil {
+		fields = append(fields, logmessage.FieldContainerID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LogMessageMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case logmessage.FieldDescription:
+		return m.Description()
+	case logmessage.FieldNotes:
+		return m.Notes()
+	case logmessage.FieldCreated:
+		return m.Created()
+	case logmessage.FieldContainerType:
+		return m.ContainerType()
+	case logmessage.FieldContainerID:
+		return m.ContainerID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LogMessageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case logmessage.FieldDescription:
+		return m.OldDescription(ctx)
+	case logmessage.FieldNotes:
+		return m.OldNotes(ctx)
+	case logmessage.FieldCreated:
+		return m.OldCreated(ctx)
+	case logmessage.FieldContainerType:
+		return m.OldContainerType(ctx)
+	case logmessage.FieldContainerID:
+		return m.OldContainerID(ctx)
+	}
+	return nil, fmt.Errorf("unknown LogMessage field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LogMessageMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case logmessage.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case logmessage.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	case logmessage.FieldCreated:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreated(v)
+		return nil
+	case logmessage.FieldContainerType:
+		v, ok := value.(schema.ContainerType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerType(v)
+		return nil
+	case logmessage.FieldContainerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LogMessage field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LogMessageMutation) AddedFields() []string {
+	var fields []string
+	if m.addcontainer_id != nil {
+		fields = append(fields, logmessage.FieldContainerID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LogMessageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case logmessage.FieldContainerID:
+		return m.AddedContainerID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LogMessageMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case logmessage.FieldContainerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddContainerID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LogMessage numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LogMessageMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(logmessage.FieldContainerType) {
+		fields = append(fields, logmessage.FieldContainerType)
+	}
+	if m.FieldCleared(logmessage.FieldContainerID) {
+		fields = append(fields, logmessage.FieldContainerID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LogMessageMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LogMessageMutation) ClearField(name string) error {
+	switch name {
+	case logmessage.FieldContainerType:
+		m.ClearContainerType()
+		return nil
+	case logmessage.FieldContainerID:
+		m.ClearContainerID()
+		return nil
+	}
+	return fmt.Errorf("unknown LogMessage nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LogMessageMutation) ResetField(name string) error {
+	switch name {
+	case logmessage.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case logmessage.FieldNotes:
+		m.ResetNotes()
+		return nil
+	case logmessage.FieldCreated:
+		m.ResetCreated()
+		return nil
+	case logmessage.FieldContainerType:
+		m.ResetContainerType()
+		return nil
+	case logmessage.FieldContainerID:
+		m.ResetContainerID()
+		return nil
+	}
+	return fmt.Errorf("unknown LogMessage field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LogMessageMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LogMessageMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LogMessageMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LogMessageMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LogMessageMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LogMessageMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LogMessageMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown LogMessage unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LogMessageMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown LogMessage edge %s", name)
 }
 
 // ProblemMutation represents an operation that mutates the Problem nodes in the graph.

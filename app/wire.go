@@ -40,6 +40,7 @@ func InitializeApp() (*App, error) {
 		repositories.NewKnowledgeNodesRepository,
 		repositories.NewAliasesRepository,
 		services.NewChildContainerRepository,
+		repositories.NewLogMessagesRepository,
 		// App provider
 		provideApp,
 	)
@@ -126,6 +127,7 @@ func provideApp(
 	knowledgeNodesRepository *repositories.KnowledgeNodesRepository,
 	knowledgeNodesService *services.KnowledgeNodesService,
 	childContainerRepository *services.ChildContainerRepository,
+	logMessagesRepository *repositories.LogMessagesRepository,
 ) *App {
 	return &App{
 		Client:                   client,
@@ -146,6 +148,7 @@ func provideApp(
 		AliasesRepository:        aliasesRepository,
 		AliasesService:           aliasesService,
 		ChildContainerRepository: childContainerRepository,
+		LogMessagesRepository:    logMessagesRepository,
 		ctx:                      context.Background(), // Default context for CLI
 	}
 }

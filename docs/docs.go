@@ -793,6 +793,179 @@ const docTemplate = `{
                 }
             }
         },
+        "/log-messages": {
+            "get": {
+                "description": "Returns multiple log messages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "log messages"
+                ],
+                "summary": "Get log messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Container type filter",
+                        "name": "containerType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Container id filter",
+                        "name": "containerID",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PaginatedResponse-ent_LogMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new log message with optional container relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "log messages"
+                ],
+                "summary": "Create new log message",
+                "parameters": [
+                    {
+                        "description": "Log message creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NewLogMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.LogMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/log-messages/{id}": {
+            "get": {
+                "description": "Returns a log message by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "log messages"
+                ],
+                "summary": "Get log message by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Log Message ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.LogMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/new-epic": {
             "post": {
                 "description": "Creates a new epic with optional parent relationship",
@@ -1799,6 +1972,39 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "ent.LogMessage": {
+            "type": "object",
+            "properties": {
+                "container_id": {
+                    "description": "ContainerID holds the value of the \"container_id\" field.",
+                    "type": "integer"
+                },
+                "container_type": {
+                    "description": "ContainerType holds the value of the \"container_type\" field.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/schema.ContainerType"
+                        }
+                    ]
+                },
+                "created": {
+                    "description": "Created holds the value of the \"created\" field.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description holds the value of the \"description\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "notes": {
+                    "description": "Notes holds the value of the \"notes\" field.",
+                    "type": "string"
+                }
+            }
+        },
         "ent.Task": {
             "type": "object",
             "properties": {
@@ -1856,6 +2062,20 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.NewLogMessageRequest": {
+            "type": "object",
+            "properties": {
+                "containerID": {
+                    "type": "integer"
+                },
+                "containerType": {
+                    "$ref": "#/definitions/schema.ContainerType"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.NewProblemRequest": {
             "description": "Request to create a new problem with optional parent container",
             "type": "object",
@@ -1888,6 +2108,32 @@ const docTemplate = `{
                 },
                 "task": {
                     "$ref": "#/definitions/models.TaskShort"
+                }
+            }
+        },
+        "handlers.PaginatedResponse-ent_LogMessage": {
+            "type": "object",
+            "required": [
+                "items",
+                "page",
+                "perPage",
+                "total"
+            ],
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.LogMessage"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

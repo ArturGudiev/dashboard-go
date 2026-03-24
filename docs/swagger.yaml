@@ -1,5 +1,27 @@
 basePath: /
 definitions:
+  ent.LogMessage:
+    properties:
+      container_id:
+        description: ContainerID holds the value of the "container_id" field.
+        type: integer
+      container_type:
+        allOf:
+        - $ref: '#/definitions/schema.ContainerType'
+        description: ContainerType holds the value of the "container_type" field.
+      created:
+        description: Created holds the value of the "created" field.
+        type: string
+      description:
+        description: Description holds the value of the "description" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: integer
+      notes:
+        description: Notes holds the value of the "notes" field.
+        type: string
+    type: object
   ent.Task:
     properties:
       description:
@@ -39,6 +61,15 @@ definitions:
     required:
     - ids
     type: object
+  handlers.NewLogMessageRequest:
+    properties:
+      containerID:
+        type: integer
+      containerType:
+        $ref: '#/definitions/schema.ContainerType'
+      description:
+        type: string
+    type: object
   handlers.NewProblemRequest:
     description: Request to create a new problem with optional parent container
     properties:
@@ -61,6 +92,24 @@ definitions:
         $ref: '#/definitions/models.ContainerDescription'
       task:
         $ref: '#/definitions/models.TaskShort'
+    type: object
+  handlers.PaginatedResponse-ent_LogMessage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ent.LogMessage'
+        type: array
+      page:
+        type: integer
+      perPage:
+        type: integer
+      total:
+        type: integer
+    required:
+    - items
+    - page
+    - perPage
+    - total
     type: object
   handlers.ParentsPathRequest:
     properties:
@@ -1175,6 +1224,120 @@ paths:
       summary: Get tasks by IDs
       tags:
       - tasks
+  /log-messages:
+    get:
+      consumes:
+      - application/json
+      description: Returns multiple log messages
+      parameters:
+      - description: Container type filter
+        in: query
+        name: containerType
+        type: string
+      - description: Container id filter
+        in: query
+        name: containerID
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PaginatedResponse-ent_LogMessage'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get log messages
+      tags:
+      - log messages
+    post:
+      consumes:
+      - application/json
+      description: Creates a new log message with optional container relationship
+      parameters:
+      - description: Log message creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.NewLogMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.LogMessage'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new log message
+      tags:
+      - log messages
+  /log-messages/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a log message by its ID
+      parameters:
+      - description: Log Message ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.LogMessage'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get log message by ID
+      tags:
+      - log messages
   /new-epic:
     post:
       consumes:

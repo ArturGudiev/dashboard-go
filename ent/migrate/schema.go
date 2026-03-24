@@ -94,6 +94,21 @@ var (
 		Columns:    KnowledgeNodesColumns,
 		PrimaryKey: []*schema.Column{KnowledgeNodesColumns[0]},
 	}
+	// LogMessagesColumns holds the columns for the "log_messages" table.
+	LogMessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+		{Name: "created", Type: field.TypeTime},
+		{Name: "container_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state"}},
+		{Name: "container_id", Type: field.TypeInt, Nullable: true},
+	}
+	// LogMessagesTable holds the schema information for the "log_messages" table.
+	LogMessagesTable = &schema.Table{
+		Name:       "log_messages",
+		Columns:    LogMessagesColumns,
+		PrimaryKey: []*schema.Column{LogMessagesColumns[0]},
+	}
 	// ProblemsColumns holds the columns for the "problems" table.
 	ProblemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -172,6 +187,7 @@ var (
 		ContainerChildrenTable,
 		EpicsTable,
 		KnowledgeNodesTable,
+		LogMessagesTable,
 		ProblemsTable,
 		QuestionsTable,
 		StoriesTable,

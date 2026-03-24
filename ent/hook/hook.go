@@ -56,6 +56,18 @@ func (f KnowledgeNodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeNodeMutation", m)
 }
 
+// The LogMessageFunc type is an adapter to allow the use of ordinary
+// function as LogMessage mutator.
+type LogMessageFunc func(context.Context, *ent.LogMessageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LogMessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LogMessageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogMessageMutation", m)
+}
+
 // The ProblemFunc type is an adapter to allow the use of ordinary
 // function as Problem mutator.
 type ProblemFunc func(context.Context, *ent.ProblemMutation) (ent.Value, error)

@@ -7,6 +7,7 @@ import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
+	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/schema"
@@ -99,6 +100,24 @@ func init() {
 	knowledgenodeDescID := knowledgenodeFields[0].Descriptor()
 	// knowledgenode.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	knowledgenode.IDValidator = knowledgenodeDescID.Validators[0].(func(int) error)
+	logmessageFields := schema.LogMessage{}.Fields()
+	_ = logmessageFields
+	// logmessageDescDescription is the schema descriptor for description field.
+	logmessageDescDescription := logmessageFields[1].Descriptor()
+	// logmessage.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	logmessage.DescriptionValidator = logmessageDescDescription.Validators[0].(func(string) error)
+	// logmessageDescNotes is the schema descriptor for notes field.
+	logmessageDescNotes := logmessageFields[2].Descriptor()
+	// logmessage.DefaultNotes holds the default value on creation for the notes field.
+	logmessage.DefaultNotes = logmessageDescNotes.Default.(string)
+	// logmessageDescContainerID is the schema descriptor for container_id field.
+	logmessageDescContainerID := logmessageFields[5].Descriptor()
+	// logmessage.ContainerIDValidator is a validator for the "container_id" field. It is called by the builders before save.
+	logmessage.ContainerIDValidator = logmessageDescContainerID.Validators[0].(func(int) error)
+	// logmessageDescID is the schema descriptor for id field.
+	logmessageDescID := logmessageFields[0].Descriptor()
+	// logmessage.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	logmessage.IDValidator = logmessageDescID.Validators[0].(func(int) error)
 	problemFields := schema.Problem{}.Fields()
 	_ = problemFields
 	// problemDescDescription is the schema descriptor for description field.

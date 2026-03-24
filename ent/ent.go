@@ -7,6 +7,7 @@ import (
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
+	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/story"
@@ -85,6 +86,7 @@ func checkColumn(t, c string) error {
 			containerchild.Table: containerchild.ValidColumn,
 			epic.Table:           epic.ValidColumn,
 			knowledgenode.Table:  knowledgenode.ValidColumn,
+			logmessage.Table:     logmessage.ValidColumn,
 			problem.Table:        problem.ValidColumn,
 			question.Table:       question.ValidColumn,
 			story.Table:          story.ValidColumn,

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/models"
 	"time"
 )
@@ -83,7 +84,7 @@ type TaskResponse struct {
 }
 
 type DoneTasksResponse struct {
-	DoneTasks 	int 		`json:"doneTasks"`
+	DoneTasks int `json:"doneTasks"`
 }
 
 // NewProblemRequest represents a request to create a new problem with optional parent
@@ -115,3 +116,24 @@ type ParentsPathRequest struct {
 	ID   int    `json:"id" binding:"required"`
 	Type string `json:"type" binding:"required"`
 }
+
+// NewTaskRequest represents a request to create a new task with optional parent
+type NewLogMessageRequest struct {
+	Description   string                `json:"description"`
+	ContainerType *schema.ContainerType `json:"containerType"`
+	ContainerID   *int                  `json:"containerID"`
+}
+
+type logMessagesQuery struct {
+	ContainerType *schema.ContainerType `form:"containerType"`
+	ContainerID   *int                  `form:"containerID"`
+	PerPage       *int                  `form:"perPage"`
+	Page          *int                  `form:"page"`
+}
+
+// type logMessagesResponse struct {
+// 	LogMessages []*ent.LogMessage `json:"logMessages"`
+// 	Total       int                  `json:"total"`
+// 	Page        int                  `json:"page"`
+// 	PerPage     int                  `json:"perPage"`
+// }
