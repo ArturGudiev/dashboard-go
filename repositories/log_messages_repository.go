@@ -39,7 +39,7 @@ func (r *LogMessagesRepository) GetLogMessage(ctx context.Context, ID int) (*ent
 
 func (r *LogMessagesRepository) GetLogMessages(ctx context.Context, perPage int, page int) ([]*ent.LogMessage, *int, error) {
 	logMessages, err := r.client.LogMessage.Query().
-		Offset((page - 1) * perPage).
+		Offset(page * perPage).
 		Limit(perPage).
 		All(ctx)
 	if err != nil {
@@ -55,7 +55,7 @@ func (r *LogMessagesRepository) GetLogMessages(ctx context.Context, perPage int,
 func (r *LogMessagesRepository) GetContainerLogMessages(ctx context.Context, containerType schema.ContainerType, containerID int, perPage int, page int) ([]*ent.LogMessage, *int, error) {
 	logMessages, err := r.client.LogMessage.Query().
 		Where(logmessage.ContainerTypeEQ(containerType), logmessage.ContainerIDEQ(containerID)).
-		Offset((page - 1) * perPage).
+		Offset(page * perPage).
 		Limit(perPage).
 		All(ctx)
 	if err != nil {

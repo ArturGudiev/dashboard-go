@@ -111,8 +111,8 @@ func (h *Handler) GetLogMessages(c *gin.Context) {
 		v := 50
 		query.PerPage = &v
 	}
-	if query.Page == nil || *query.Page == 0 {
-		v := 1
+	if query.Page == nil {
+		v := 0
 		query.Page = &v
 	}
 
@@ -131,7 +131,13 @@ func (h *Handler) GetLogMessages(c *gin.Context) {
 		return
 	}
 	if query.ContainerType != nil && query.ContainerID != nil {
-		logMessages, total, err := h.App.LogMessagesRepository.GetContainerLogMessages(c.Request.Context(), *query.ContainerType, *query.ContainerID, *query.PerPage, *query.Page)
+		logMessages, total, err := h.App.LogMessagesRepository.GetContainerLogMessages(
+			c.Request.Context(),
+			*query.ContainerType,
+			*query.ContainerID,
+			*query.PerPage,
+			*query.Page,
+		)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
