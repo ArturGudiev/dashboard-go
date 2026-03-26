@@ -37,15 +37,20 @@ func (r *LogMessagesRepository) GetLogMessage(ctx context.Context, ID int) (*ent
 	return logMessage, nil
 }
 
-func (r *LogMessagesRepository) GetLogMessages(ctx context.Context, perPage int, page int) ([]*ent.LogMessage, *int, error) {
-	logMessages, err := r.client.LogMessage.Query().
-		Offset(page * perPage).
-		Limit(perPage).
-		All(ctx)
+func (r *LogMessagesRepository) GetLogMessages(ctx context.Context, perPage int, page int, global bool) ([]*ent.LogMessage, *int, error) {
+	query := r.client.LogMessage.Query()
+	if global {
+		query = query.Where(logmessage.ContainerTypeIsNil()).Where(logmessage.ContainerIDIsNil())
+	}
+	logMessages, err := query.Offset(page * perPage).Limit(perPage).All(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-	total, err := r.client.LogMessage.Query().Count(ctx)
+	countQuery := r.client.LogMessage.Query()
+	if global {
+		countQuery = countQuery.Where(logmessage.ContainerTypeIsNil()).Where(logmessage.ContainerIDIsNil())
+	}
+	total, err := countQuery.Count(ctx)
 	if err != nil {
 		return nil, nil, err
 	}

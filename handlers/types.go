@@ -129,6 +129,7 @@ type logMessagesQuery struct {
 	ContainerID   *int                  `form:"containerID"`
 	PerPage       *int                  `form:"perPage"`
 	Page          *int                  `form:"page"`
+	Global        *bool                 `form:"global"`
 }
 
 // type logMessagesResponse struct {

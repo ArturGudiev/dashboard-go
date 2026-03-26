@@ -93,6 +93,9 @@ type PaginatedResponse[T any] struct {
 // @Description  Returns multiple log messages
 // @Param containerType query string false "Container type filter"
 // @Param containerID query integer false "Container id filter"
+// @Param perPage query integer false "Items per page"
+// @Param page query integer false "Page number"
+// @Param global query boolean false "Global log messages"
 // @Tags         log messages
 // @Accept       json
 // @Produce      json
@@ -116,8 +119,13 @@ func (h *Handler) GetLogMessages(c *gin.Context) {
 		query.Page = &v
 	}
 
+	global := false
+	if query.Global != nil {
+		global = *query.Global
+	}
+
 	if query.ContainerType == nil && query.ContainerID == nil {
-		logMessages, total, err := h.App.LogMessagesRepository.GetLogMessages(c.Request.Context(), *query.PerPage, *query.Page)
+		logMessages, total, err := h.App.LogMessagesRepository.GetLogMessages(c.Request.Context(), *query.PerPage, *query.Page, global)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
