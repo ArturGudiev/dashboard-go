@@ -12,6 +12,8 @@ import (
 type App struct {
 	Client                   *ent.Client
 	TaskService              *services.TaskService
+	RepetitiveTaskService             *services.RepetitiveTaskService
+	RepetitiveTaskExecutionService    *services.RepetitiveTaskExecutionService
 	ProblemService           *services.ProblemService
 	ContainerService         *services.ContainerService
 	CLIService               *services.CLIService
@@ -29,6 +31,8 @@ type App struct {
 	AliasesService           *services.AliasesService
 	ChildContainerRepository *services.ChildContainerRepository
 	LogMessagesRepository    *repositories.LogMessagesRepository
+	RepetitiveTasksRepository           *repositories.RepetitiveTasksRepository
+	RepetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository
 	ctx                      context.Context // Default context for CLI operations
 }
 

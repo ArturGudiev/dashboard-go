@@ -122,6 +122,7 @@ type NewLogMessageRequest struct {
 	Description   string                `json:"description"`
 	ContainerType *schema.ContainerType `json:"containerType"`
 	ContainerID   *int                  `json:"containerID"`
+	LogType       *string               `json:"logType"`
 }
 
 type logMessagesQuery struct {

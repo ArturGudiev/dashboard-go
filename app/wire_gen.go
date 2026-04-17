@@ -37,6 +37,10 @@ func InitializeApp() (*App, error) {
 	problemService := services.NewProblemService(client, containerService, problemsRepository, childContainerRepository)
 	tasksRepository := services.NewTasksRepository(client)
 	taskService := services.NewTaskService(client, containerService, problemService, tasksRepository, childContainerRepository)
+	repetitiveTasksRepository := repositories.NewRepetitiveTasksRepository(client)
+	repetitiveTaskService := services.NewRepetitiveTaskService(client, containerService, problemService, repetitiveTasksRepository, childContainerRepository)
+	repetitiveTaskExecutionsRepository := repositories.NewRepetitiveTaskExecutionsRepository(client)
+	repetitiveTaskExecutionService := services.NewRepetitiveTaskExecutionService(repetitiveTaskExecutionsRepository)
 	epicsRepository := repositories.NewEpicsRepository(client)
 	cliService := services.NewCLIService(client, containerService, problemsRepository, epicsRepository, aliasesRepository)
 	questionsRepository := repositories.NewQuestionsRepository(client)
@@ -48,7 +52,7 @@ func InitializeApp() (*App, error) {
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
 	logMessagesRepository := repositories.NewLogMessagesRepository(client)
-	app := provideApp(client, taskService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository)
+	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository)
 	return app, nil
 }
 
@@ -113,6 +117,8 @@ func provideEntClient() (*ent.Client, error) {
 func provideApp(
 	client *ent.Client,
 	taskService *services.TaskService,
+	repetitiveTaskService *services.RepetitiveTaskService,
+	repetitiveTaskExecutionService *services.RepetitiveTaskExecutionService,
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
@@ -130,27 +136,33 @@ func provideApp(
 	knowledgeNodesService *services.KnowledgeNodesService,
 	childContainerRepository *services.ChildContainerRepository,
 	logMessagesRepository *repositories.LogMessagesRepository,
+	repetitiveTasksRepository *repositories.RepetitiveTasksRepository,
+	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
 ) *App {
 	return &App{
-		Client:                   client,
-		TaskService:              taskService,
-		ProblemService:           problemService,
-		ContainerService:         containerService,
-		CLIService:               cliService,
-		TasksRepository:          tasksRepository,
-		ProblemsRepository:       problemsRepository,
-		QuestionsRepository:      questionsRepository,
-		QuestionsService:         questionsService,
-		StoriesRepository:        storiesRepository,
-		StoriesService:           storiesService,
-		EpicsRepository:          epicsRepository,
-		EpicsService:             epicsService,
-		KnowledgeNodesRepository: knowledgeNodesRepository,
-		KnowledgeNodesService:    knowledgeNodesService,
-		AliasesRepository:        aliasesRepository,
-		AliasesService:           aliasesService,
-		ChildContainerRepository: childContainerRepository,
-		LogMessagesRepository:    logMessagesRepository,
-		ctx:                      context.Background(),
+		Client:                             client,
+		TaskService:                        taskService,
+		RepetitiveTaskService:              repetitiveTaskService,
+		RepetitiveTaskExecutionService:     repetitiveTaskExecutionService,
+		ProblemService:                     problemService,
+		ContainerService:                   containerService,
+		CLIService:                         cliService,
+		TasksRepository:                    tasksRepository,
+		ProblemsRepository:                 problemsRepository,
+		QuestionsRepository:                questionsRepository,
+		QuestionsService:                   questionsService,
+		StoriesRepository:                  storiesRepository,
+		StoriesService:                     storiesService,
+		EpicsRepository:                    epicsRepository,
+		EpicsService:                       epicsService,
+		KnowledgeNodesRepository:           knowledgeNodesRepository,
+		KnowledgeNodesService:              knowledgeNodesService,
+		AliasesRepository:                  aliasesRepository,
+		AliasesService:                     aliasesService,
+		ChildContainerRepository:           childContainerRepository,
+		LogMessagesRepository:              logMessagesRepository,
+		RepetitiveTasksRepository:          repetitiveTasksRepository,
+		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
+		ctx:                                context.Background(),
 	}
 }

@@ -26,6 +26,10 @@ type Tx struct {
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
 	Question *QuestionClient
+	// RepetitiveTask is the client for interacting with the RepetitiveTask builders.
+	RepetitiveTask *RepetitiveTaskClient
+	// RepetitiveTaskExecution is the client for interacting with the RepetitiveTaskExecution builders.
+	RepetitiveTaskExecution *RepetitiveTaskExecutionClient
 	// Story is the client for interacting with the Story builders.
 	Story *StoryClient
 	// Task is the client for interacting with the Task builders.
@@ -170,6 +174,8 @@ func (tx *Tx) init() {
 	tx.LogMessage = NewLogMessageClient(tx.config)
 	tx.Problem = NewProblemClient(tx.config)
 	tx.Question = NewQuestionClient(tx.config)
+	tx.RepetitiveTask = NewRepetitiveTaskClient(tx.config)
+	tx.RepetitiveTaskExecution = NewRepetitiveTaskExecutionClient(tx.config)
 	tx.Story = NewStoryClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Test = NewTestClient(tx.config)

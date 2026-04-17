@@ -816,6 +816,24 @@
                         "description": "Container id filter",
                         "name": "containerID",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "perPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Global log messages",
+                        "name": "global",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1442,6 +1460,183 @@
                 }
             }
         },
+        "/repetitive-tasks/": {
+            "get": {
+                "description": "Returns all repetitive tasks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "repetitive-tasks"
+                ],
+                "summary": "Get repetitive tasks",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.RepetitiveTask"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repetitive-tasks/{id}": {
+            "get": {
+                "description": "Returns repetitive task by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "repetitive-tasks"
+                ],
+                "summary": "Get repetitive task by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Repetitive task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.RepetitiveTask"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repetitive-tasks/{id}/executions": {
+            "get": {
+                "description": "Returns execution records for the given repetitive task (newest first)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "repetitive-tasks"
+                ],
+                "summary": "List repetitive task executions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Repetitive task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.RepetitiveTaskExecution"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates an execution record for the given repetitive task (timestamp is server time)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "repetitive-tasks"
+                ],
+                "summary": "Record repetitive task execution",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Repetitive task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.RepetitiveTaskExecution"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/solve-problem/{id}": {
             "put": {
                 "description": "Sets the solution for a problem",
@@ -2003,6 +2198,108 @@
                 }
             }
         },
+        "ent.RepetitiveTask": {
+            "type": "object",
+            "properties": {
+                "closed": {
+                    "description": "Closed holds the value of the \"closed\" field.",
+                    "type": "boolean"
+                },
+                "description": {
+                    "description": "Description holds the value of the \"description\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the RepetitiveTaskQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.RepetitiveTaskEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "notes": {
+                    "description": "Notes holds the value of the \"notes\" field.",
+                    "type": "string"
+                },
+                "once_in_days": {
+                    "description": "OnceInDays holds the value of the \"once_in_days\" field.",
+                    "type": "integer"
+                },
+                "once_in_months": {
+                    "description": "OnceInMonths holds the value of the \"once_in_months\" field.",
+                    "type": "integer"
+                },
+                "once_in_weeks": {
+                    "description": "OnceInWeeks holds the value of the \"once_in_weeks\" field.",
+                    "type": "integer"
+                },
+                "tags": {
+                    "description": "Tags holds the value of the \"tags\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ent.RepetitiveTaskEdges": {
+            "type": "object",
+            "properties": {
+                "executions": {
+                    "description": "Executions holds the value of the executions edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.RepetitiveTaskExecution"
+                    }
+                }
+            }
+        },
+        "ent.RepetitiveTaskExecution": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "description": "Comments holds the value of the \"comments\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the RepetitiveTaskExecutionQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.RepetitiveTaskExecutionEdges"
+                        }
+                    ]
+                },
+                "execution_date": {
+                    "description": "ExecutionDate holds the value of the \"execution_date\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "repetitive_task_id": {
+                    "description": "RepetitiveTaskID holds the value of the \"repetitive_task_id\" field.",
+                    "type": "integer"
+                }
+            }
+        },
+        "ent.RepetitiveTaskExecutionEdges": {
+            "type": "object",
+            "properties": {
+                "repetitive_task": {
+                    "description": "RepetitiveTask holds the value of the repetitive_task edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.RepetitiveTask"
+                        }
+                    ]
+                }
+            }
+        },
         "ent.Task": {
             "type": "object",
             "properties": {
@@ -2070,6 +2367,9 @@
                     "$ref": "#/definitions/schema.ContainerType"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "logType": {
                     "type": "string"
                 }
             }

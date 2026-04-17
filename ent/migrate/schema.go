@@ -139,6 +139,44 @@ var (
 		Columns:    QuestionsColumns,
 		PrimaryKey: []*schema.Column{QuestionsColumns[0]},
 	}
+	// RepetitiveTasksColumns holds the columns for the "repetitive_tasks" table.
+	RepetitiveTasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "closed", Type: field.TypeBool, Default: false},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+		{Name: "once_in_days", Type: field.TypeInt, Nullable: true},
+		{Name: "once_in_weeks", Type: field.TypeInt, Nullable: true},
+		{Name: "once_in_months", Type: field.TypeInt, Nullable: true},
+	}
+	// RepetitiveTasksTable holds the schema information for the "repetitive_tasks" table.
+	RepetitiveTasksTable = &schema.Table{
+		Name:       "repetitive_tasks",
+		Columns:    RepetitiveTasksColumns,
+		PrimaryKey: []*schema.Column{RepetitiveTasksColumns[0]},
+	}
+	// RepetitiveTaskExecutionsColumns holds the columns for the "repetitive_task_executions" table.
+	RepetitiveTaskExecutionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "execution_date", Type: field.TypeTime},
+		{Name: "comments", Type: field.TypeString, Nullable: true},
+		{Name: "repetitive_task_id", Type: field.TypeInt},
+	}
+	// RepetitiveTaskExecutionsTable holds the schema information for the "repetitive_task_executions" table.
+	RepetitiveTaskExecutionsTable = &schema.Table{
+		Name:       "repetitive_task_executions",
+		Columns:    RepetitiveTaskExecutionsColumns,
+		PrimaryKey: []*schema.Column{RepetitiveTaskExecutionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "repetitive_task_executions_repetitive_tasks_executions",
+				Columns:    []*schema.Column{RepetitiveTaskExecutionsColumns[3]},
+				RefColumns: []*schema.Column{RepetitiveTasksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// StoriesColumns holds the columns for the "stories" table.
 	StoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -190,6 +228,8 @@ var (
 		LogMessagesTable,
 		ProblemsTable,
 		QuestionsTable,
+		RepetitiveTasksTable,
+		RepetitiveTaskExecutionsTable,
 		StoriesTable,
 		TasksTable,
 		TestsTable,
@@ -203,4 +243,5 @@ func init() {
 	ContainerChildrenTable.Annotation = &entsql.Annotation{
 		Table: "container_children",
 	}
+	RepetitiveTaskExecutionsTable.ForeignKeys[0].RefTable = RepetitiveTasksTable
 }

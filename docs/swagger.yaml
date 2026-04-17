@@ -22,6 +22,78 @@ definitions:
         description: Notes holds the value of the "notes" field.
         type: string
     type: object
+  ent.RepetitiveTask:
+    properties:
+      closed:
+        description: Closed holds the value of the "closed" field.
+        type: boolean
+      description:
+        description: Description holds the value of the "description" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.RepetitiveTaskEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the RepetitiveTaskQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      notes:
+        description: Notes holds the value of the "notes" field.
+        type: string
+      once_in_days:
+        description: OnceInDays holds the value of the "once_in_days" field.
+        type: integer
+      once_in_months:
+        description: OnceInMonths holds the value of the "once_in_months" field.
+        type: integer
+      once_in_weeks:
+        description: OnceInWeeks holds the value of the "once_in_weeks" field.
+        type: integer
+      tags:
+        description: Tags holds the value of the "tags" field.
+        items:
+          type: string
+        type: array
+    type: object
+  ent.RepetitiveTaskEdges:
+    properties:
+      executions:
+        description: Executions holds the value of the executions edge.
+        items:
+          $ref: '#/definitions/ent.RepetitiveTaskExecution'
+        type: array
+    type: object
+  ent.RepetitiveTaskExecution:
+    properties:
+      comments:
+        description: Comments holds the value of the "comments" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.RepetitiveTaskExecutionEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the RepetitiveTaskExecutionQuery when eager-loading is set.
+      execution_date:
+        description: ExecutionDate holds the value of the "execution_date" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: integer
+      repetitive_task_id:
+        description: RepetitiveTaskID holds the value of the "repetitive_task_id"
+          field.
+        type: integer
+    type: object
+  ent.RepetitiveTaskExecutionEdges:
+    properties:
+      repetitive_task:
+        allOf:
+        - $ref: '#/definitions/ent.RepetitiveTask'
+        description: RepetitiveTask holds the value of the repetitive_task edge.
+    type: object
   ent.Task:
     properties:
       description:
@@ -68,6 +140,8 @@ definitions:
       containerType:
         $ref: '#/definitions/schema.ContainerType'
       description:
+        type: string
+      logType:
         type: string
     type: object
   handlers.NewProblemRequest:
@@ -1238,6 +1312,18 @@ paths:
         in: query
         name: containerID
         type: integer
+      - description: Items per page
+        in: query
+        name: perPage
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Global log messages
+        in: query
+        name: global
+        type: boolean
       produces:
       - application/json
       responses:
@@ -1652,6 +1738,125 @@ paths:
       summary: Get question by ID
       tags:
       - questions
+  /repetitive-tasks/:
+    get:
+      consumes:
+      - application/json
+      description: Returns all repetitive tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.RepetitiveTask'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get repetitive tasks
+      tags:
+      - repetitive-tasks
+  /repetitive-tasks/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns repetitive task by ID
+      parameters:
+      - description: Repetitive task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.RepetitiveTask'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get repetitive task by ID
+      tags:
+      - repetitive-tasks
+  /repetitive-tasks/{id}/executions:
+    get:
+      consumes:
+      - application/json
+      description: Returns execution records for the given repetitive task (newest
+        first)
+      parameters:
+      - description: Repetitive task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.RepetitiveTaskExecution'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List repetitive task executions
+      tags:
+      - repetitive-tasks
+    post:
+      consumes:
+      - application/json
+      description: Creates an execution record for the given repetitive task (timestamp
+        is server time)
+      parameters:
+      - description: Repetitive task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.RepetitiveTaskExecution'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Record repetitive task execution
+      tags:
+      - repetitive-tasks
   /solve-problem/{id}:
     put:
       consumes:

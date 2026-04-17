@@ -11,6 +11,8 @@ import (
 	"arturgudiev/dashboard/ent/predicate"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
+	"arturgudiev/dashboard/ent/repetitivetask"
+	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
@@ -34,16 +36,18 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAlias          = "Alias"
-	TypeContainerChild = "ContainerChild"
-	TypeEpic           = "Epic"
-	TypeKnowledgeNode  = "KnowledgeNode"
-	TypeLogMessage     = "LogMessage"
-	TypeProblem        = "Problem"
-	TypeQuestion       = "Question"
-	TypeStory          = "Story"
-	TypeTask           = "Task"
-	TypeTest           = "Test"
+	TypeAlias                   = "Alias"
+	TypeContainerChild          = "ContainerChild"
+	TypeEpic                    = "Epic"
+	TypeKnowledgeNode           = "KnowledgeNode"
+	TypeLogMessage              = "LogMessage"
+	TypeProblem                 = "Problem"
+	TypeQuestion                = "Question"
+	TypeRepetitiveTask          = "RepetitiveTask"
+	TypeRepetitiveTaskExecution = "RepetitiveTaskExecution"
+	TypeStory                   = "Story"
+	TypeTask                    = "Task"
+	TypeTest                    = "Test"
 )
 
 // AliasMutation represents an operation that mutates the Alias nodes in the graph.
@@ -4231,6 +4235,1455 @@ func (m *QuestionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *QuestionMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Question edge %s", name)
+}
+
+// RepetitiveTaskMutation represents an operation that mutates the RepetitiveTask nodes in the graph.
+type RepetitiveTaskMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	description       *string
+	tags              *[]string
+	appendtags        []string
+	closed            *bool
+	notes             *string
+	once_in_days      *int
+	addonce_in_days   *int
+	once_in_weeks     *int
+	addonce_in_weeks  *int
+	once_in_months    *int
+	addonce_in_months *int
+	clearedFields     map[string]struct{}
+	executions        map[int]struct{}
+	removedexecutions map[int]struct{}
+	clearedexecutions bool
+	done              bool
+	oldValue          func(context.Context) (*RepetitiveTask, error)
+	predicates        []predicate.RepetitiveTask
+}
+
+var _ ent.Mutation = (*RepetitiveTaskMutation)(nil)
+
+// repetitivetaskOption allows management of the mutation configuration using functional options.
+type repetitivetaskOption func(*RepetitiveTaskMutation)
+
+// newRepetitiveTaskMutation creates new mutation for the RepetitiveTask entity.
+func newRepetitiveTaskMutation(c config, op Op, opts ...repetitivetaskOption) *RepetitiveTaskMutation {
+	m := &RepetitiveTaskMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRepetitiveTask,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRepetitiveTaskID sets the ID field of the mutation.
+func withRepetitiveTaskID(id int) repetitivetaskOption {
+	return func(m *RepetitiveTaskMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RepetitiveTask
+		)
+		m.oldValue = func(ctx context.Context) (*RepetitiveTask, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RepetitiveTask.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRepetitiveTask sets the old RepetitiveTask of the mutation.
+func withRepetitiveTask(node *RepetitiveTask) repetitivetaskOption {
+	return func(m *RepetitiveTaskMutation) {
+		m.oldValue = func(context.Context) (*RepetitiveTask, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RepetitiveTaskMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RepetitiveTaskMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of RepetitiveTask entities.
+func (m *RepetitiveTaskMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RepetitiveTaskMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RepetitiveTaskMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().RepetitiveTask.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDescription sets the "description" field.
+func (m *RepetitiveTaskMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *RepetitiveTaskMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the RepetitiveTask entity.
+// If the RepetitiveTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *RepetitiveTaskMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetTags sets the "tags" field.
+func (m *RepetitiveTaskMutation) SetTags(s []string) {
+	m.tags = &s
+	m.appendtags = nil
+}
+
+// Tags returns the value of the "tags" field in the mutation.
+func (m *RepetitiveTaskMutation) Tags() (r []string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old "tags" field's value of the RepetitiveTask entity.
+// If the RepetitiveTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskMutation) OldTags(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTags is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// AppendTags adds s to the "tags" field.
+func (m *RepetitiveTaskMutation) AppendTags(s []string) {
+	m.appendtags = append(m.appendtags, s...)
+}
+
+// AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
+func (m *RepetitiveTaskMutation) AppendedTags() ([]string, bool) {
+	if len(m.appendtags) == 0 {
+		return nil, false
+	}
+	return m.appendtags, true
+}
+
+// ResetTags resets all changes to the "tags" field.
+func (m *RepetitiveTaskMutation) ResetTags() {
+	m.tags = nil
+	m.appendtags = nil
+}
+
+// SetClosed sets the "closed" field.
+func (m *RepetitiveTaskMutation) SetClosed(b bool) {
+	m.closed = &b
+}
+
+// Closed returns the value of the "closed" field in the mutation.
+func (m *RepetitiveTaskMutation) Closed() (r bool, exists bool) {
+	v := m.closed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClosed returns the old "closed" field's value of the RepetitiveTask entity.
+// If the RepetitiveTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskMutation) OldClosed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClosed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClosed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClosed: %w", err)
+	}
+	return oldValue.Closed, nil
+}
+
+// ResetClosed resets all changes to the "closed" field.
+func (m *RepetitiveTaskMutation) ResetClosed() {
+	m.closed = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *RepetitiveTaskMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *RepetitiveTaskMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the RepetitiveTask entity.
+// If the RepetitiveTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskMutation) OldNotes(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *RepetitiveTaskMutation) ResetNotes() {
+	m.notes = nil
+}
+
+// SetOnceInDays sets the "once_in_days" field.
+func (m *RepetitiveTaskMutation) SetOnceInDays(i int) {
+	m.once_in_days = &i
+	m.addonce_in_days = nil
+}
+
+// OnceInDays returns the value of the "once_in_days" field in the mutation.
+func (m *RepetitiveTaskMutation) OnceInDays() (r int, exists bool) {
+	v := m.once_in_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOnceInDays returns the old "once_in_days" field's value of the RepetitiveTask entity.
+// If the RepetitiveTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskMutation) OldOnceInDays(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOnceInDays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOnceInDays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOnceInDays: %w", err)
+	}
+	return oldValue.OnceInDays, nil
+}
+
+// AddOnceInDays adds i to the "once_in_days" field.
+func (m *RepetitiveTaskMutation) AddOnceInDays(i int) {
+	if m.addonce_in_days != nil {
+		*m.addonce_in_days += i
+	} else {
+		m.addonce_in_days = &i
+	}
+}
+
+// AddedOnceInDays returns the value that was added to the "once_in_days" field in this mutation.
+func (m *RepetitiveTaskMutation) AddedOnceInDays() (r int, exists bool) {
+	v := m.addonce_in_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOnceInDays clears the value of the "once_in_days" field.
+func (m *RepetitiveTaskMutation) ClearOnceInDays() {
+	m.once_in_days = nil
+	m.addonce_in_days = nil
+	m.clearedFields[repetitivetask.FieldOnceInDays] = struct{}{}
+}
+
+// OnceInDaysCleared returns if the "once_in_days" field was cleared in this mutation.
+func (m *RepetitiveTaskMutation) OnceInDaysCleared() bool {
+	_, ok := m.clearedFields[repetitivetask.FieldOnceInDays]
+	return ok
+}
+
+// ResetOnceInDays resets all changes to the "once_in_days" field.
+func (m *RepetitiveTaskMutation) ResetOnceInDays() {
+	m.once_in_days = nil
+	m.addonce_in_days = nil
+	delete(m.clearedFields, repetitivetask.FieldOnceInDays)
+}
+
+// SetOnceInWeeks sets the "once_in_weeks" field.
+func (m *RepetitiveTaskMutation) SetOnceInWeeks(i int) {
+	m.once_in_weeks = &i
+	m.addonce_in_weeks = nil
+}
+
+// OnceInWeeks returns the value of the "once_in_weeks" field in the mutation.
+func (m *RepetitiveTaskMutation) OnceInWeeks() (r int, exists bool) {
+	v := m.once_in_weeks
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOnceInWeeks returns the old "once_in_weeks" field's value of the RepetitiveTask entity.
+// If the RepetitiveTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskMutation) OldOnceInWeeks(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOnceInWeeks is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOnceInWeeks requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOnceInWeeks: %w", err)
+	}
+	return oldValue.OnceInWeeks, nil
+}
+
+// AddOnceInWeeks adds i to the "once_in_weeks" field.
+func (m *RepetitiveTaskMutation) AddOnceInWeeks(i int) {
+	if m.addonce_in_weeks != nil {
+		*m.addonce_in_weeks += i
+	} else {
+		m.addonce_in_weeks = &i
+	}
+}
+
+// AddedOnceInWeeks returns the value that was added to the "once_in_weeks" field in this mutation.
+func (m *RepetitiveTaskMutation) AddedOnceInWeeks() (r int, exists bool) {
+	v := m.addonce_in_weeks
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOnceInWeeks clears the value of the "once_in_weeks" field.
+func (m *RepetitiveTaskMutation) ClearOnceInWeeks() {
+	m.once_in_weeks = nil
+	m.addonce_in_weeks = nil
+	m.clearedFields[repetitivetask.FieldOnceInWeeks] = struct{}{}
+}
+
+// OnceInWeeksCleared returns if the "once_in_weeks" field was cleared in this mutation.
+func (m *RepetitiveTaskMutation) OnceInWeeksCleared() bool {
+	_, ok := m.clearedFields[repetitivetask.FieldOnceInWeeks]
+	return ok
+}
+
+// ResetOnceInWeeks resets all changes to the "once_in_weeks" field.
+func (m *RepetitiveTaskMutation) ResetOnceInWeeks() {
+	m.once_in_weeks = nil
+	m.addonce_in_weeks = nil
+	delete(m.clearedFields, repetitivetask.FieldOnceInWeeks)
+}
+
+// SetOnceInMonths sets the "once_in_months" field.
+func (m *RepetitiveTaskMutation) SetOnceInMonths(i int) {
+	m.once_in_months = &i
+	m.addonce_in_months = nil
+}
+
+// OnceInMonths returns the value of the "once_in_months" field in the mutation.
+func (m *RepetitiveTaskMutation) OnceInMonths() (r int, exists bool) {
+	v := m.once_in_months
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOnceInMonths returns the old "once_in_months" field's value of the RepetitiveTask entity.
+// If the RepetitiveTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskMutation) OldOnceInMonths(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOnceInMonths is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOnceInMonths requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOnceInMonths: %w", err)
+	}
+	return oldValue.OnceInMonths, nil
+}
+
+// AddOnceInMonths adds i to the "once_in_months" field.
+func (m *RepetitiveTaskMutation) AddOnceInMonths(i int) {
+	if m.addonce_in_months != nil {
+		*m.addonce_in_months += i
+	} else {
+		m.addonce_in_months = &i
+	}
+}
+
+// AddedOnceInMonths returns the value that was added to the "once_in_months" field in this mutation.
+func (m *RepetitiveTaskMutation) AddedOnceInMonths() (r int, exists bool) {
+	v := m.addonce_in_months
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOnceInMonths clears the value of the "once_in_months" field.
+func (m *RepetitiveTaskMutation) ClearOnceInMonths() {
+	m.once_in_months = nil
+	m.addonce_in_months = nil
+	m.clearedFields[repetitivetask.FieldOnceInMonths] = struct{}{}
+}
+
+// OnceInMonthsCleared returns if the "once_in_months" field was cleared in this mutation.
+func (m *RepetitiveTaskMutation) OnceInMonthsCleared() bool {
+	_, ok := m.clearedFields[repetitivetask.FieldOnceInMonths]
+	return ok
+}
+
+// ResetOnceInMonths resets all changes to the "once_in_months" field.
+func (m *RepetitiveTaskMutation) ResetOnceInMonths() {
+	m.once_in_months = nil
+	m.addonce_in_months = nil
+	delete(m.clearedFields, repetitivetask.FieldOnceInMonths)
+}
+
+// AddExecutionIDs adds the "executions" edge to the RepetitiveTaskExecution entity by ids.
+func (m *RepetitiveTaskMutation) AddExecutionIDs(ids ...int) {
+	if m.executions == nil {
+		m.executions = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.executions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearExecutions clears the "executions" edge to the RepetitiveTaskExecution entity.
+func (m *RepetitiveTaskMutation) ClearExecutions() {
+	m.clearedexecutions = true
+}
+
+// ExecutionsCleared reports if the "executions" edge to the RepetitiveTaskExecution entity was cleared.
+func (m *RepetitiveTaskMutation) ExecutionsCleared() bool {
+	return m.clearedexecutions
+}
+
+// RemoveExecutionIDs removes the "executions" edge to the RepetitiveTaskExecution entity by IDs.
+func (m *RepetitiveTaskMutation) RemoveExecutionIDs(ids ...int) {
+	if m.removedexecutions == nil {
+		m.removedexecutions = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.executions, ids[i])
+		m.removedexecutions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedExecutions returns the removed IDs of the "executions" edge to the RepetitiveTaskExecution entity.
+func (m *RepetitiveTaskMutation) RemovedExecutionsIDs() (ids []int) {
+	for id := range m.removedexecutions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ExecutionsIDs returns the "executions" edge IDs in the mutation.
+func (m *RepetitiveTaskMutation) ExecutionsIDs() (ids []int) {
+	for id := range m.executions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetExecutions resets all changes to the "executions" edge.
+func (m *RepetitiveTaskMutation) ResetExecutions() {
+	m.executions = nil
+	m.clearedexecutions = false
+	m.removedexecutions = nil
+}
+
+// Where appends a list predicates to the RepetitiveTaskMutation builder.
+func (m *RepetitiveTaskMutation) Where(ps ...predicate.RepetitiveTask) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RepetitiveTaskMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RepetitiveTaskMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RepetitiveTask, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RepetitiveTaskMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RepetitiveTaskMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (RepetitiveTask).
+func (m *RepetitiveTaskMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RepetitiveTaskMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.description != nil {
+		fields = append(fields, repetitivetask.FieldDescription)
+	}
+	if m.tags != nil {
+		fields = append(fields, repetitivetask.FieldTags)
+	}
+	if m.closed != nil {
+		fields = append(fields, repetitivetask.FieldClosed)
+	}
+	if m.notes != nil {
+		fields = append(fields, repetitivetask.FieldNotes)
+	}
+	if m.once_in_days != nil {
+		fields = append(fields, repetitivetask.FieldOnceInDays)
+	}
+	if m.once_in_weeks != nil {
+		fields = append(fields, repetitivetask.FieldOnceInWeeks)
+	}
+	if m.once_in_months != nil {
+		fields = append(fields, repetitivetask.FieldOnceInMonths)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RepetitiveTaskMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case repetitivetask.FieldDescription:
+		return m.Description()
+	case repetitivetask.FieldTags:
+		return m.Tags()
+	case repetitivetask.FieldClosed:
+		return m.Closed()
+	case repetitivetask.FieldNotes:
+		return m.Notes()
+	case repetitivetask.FieldOnceInDays:
+		return m.OnceInDays()
+	case repetitivetask.FieldOnceInWeeks:
+		return m.OnceInWeeks()
+	case repetitivetask.FieldOnceInMonths:
+		return m.OnceInMonths()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RepetitiveTaskMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case repetitivetask.FieldDescription:
+		return m.OldDescription(ctx)
+	case repetitivetask.FieldTags:
+		return m.OldTags(ctx)
+	case repetitivetask.FieldClosed:
+		return m.OldClosed(ctx)
+	case repetitivetask.FieldNotes:
+		return m.OldNotes(ctx)
+	case repetitivetask.FieldOnceInDays:
+		return m.OldOnceInDays(ctx)
+	case repetitivetask.FieldOnceInWeeks:
+		return m.OldOnceInWeeks(ctx)
+	case repetitivetask.FieldOnceInMonths:
+		return m.OldOnceInMonths(ctx)
+	}
+	return nil, fmt.Errorf("unknown RepetitiveTask field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepetitiveTaskMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case repetitivetask.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case repetitivetask.FieldTags:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
+		return nil
+	case repetitivetask.FieldClosed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClosed(v)
+		return nil
+	case repetitivetask.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	case repetitivetask.FieldOnceInDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOnceInDays(v)
+		return nil
+	case repetitivetask.FieldOnceInWeeks:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOnceInWeeks(v)
+		return nil
+	case repetitivetask.FieldOnceInMonths:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOnceInMonths(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTask field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RepetitiveTaskMutation) AddedFields() []string {
+	var fields []string
+	if m.addonce_in_days != nil {
+		fields = append(fields, repetitivetask.FieldOnceInDays)
+	}
+	if m.addonce_in_weeks != nil {
+		fields = append(fields, repetitivetask.FieldOnceInWeeks)
+	}
+	if m.addonce_in_months != nil {
+		fields = append(fields, repetitivetask.FieldOnceInMonths)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RepetitiveTaskMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case repetitivetask.FieldOnceInDays:
+		return m.AddedOnceInDays()
+	case repetitivetask.FieldOnceInWeeks:
+		return m.AddedOnceInWeeks()
+	case repetitivetask.FieldOnceInMonths:
+		return m.AddedOnceInMonths()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepetitiveTaskMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case repetitivetask.FieldOnceInDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOnceInDays(v)
+		return nil
+	case repetitivetask.FieldOnceInWeeks:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOnceInWeeks(v)
+		return nil
+	case repetitivetask.FieldOnceInMonths:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOnceInMonths(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTask numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RepetitiveTaskMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(repetitivetask.FieldOnceInDays) {
+		fields = append(fields, repetitivetask.FieldOnceInDays)
+	}
+	if m.FieldCleared(repetitivetask.FieldOnceInWeeks) {
+		fields = append(fields, repetitivetask.FieldOnceInWeeks)
+	}
+	if m.FieldCleared(repetitivetask.FieldOnceInMonths) {
+		fields = append(fields, repetitivetask.FieldOnceInMonths)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RepetitiveTaskMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RepetitiveTaskMutation) ClearField(name string) error {
+	switch name {
+	case repetitivetask.FieldOnceInDays:
+		m.ClearOnceInDays()
+		return nil
+	case repetitivetask.FieldOnceInWeeks:
+		m.ClearOnceInWeeks()
+		return nil
+	case repetitivetask.FieldOnceInMonths:
+		m.ClearOnceInMonths()
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTask nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RepetitiveTaskMutation) ResetField(name string) error {
+	switch name {
+	case repetitivetask.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case repetitivetask.FieldTags:
+		m.ResetTags()
+		return nil
+	case repetitivetask.FieldClosed:
+		m.ResetClosed()
+		return nil
+	case repetitivetask.FieldNotes:
+		m.ResetNotes()
+		return nil
+	case repetitivetask.FieldOnceInDays:
+		m.ResetOnceInDays()
+		return nil
+	case repetitivetask.FieldOnceInWeeks:
+		m.ResetOnceInWeeks()
+		return nil
+	case repetitivetask.FieldOnceInMonths:
+		m.ResetOnceInMonths()
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTask field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RepetitiveTaskMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.executions != nil {
+		edges = append(edges, repetitivetask.EdgeExecutions)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RepetitiveTaskMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case repetitivetask.EdgeExecutions:
+		ids := make([]ent.Value, 0, len(m.executions))
+		for id := range m.executions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RepetitiveTaskMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedexecutions != nil {
+		edges = append(edges, repetitivetask.EdgeExecutions)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RepetitiveTaskMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case repetitivetask.EdgeExecutions:
+		ids := make([]ent.Value, 0, len(m.removedexecutions))
+		for id := range m.removedexecutions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RepetitiveTaskMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedexecutions {
+		edges = append(edges, repetitivetask.EdgeExecutions)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RepetitiveTaskMutation) EdgeCleared(name string) bool {
+	switch name {
+	case repetitivetask.EdgeExecutions:
+		return m.clearedexecutions
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RepetitiveTaskMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown RepetitiveTask unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RepetitiveTaskMutation) ResetEdge(name string) error {
+	switch name {
+	case repetitivetask.EdgeExecutions:
+		m.ResetExecutions()
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTask edge %s", name)
+}
+
+// RepetitiveTaskExecutionMutation represents an operation that mutates the RepetitiveTaskExecution nodes in the graph.
+type RepetitiveTaskExecutionMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *int
+	execution_date         *time.Time
+	comments               *string
+	clearedFields          map[string]struct{}
+	repetitive_task        *int
+	clearedrepetitive_task bool
+	done                   bool
+	oldValue               func(context.Context) (*RepetitiveTaskExecution, error)
+	predicates             []predicate.RepetitiveTaskExecution
+}
+
+var _ ent.Mutation = (*RepetitiveTaskExecutionMutation)(nil)
+
+// repetitivetaskexecutionOption allows management of the mutation configuration using functional options.
+type repetitivetaskexecutionOption func(*RepetitiveTaskExecutionMutation)
+
+// newRepetitiveTaskExecutionMutation creates new mutation for the RepetitiveTaskExecution entity.
+func newRepetitiveTaskExecutionMutation(c config, op Op, opts ...repetitivetaskexecutionOption) *RepetitiveTaskExecutionMutation {
+	m := &RepetitiveTaskExecutionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRepetitiveTaskExecution,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRepetitiveTaskExecutionID sets the ID field of the mutation.
+func withRepetitiveTaskExecutionID(id int) repetitivetaskexecutionOption {
+	return func(m *RepetitiveTaskExecutionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RepetitiveTaskExecution
+		)
+		m.oldValue = func(ctx context.Context) (*RepetitiveTaskExecution, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RepetitiveTaskExecution.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRepetitiveTaskExecution sets the old RepetitiveTaskExecution of the mutation.
+func withRepetitiveTaskExecution(node *RepetitiveTaskExecution) repetitivetaskexecutionOption {
+	return func(m *RepetitiveTaskExecutionMutation) {
+		m.oldValue = func(context.Context) (*RepetitiveTaskExecution, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RepetitiveTaskExecutionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RepetitiveTaskExecutionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of RepetitiveTaskExecution entities.
+func (m *RepetitiveTaskExecutionMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RepetitiveTaskExecutionMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RepetitiveTaskExecutionMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().RepetitiveTaskExecution.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetRepetitiveTaskID sets the "repetitive_task_id" field.
+func (m *RepetitiveTaskExecutionMutation) SetRepetitiveTaskID(i int) {
+	m.repetitive_task = &i
+}
+
+// RepetitiveTaskID returns the value of the "repetitive_task_id" field in the mutation.
+func (m *RepetitiveTaskExecutionMutation) RepetitiveTaskID() (r int, exists bool) {
+	v := m.repetitive_task
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepetitiveTaskID returns the old "repetitive_task_id" field's value of the RepetitiveTaskExecution entity.
+// If the RepetitiveTaskExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskExecutionMutation) OldRepetitiveTaskID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRepetitiveTaskID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRepetitiveTaskID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepetitiveTaskID: %w", err)
+	}
+	return oldValue.RepetitiveTaskID, nil
+}
+
+// ResetRepetitiveTaskID resets all changes to the "repetitive_task_id" field.
+func (m *RepetitiveTaskExecutionMutation) ResetRepetitiveTaskID() {
+	m.repetitive_task = nil
+}
+
+// SetExecutionDate sets the "execution_date" field.
+func (m *RepetitiveTaskExecutionMutation) SetExecutionDate(t time.Time) {
+	m.execution_date = &t
+}
+
+// ExecutionDate returns the value of the "execution_date" field in the mutation.
+func (m *RepetitiveTaskExecutionMutation) ExecutionDate() (r time.Time, exists bool) {
+	v := m.execution_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExecutionDate returns the old "execution_date" field's value of the RepetitiveTaskExecution entity.
+// If the RepetitiveTaskExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskExecutionMutation) OldExecutionDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExecutionDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExecutionDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExecutionDate: %w", err)
+	}
+	return oldValue.ExecutionDate, nil
+}
+
+// ResetExecutionDate resets all changes to the "execution_date" field.
+func (m *RepetitiveTaskExecutionMutation) ResetExecutionDate() {
+	m.execution_date = nil
+}
+
+// SetComments sets the "comments" field.
+func (m *RepetitiveTaskExecutionMutation) SetComments(s string) {
+	m.comments = &s
+}
+
+// Comments returns the value of the "comments" field in the mutation.
+func (m *RepetitiveTaskExecutionMutation) Comments() (r string, exists bool) {
+	v := m.comments
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldComments returns the old "comments" field's value of the RepetitiveTaskExecution entity.
+// If the RepetitiveTaskExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepetitiveTaskExecutionMutation) OldComments(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldComments is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldComments requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldComments: %w", err)
+	}
+	return oldValue.Comments, nil
+}
+
+// ClearComments clears the value of the "comments" field.
+func (m *RepetitiveTaskExecutionMutation) ClearComments() {
+	m.comments = nil
+	m.clearedFields[repetitivetaskexecution.FieldComments] = struct{}{}
+}
+
+// CommentsCleared returns if the "comments" field was cleared in this mutation.
+func (m *RepetitiveTaskExecutionMutation) CommentsCleared() bool {
+	_, ok := m.clearedFields[repetitivetaskexecution.FieldComments]
+	return ok
+}
+
+// ResetComments resets all changes to the "comments" field.
+func (m *RepetitiveTaskExecutionMutation) ResetComments() {
+	m.comments = nil
+	delete(m.clearedFields, repetitivetaskexecution.FieldComments)
+}
+
+// ClearRepetitiveTask clears the "repetitive_task" edge to the RepetitiveTask entity.
+func (m *RepetitiveTaskExecutionMutation) ClearRepetitiveTask() {
+	m.clearedrepetitive_task = true
+	m.clearedFields[repetitivetaskexecution.FieldRepetitiveTaskID] = struct{}{}
+}
+
+// RepetitiveTaskCleared reports if the "repetitive_task" edge to the RepetitiveTask entity was cleared.
+func (m *RepetitiveTaskExecutionMutation) RepetitiveTaskCleared() bool {
+	return m.clearedrepetitive_task
+}
+
+// RepetitiveTaskIDs returns the "repetitive_task" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RepetitiveTaskID instead. It exists only for internal usage by the builders.
+func (m *RepetitiveTaskExecutionMutation) RepetitiveTaskIDs() (ids []int) {
+	if id := m.repetitive_task; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRepetitiveTask resets all changes to the "repetitive_task" edge.
+func (m *RepetitiveTaskExecutionMutation) ResetRepetitiveTask() {
+	m.repetitive_task = nil
+	m.clearedrepetitive_task = false
+}
+
+// Where appends a list predicates to the RepetitiveTaskExecutionMutation builder.
+func (m *RepetitiveTaskExecutionMutation) Where(ps ...predicate.RepetitiveTaskExecution) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RepetitiveTaskExecutionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RepetitiveTaskExecutionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RepetitiveTaskExecution, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RepetitiveTaskExecutionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RepetitiveTaskExecutionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (RepetitiveTaskExecution).
+func (m *RepetitiveTaskExecutionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RepetitiveTaskExecutionMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.repetitive_task != nil {
+		fields = append(fields, repetitivetaskexecution.FieldRepetitiveTaskID)
+	}
+	if m.execution_date != nil {
+		fields = append(fields, repetitivetaskexecution.FieldExecutionDate)
+	}
+	if m.comments != nil {
+		fields = append(fields, repetitivetaskexecution.FieldComments)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RepetitiveTaskExecutionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case repetitivetaskexecution.FieldRepetitiveTaskID:
+		return m.RepetitiveTaskID()
+	case repetitivetaskexecution.FieldExecutionDate:
+		return m.ExecutionDate()
+	case repetitivetaskexecution.FieldComments:
+		return m.Comments()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RepetitiveTaskExecutionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case repetitivetaskexecution.FieldRepetitiveTaskID:
+		return m.OldRepetitiveTaskID(ctx)
+	case repetitivetaskexecution.FieldExecutionDate:
+		return m.OldExecutionDate(ctx)
+	case repetitivetaskexecution.FieldComments:
+		return m.OldComments(ctx)
+	}
+	return nil, fmt.Errorf("unknown RepetitiveTaskExecution field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepetitiveTaskExecutionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case repetitivetaskexecution.FieldRepetitiveTaskID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepetitiveTaskID(v)
+		return nil
+	case repetitivetaskexecution.FieldExecutionDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExecutionDate(v)
+		return nil
+	case repetitivetaskexecution.FieldComments:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetComments(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTaskExecution field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RepetitiveTaskExecutionMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RepetitiveTaskExecutionMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepetitiveTaskExecutionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown RepetitiveTaskExecution numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RepetitiveTaskExecutionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(repetitivetaskexecution.FieldComments) {
+		fields = append(fields, repetitivetaskexecution.FieldComments)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RepetitiveTaskExecutionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RepetitiveTaskExecutionMutation) ClearField(name string) error {
+	switch name {
+	case repetitivetaskexecution.FieldComments:
+		m.ClearComments()
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTaskExecution nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RepetitiveTaskExecutionMutation) ResetField(name string) error {
+	switch name {
+	case repetitivetaskexecution.FieldRepetitiveTaskID:
+		m.ResetRepetitiveTaskID()
+		return nil
+	case repetitivetaskexecution.FieldExecutionDate:
+		m.ResetExecutionDate()
+		return nil
+	case repetitivetaskexecution.FieldComments:
+		m.ResetComments()
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTaskExecution field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RepetitiveTaskExecutionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.repetitive_task != nil {
+		edges = append(edges, repetitivetaskexecution.EdgeRepetitiveTask)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RepetitiveTaskExecutionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case repetitivetaskexecution.EdgeRepetitiveTask:
+		if id := m.repetitive_task; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RepetitiveTaskExecutionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RepetitiveTaskExecutionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RepetitiveTaskExecutionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedrepetitive_task {
+		edges = append(edges, repetitivetaskexecution.EdgeRepetitiveTask)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RepetitiveTaskExecutionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case repetitivetaskexecution.EdgeRepetitiveTask:
+		return m.clearedrepetitive_task
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RepetitiveTaskExecutionMutation) ClearEdge(name string) error {
+	switch name {
+	case repetitivetaskexecution.EdgeRepetitiveTask:
+		m.ClearRepetitiveTask()
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTaskExecution unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RepetitiveTaskExecutionMutation) ResetEdge(name string) error {
+	switch name {
+	case repetitivetaskexecution.EdgeRepetitiveTask:
+		m.ResetRepetitiveTask()
+		return nil
+	}
+	return fmt.Errorf("unknown RepetitiveTaskExecution edge %s", name)
 }
 
 // StoryMutation represents an operation that mutates the Story nodes in the graph.

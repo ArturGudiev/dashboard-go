@@ -18,6 +18,8 @@ import (
 	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
+	"arturgudiev/dashboard/ent/repetitivetask"
+	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
@@ -25,6 +27,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -46,6 +49,10 @@ type Client struct {
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
 	Question *QuestionClient
+	// RepetitiveTask is the client for interacting with the RepetitiveTask builders.
+	RepetitiveTask *RepetitiveTaskClient
+	// RepetitiveTaskExecution is the client for interacting with the RepetitiveTaskExecution builders.
+	RepetitiveTaskExecution *RepetitiveTaskExecutionClient
 	// Story is the client for interacting with the Story builders.
 	Story *StoryClient
 	// Task is the client for interacting with the Task builders.
@@ -70,6 +77,8 @@ func (c *Client) init() {
 	c.LogMessage = NewLogMessageClient(c.config)
 	c.Problem = NewProblemClient(c.config)
 	c.Question = NewQuestionClient(c.config)
+	c.RepetitiveTask = NewRepetitiveTaskClient(c.config)
+	c.RepetitiveTaskExecution = NewRepetitiveTaskExecutionClient(c.config)
 	c.Story = NewStoryClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Test = NewTestClient(c.config)
@@ -163,18 +172,20 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:            ctx,
-		config:         cfg,
-		Alias:          NewAliasClient(cfg),
-		ContainerChild: NewContainerChildClient(cfg),
-		Epic:           NewEpicClient(cfg),
-		KnowledgeNode:  NewKnowledgeNodeClient(cfg),
-		LogMessage:     NewLogMessageClient(cfg),
-		Problem:        NewProblemClient(cfg),
-		Question:       NewQuestionClient(cfg),
-		Story:          NewStoryClient(cfg),
-		Task:           NewTaskClient(cfg),
-		Test:           NewTestClient(cfg),
+		ctx:                     ctx,
+		config:                  cfg,
+		Alias:                   NewAliasClient(cfg),
+		ContainerChild:          NewContainerChildClient(cfg),
+		Epic:                    NewEpicClient(cfg),
+		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
+		LogMessage:              NewLogMessageClient(cfg),
+		Problem:                 NewProblemClient(cfg),
+		Question:                NewQuestionClient(cfg),
+		RepetitiveTask:          NewRepetitiveTaskClient(cfg),
+		RepetitiveTaskExecution: NewRepetitiveTaskExecutionClient(cfg),
+		Story:                   NewStoryClient(cfg),
+		Task:                    NewTaskClient(cfg),
+		Test:                    NewTestClient(cfg),
 	}, nil
 }
 
@@ -192,18 +203,20 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:            ctx,
-		config:         cfg,
-		Alias:          NewAliasClient(cfg),
-		ContainerChild: NewContainerChildClient(cfg),
-		Epic:           NewEpicClient(cfg),
-		KnowledgeNode:  NewKnowledgeNodeClient(cfg),
-		LogMessage:     NewLogMessageClient(cfg),
-		Problem:        NewProblemClient(cfg),
-		Question:       NewQuestionClient(cfg),
-		Story:          NewStoryClient(cfg),
-		Task:           NewTaskClient(cfg),
-		Test:           NewTestClient(cfg),
+		ctx:                     ctx,
+		config:                  cfg,
+		Alias:                   NewAliasClient(cfg),
+		ContainerChild:          NewContainerChildClient(cfg),
+		Epic:                    NewEpicClient(cfg),
+		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
+		LogMessage:              NewLogMessageClient(cfg),
+		Problem:                 NewProblemClient(cfg),
+		Question:                NewQuestionClient(cfg),
+		RepetitiveTask:          NewRepetitiveTaskClient(cfg),
+		RepetitiveTaskExecution: NewRepetitiveTaskExecutionClient(cfg),
+		Story:                   NewStoryClient(cfg),
+		Task:                    NewTaskClient(cfg),
+		Test:                    NewTestClient(cfg),
 	}, nil
 }
 
@@ -234,7 +247,8 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Alias, c.ContainerChild, c.Epic, c.KnowledgeNode, c.LogMessage, c.Problem,
-		c.Question, c.Story, c.Task, c.Test,
+		c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story, c.Task,
+		c.Test,
 	} {
 		n.Use(hooks...)
 	}
@@ -245,7 +259,8 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Alias, c.ContainerChild, c.Epic, c.KnowledgeNode, c.LogMessage, c.Problem,
-		c.Question, c.Story, c.Task, c.Test,
+		c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story, c.Task,
+		c.Test,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -268,6 +283,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Problem.mutate(ctx, m)
 	case *QuestionMutation:
 		return c.Question.mutate(ctx, m)
+	case *RepetitiveTaskMutation:
+		return c.RepetitiveTask.mutate(ctx, m)
+	case *RepetitiveTaskExecutionMutation:
+		return c.RepetitiveTaskExecution.mutate(ctx, m)
 	case *StoryMutation:
 		return c.Story.mutate(ctx, m)
 	case *TaskMutation:
@@ -1210,6 +1229,304 @@ func (c *QuestionClient) mutate(ctx context.Context, m *QuestionMutation) (Value
 	}
 }
 
+// RepetitiveTaskClient is a client for the RepetitiveTask schema.
+type RepetitiveTaskClient struct {
+	config
+}
+
+// NewRepetitiveTaskClient returns a client for the RepetitiveTask from the given config.
+func NewRepetitiveTaskClient(c config) *RepetitiveTaskClient {
+	return &RepetitiveTaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `repetitivetask.Hooks(f(g(h())))`.
+func (c *RepetitiveTaskClient) Use(hooks ...Hook) {
+	c.hooks.RepetitiveTask = append(c.hooks.RepetitiveTask, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `repetitivetask.Intercept(f(g(h())))`.
+func (c *RepetitiveTaskClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RepetitiveTask = append(c.inters.RepetitiveTask, interceptors...)
+}
+
+// Create returns a builder for creating a RepetitiveTask entity.
+func (c *RepetitiveTaskClient) Create() *RepetitiveTaskCreate {
+	mutation := newRepetitiveTaskMutation(c.config, OpCreate)
+	return &RepetitiveTaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RepetitiveTask entities.
+func (c *RepetitiveTaskClient) CreateBulk(builders ...*RepetitiveTaskCreate) *RepetitiveTaskCreateBulk {
+	return &RepetitiveTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RepetitiveTaskClient) MapCreateBulk(slice any, setFunc func(*RepetitiveTaskCreate, int)) *RepetitiveTaskCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RepetitiveTaskCreateBulk{err: fmt.Errorf("calling to RepetitiveTaskClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RepetitiveTaskCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RepetitiveTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RepetitiveTask.
+func (c *RepetitiveTaskClient) Update() *RepetitiveTaskUpdate {
+	mutation := newRepetitiveTaskMutation(c.config, OpUpdate)
+	return &RepetitiveTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RepetitiveTaskClient) UpdateOne(_m *RepetitiveTask) *RepetitiveTaskUpdateOne {
+	mutation := newRepetitiveTaskMutation(c.config, OpUpdateOne, withRepetitiveTask(_m))
+	return &RepetitiveTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RepetitiveTaskClient) UpdateOneID(id int) *RepetitiveTaskUpdateOne {
+	mutation := newRepetitiveTaskMutation(c.config, OpUpdateOne, withRepetitiveTaskID(id))
+	return &RepetitiveTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RepetitiveTask.
+func (c *RepetitiveTaskClient) Delete() *RepetitiveTaskDelete {
+	mutation := newRepetitiveTaskMutation(c.config, OpDelete)
+	return &RepetitiveTaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RepetitiveTaskClient) DeleteOne(_m *RepetitiveTask) *RepetitiveTaskDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RepetitiveTaskClient) DeleteOneID(id int) *RepetitiveTaskDeleteOne {
+	builder := c.Delete().Where(repetitivetask.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RepetitiveTaskDeleteOne{builder}
+}
+
+// Query returns a query builder for RepetitiveTask.
+func (c *RepetitiveTaskClient) Query() *RepetitiveTaskQuery {
+	return &RepetitiveTaskQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRepetitiveTask},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a RepetitiveTask entity by its id.
+func (c *RepetitiveTaskClient) Get(ctx context.Context, id int) (*RepetitiveTask, error) {
+	return c.Query().Where(repetitivetask.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RepetitiveTaskClient) GetX(ctx context.Context, id int) *RepetitiveTask {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryExecutions queries the executions edge of a RepetitiveTask.
+func (c *RepetitiveTaskClient) QueryExecutions(_m *RepetitiveTask) *RepetitiveTaskExecutionQuery {
+	query := (&RepetitiveTaskExecutionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repetitivetask.Table, repetitivetask.FieldID, id),
+			sqlgraph.To(repetitivetaskexecution.Table, repetitivetaskexecution.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, repetitivetask.ExecutionsTable, repetitivetask.ExecutionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *RepetitiveTaskClient) Hooks() []Hook {
+	return c.hooks.RepetitiveTask
+}
+
+// Interceptors returns the client interceptors.
+func (c *RepetitiveTaskClient) Interceptors() []Interceptor {
+	return c.inters.RepetitiveTask
+}
+
+func (c *RepetitiveTaskClient) mutate(ctx context.Context, m *RepetitiveTaskMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RepetitiveTaskCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RepetitiveTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RepetitiveTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RepetitiveTaskDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown RepetitiveTask mutation op: %q", m.Op())
+	}
+}
+
+// RepetitiveTaskExecutionClient is a client for the RepetitiveTaskExecution schema.
+type RepetitiveTaskExecutionClient struct {
+	config
+}
+
+// NewRepetitiveTaskExecutionClient returns a client for the RepetitiveTaskExecution from the given config.
+func NewRepetitiveTaskExecutionClient(c config) *RepetitiveTaskExecutionClient {
+	return &RepetitiveTaskExecutionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `repetitivetaskexecution.Hooks(f(g(h())))`.
+func (c *RepetitiveTaskExecutionClient) Use(hooks ...Hook) {
+	c.hooks.RepetitiveTaskExecution = append(c.hooks.RepetitiveTaskExecution, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `repetitivetaskexecution.Intercept(f(g(h())))`.
+func (c *RepetitiveTaskExecutionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RepetitiveTaskExecution = append(c.inters.RepetitiveTaskExecution, interceptors...)
+}
+
+// Create returns a builder for creating a RepetitiveTaskExecution entity.
+func (c *RepetitiveTaskExecutionClient) Create() *RepetitiveTaskExecutionCreate {
+	mutation := newRepetitiveTaskExecutionMutation(c.config, OpCreate)
+	return &RepetitiveTaskExecutionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RepetitiveTaskExecution entities.
+func (c *RepetitiveTaskExecutionClient) CreateBulk(builders ...*RepetitiveTaskExecutionCreate) *RepetitiveTaskExecutionCreateBulk {
+	return &RepetitiveTaskExecutionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RepetitiveTaskExecutionClient) MapCreateBulk(slice any, setFunc func(*RepetitiveTaskExecutionCreate, int)) *RepetitiveTaskExecutionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RepetitiveTaskExecutionCreateBulk{err: fmt.Errorf("calling to RepetitiveTaskExecutionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RepetitiveTaskExecutionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RepetitiveTaskExecutionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RepetitiveTaskExecution.
+func (c *RepetitiveTaskExecutionClient) Update() *RepetitiveTaskExecutionUpdate {
+	mutation := newRepetitiveTaskExecutionMutation(c.config, OpUpdate)
+	return &RepetitiveTaskExecutionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RepetitiveTaskExecutionClient) UpdateOne(_m *RepetitiveTaskExecution) *RepetitiveTaskExecutionUpdateOne {
+	mutation := newRepetitiveTaskExecutionMutation(c.config, OpUpdateOne, withRepetitiveTaskExecution(_m))
+	return &RepetitiveTaskExecutionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RepetitiveTaskExecutionClient) UpdateOneID(id int) *RepetitiveTaskExecutionUpdateOne {
+	mutation := newRepetitiveTaskExecutionMutation(c.config, OpUpdateOne, withRepetitiveTaskExecutionID(id))
+	return &RepetitiveTaskExecutionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RepetitiveTaskExecution.
+func (c *RepetitiveTaskExecutionClient) Delete() *RepetitiveTaskExecutionDelete {
+	mutation := newRepetitiveTaskExecutionMutation(c.config, OpDelete)
+	return &RepetitiveTaskExecutionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RepetitiveTaskExecutionClient) DeleteOne(_m *RepetitiveTaskExecution) *RepetitiveTaskExecutionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RepetitiveTaskExecutionClient) DeleteOneID(id int) *RepetitiveTaskExecutionDeleteOne {
+	builder := c.Delete().Where(repetitivetaskexecution.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RepetitiveTaskExecutionDeleteOne{builder}
+}
+
+// Query returns a query builder for RepetitiveTaskExecution.
+func (c *RepetitiveTaskExecutionClient) Query() *RepetitiveTaskExecutionQuery {
+	return &RepetitiveTaskExecutionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRepetitiveTaskExecution},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a RepetitiveTaskExecution entity by its id.
+func (c *RepetitiveTaskExecutionClient) Get(ctx context.Context, id int) (*RepetitiveTaskExecution, error) {
+	return c.Query().Where(repetitivetaskexecution.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RepetitiveTaskExecutionClient) GetX(ctx context.Context, id int) *RepetitiveTaskExecution {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryRepetitiveTask queries the repetitive_task edge of a RepetitiveTaskExecution.
+func (c *RepetitiveTaskExecutionClient) QueryRepetitiveTask(_m *RepetitiveTaskExecution) *RepetitiveTaskQuery {
+	query := (&RepetitiveTaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repetitivetaskexecution.Table, repetitivetaskexecution.FieldID, id),
+			sqlgraph.To(repetitivetask.Table, repetitivetask.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, repetitivetaskexecution.RepetitiveTaskTable, repetitivetaskexecution.RepetitiveTaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *RepetitiveTaskExecutionClient) Hooks() []Hook {
+	return c.hooks.RepetitiveTaskExecution
+}
+
+// Interceptors returns the client interceptors.
+func (c *RepetitiveTaskExecutionClient) Interceptors() []Interceptor {
+	return c.inters.RepetitiveTaskExecution
+}
+
+func (c *RepetitiveTaskExecutionClient) mutate(ctx context.Context, m *RepetitiveTaskExecutionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RepetitiveTaskExecutionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RepetitiveTaskExecutionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RepetitiveTaskExecutionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RepetitiveTaskExecutionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown RepetitiveTaskExecution mutation op: %q", m.Op())
+	}
+}
+
 // StoryClient is a client for the Story schema.
 type StoryClient struct {
 	config
@@ -1613,10 +1930,10 @@ func (c *TestClient) mutate(ctx context.Context, m *TestMutation) (Value, error)
 type (
 	hooks struct {
 		Alias, ContainerChild, Epic, KnowledgeNode, LogMessage, Problem, Question,
-		Story, Task, Test []ent.Hook
+		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test []ent.Hook
 	}
 	inters struct {
 		Alias, ContainerChild, Epic, KnowledgeNode, LogMessage, Problem, Question,
-		Story, Task, Test []ent.Interceptor
+		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test []ent.Interceptor
 	}
 )

@@ -175,6 +175,12 @@ func main() {
 	router.POST("/new-task", h.NewTask)
 	router.PUT("/update-task", h.UpdateTask)
 
+	// Repetitive task routes
+	router.GET("/repetitive-tasks", h.GetRepetitiveTasks)
+	router.GET("/repetitive-tasks/:id", h.GetRepetitiveTaskById)
+	router.POST("/repetitive-tasks/:id/executions", h.AddRepetitiveTaskExecution)
+	router.GET("/repetitive-tasks/:id/executions", h.GetRepetitiveTaskExecutions)
+
 	// Problem routes
 	router.GET("/problem/:id", h.GetProblemByID)
 	router.POST("/get-problems", h.GetProblemsByIDs)

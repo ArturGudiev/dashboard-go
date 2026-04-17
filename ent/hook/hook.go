@@ -92,6 +92,30 @@ func (f QuestionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.QuestionMutation", m)
 }
 
+// The RepetitiveTaskFunc type is an adapter to allow the use of ordinary
+// function as RepetitiveTask mutator.
+type RepetitiveTaskFunc func(context.Context, *ent.RepetitiveTaskMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RepetitiveTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RepetitiveTaskMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RepetitiveTaskMutation", m)
+}
+
+// The RepetitiveTaskExecutionFunc type is an adapter to allow the use of ordinary
+// function as RepetitiveTaskExecution mutator.
+type RepetitiveTaskExecutionFunc func(context.Context, *ent.RepetitiveTaskExecutionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RepetitiveTaskExecutionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RepetitiveTaskExecutionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RepetitiveTaskExecutionMutation", m)
+}
+
 // The StoryFunc type is an adapter to allow the use of ordinary
 // function as Story mutator.
 type StoryFunc func(context.Context, *ent.StoryMutation) (ent.Value, error)

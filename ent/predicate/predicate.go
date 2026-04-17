@@ -27,6 +27,12 @@ type Problem func(*sql.Selector)
 // Question is the predicate function for question builders.
 type Question func(*sql.Selector)
 
+// RepetitiveTask is the predicate function for repetitivetask builders.
+type RepetitiveTask func(*sql.Selector)
+
+// RepetitiveTaskExecution is the predicate function for repetitivetaskexecution builders.
+type RepetitiveTaskExecution func(*sql.Selector)
+
 // Story is the predicate function for story builders.
 type Story func(*sql.Selector)
 

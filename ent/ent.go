@@ -10,6 +10,8 @@ import (
 	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
+	"arturgudiev/dashboard/ent/repetitivetask"
+	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
@@ -82,16 +84,18 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			alias.Table:          alias.ValidColumn,
-			containerchild.Table: containerchild.ValidColumn,
-			epic.Table:           epic.ValidColumn,
-			knowledgenode.Table:  knowledgenode.ValidColumn,
-			logmessage.Table:     logmessage.ValidColumn,
-			problem.Table:        problem.ValidColumn,
-			question.Table:       question.ValidColumn,
-			story.Table:          story.ValidColumn,
-			task.Table:           task.ValidColumn,
-			test.Table:           test.ValidColumn,
+			alias.Table:                   alias.ValidColumn,
+			containerchild.Table:          containerchild.ValidColumn,
+			epic.Table:                    epic.ValidColumn,
+			knowledgenode.Table:           knowledgenode.ValidColumn,
+			logmessage.Table:              logmessage.ValidColumn,
+			problem.Table:                 problem.ValidColumn,
+			question.Table:                question.ValidColumn,
+			repetitivetask.Table:          repetitivetask.ValidColumn,
+			repetitivetaskexecution.Table: repetitivetaskexecution.ValidColumn,
+			story.Table:                   story.ValidColumn,
+			task.Table:                    task.ValidColumn,
+			test.Table:                    test.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

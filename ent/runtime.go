@@ -10,6 +10,8 @@ import (
 	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
+	"arturgudiev/dashboard/ent/repetitivetask"
+	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
@@ -154,6 +156,38 @@ func init() {
 	questionDescID := questionFields[0].Descriptor()
 	// question.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	question.IDValidator = questionDescID.Validators[0].(func(int) error)
+	repetitivetaskFields := schema.RepetitiveTask{}.Fields()
+	_ = repetitivetaskFields
+	// repetitivetaskDescDescription is the schema descriptor for description field.
+	repetitivetaskDescDescription := repetitivetaskFields[1].Descriptor()
+	// repetitivetask.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	repetitivetask.DescriptionValidator = repetitivetaskDescDescription.Validators[0].(func(string) error)
+	// repetitivetaskDescTags is the schema descriptor for tags field.
+	repetitivetaskDescTags := repetitivetaskFields[2].Descriptor()
+	// repetitivetask.DefaultTags holds the default value on creation for the tags field.
+	repetitivetask.DefaultTags = repetitivetaskDescTags.Default.([]string)
+	// repetitivetaskDescClosed is the schema descriptor for closed field.
+	repetitivetaskDescClosed := repetitivetaskFields[3].Descriptor()
+	// repetitivetask.DefaultClosed holds the default value on creation for the closed field.
+	repetitivetask.DefaultClosed = repetitivetaskDescClosed.Default.(bool)
+	// repetitivetaskDescNotes is the schema descriptor for notes field.
+	repetitivetaskDescNotes := repetitivetaskFields[4].Descriptor()
+	// repetitivetask.DefaultNotes holds the default value on creation for the notes field.
+	repetitivetask.DefaultNotes = repetitivetaskDescNotes.Default.(string)
+	// repetitivetaskDescID is the schema descriptor for id field.
+	repetitivetaskDescID := repetitivetaskFields[0].Descriptor()
+	// repetitivetask.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	repetitivetask.IDValidator = repetitivetaskDescID.Validators[0].(func(int) error)
+	repetitivetaskexecutionFields := schema.RepetitiveTaskExecution{}.Fields()
+	_ = repetitivetaskexecutionFields
+	// repetitivetaskexecutionDescRepetitiveTaskID is the schema descriptor for repetitive_task_id field.
+	repetitivetaskexecutionDescRepetitiveTaskID := repetitivetaskexecutionFields[1].Descriptor()
+	// repetitivetaskexecution.RepetitiveTaskIDValidator is a validator for the "repetitive_task_id" field. It is called by the builders before save.
+	repetitivetaskexecution.RepetitiveTaskIDValidator = repetitivetaskexecutionDescRepetitiveTaskID.Validators[0].(func(int) error)
+	// repetitivetaskexecutionDescID is the schema descriptor for id field.
+	repetitivetaskexecutionDescID := repetitivetaskexecutionFields[0].Descriptor()
+	// repetitivetaskexecution.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	repetitivetaskexecution.IDValidator = repetitivetaskexecutionDescID.Validators[0].(func(int) error)
 	storyFields := schema.Story{}.Fields()
 	_ = storyFields
 	// storyDescDescription is the schema descriptor for description field.
