@@ -1810,9 +1810,9 @@ paths:
       - application/json
       description: Returns all repetitive tasks
       parameters:
-      - description: Only actual repetitive tasks
+      - description: filter repetitive tasks by actual property
         in: query
-        name: onlyActual
+        name: actual
         type: boolean
       produces:
       - application/json

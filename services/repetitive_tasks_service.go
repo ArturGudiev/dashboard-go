@@ -6,6 +6,8 @@ import (
 	"arturgudiev/dashboard/models"
 	"arturgudiev/dashboard/repositories"
 	"context"
+	"fmt"
+	"slices"
 	"time"
 )
 
@@ -32,16 +34,31 @@ func NewRepetitiveTaskService(client *ent.Client, containerService *ContainerSer
 	}
 }
 
-func (s *RepetitiveTaskService) GetRepetitiveTasks(ctx context.Context, onlyActual *bool) ([]*ent.RepetitiveTask, error) {
+func (s *RepetitiveTaskService) GetRepetitiveTasks(ctx context.Context, actual *bool) ([]*ent.RepetitiveTask, error) {
+
 	repetitiveTasks, err := s.repetitiveTasksRepository.GetRepetitiveTasks(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if onlyActual != nil && *onlyActual {
-		repetitiveTasks = s.filterActualRepetitiveTasks(ctx, repetitiveTasks)
+	if actual == nil {
+		fmt.Println(actual)
+		return repetitiveTasks, nil
 	}
+	fmt.Println(*actual)
 
+	repetitiveTasks = slices.DeleteFunc(repetitiveTasks, func(rTask *ent.RepetitiveTask) bool {
+		isActual, err := s.IsRepetitiveTaskActual(ctx, *rTask)
+		if err != nil {
+			return false
+		}
+		if *actual == true {
+			return !isActual
+		}
+		return isActual
+	})
+
+	repetitiveTasks = s.filterActualRepetitiveTasks(ctx, repetitiveTasks)
 	return repetitiveTasks, nil
 }
 

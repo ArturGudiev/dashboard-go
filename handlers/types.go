@@ -147,5 +147,5 @@ type NewRepetitiveTaskRequest struct {
 
 // RepetitiveTasksQuery represents a request to get repetitive tasks
 type RepetitiveTasksQuery struct {
-	OnlyActual *bool `form:"onlyActual"`
+	Actual *bool `form:"actual"`
 }

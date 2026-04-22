@@ -10,7 +10,7 @@ import (
 // GetRepetitiveTasks handles GET /repetitive-tasks/
 // @Summary      Get repetitive tasks
 // @Description  Returns all repetitive tasks
-// @Param onlyActual query boolean false "Only actual repetitive tasks"
+// @Param actual query boolean false "filter repetitive tasks by actual property"
 // @Tags         repetitive-tasks
 // @Accept       json
 // @Produce      json
@@ -23,7 +23,7 @@ func (h *Handler) GetRepetitiveTasks(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	repetitiveTasks, err := h.App.RepetitiveTaskService.GetRepetitiveTasks(c.Request.Context(), query.OnlyActual)
+	repetitiveTasks, err := h.App.RepetitiveTaskService.GetRepetitiveTasks(c.Request.Context(), query.Actual)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return

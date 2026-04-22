@@ -1530,8 +1530,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "boolean",
-                        "description": "Only actual repetitive tasks",
-                        "name": "onlyActual",
+                        "description": "filter repetitive tasks by actual property",
+                        "name": "actual",
                         "in": "query"
                     }
                 ],
