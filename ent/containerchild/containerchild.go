@@ -71,7 +71,7 @@ var (
 // ParentTypeValidator is a validator for the "parent_type" field enum values. It is called by the builders before save.
 func ParentTypeValidator(pt schema.ContainerType) error {
 	switch pt {
-	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state":
+	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state":
 		return nil
 	default:
 		return fmt.Errorf("containerchild: invalid enum value for parent_type field: %q", pt)
@@ -81,7 +81,7 @@ func ParentTypeValidator(pt schema.ContainerType) error {
 // ChildTypeValidator is a validator for the "child_type" field enum values. It is called by the builders before save.
 func ChildTypeValidator(ct schema.ContainerType) error {
 	switch ct {
-	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state":
+	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state":
 		return nil
 	default:
 		return fmt.Errorf("containerchild: invalid enum value for child_type field: %q", ct)

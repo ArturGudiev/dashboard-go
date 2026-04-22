@@ -1167,6 +1167,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/new-repetitive-task": {
+            "post": {
+                "description": "Creates a new repetitive task with optional parent relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "repetitive-tasks"
+                ],
+                "summary": "Create new repetitive task",
+                "parameters": [
+                    {
+                        "description": "Repetitive task creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NewRepetitiveTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.RepetitiveTask"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/new-story": {
             "post": {
                 "description": "Creates a new story with optional parent relationship",
@@ -1475,6 +1527,14 @@ const docTemplate = `{
                     "repetitive-tasks"
                 ],
                 "summary": "Get repetitive tasks",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Only actual repetitive tasks",
+                        "name": "onlyActual",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2400,6 +2460,17 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.NewRepetitiveTaskRequest": {
+            "type": "object",
+            "properties": {
+                "parent": {
+                    "$ref": "#/definitions/models.ContainerDescription"
+                },
+                "repetitiveTask": {
+                    "$ref": "#/definitions/models.RepetitiveTaskShort"
+                }
+            }
+        },
         "handlers.NewTaskRequest": {
             "type": "object",
             "properties": {
@@ -3004,6 +3075,41 @@ const docTemplate = `{
                 }
             }
         },
+        "models.RepetitiveTaskShort": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Fix login bug"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "User cannot log in"
+                },
+                "onceInDays": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "onceInMonths": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "onceInWeeks": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "bug",
+                        "urgent"
+                    ]
+                }
+            }
+        },
         "models.StoryFull": {
             "type": "object",
             "properties": {
@@ -3290,7 +3396,7 @@ const docTemplate = `{
                 "knowledge-bit",
                 "definition",
                 "action",
-                "scheduled-task",
+                "repetitive-task",
                 "state"
             ],
             "x-enum-varnames": [
@@ -3303,7 +3409,7 @@ const docTemplate = `{
                 "ContainerTypeKnowledgeBit",
                 "ContainerTypeDefinition",
                 "ContainerTypeAction",
-                "ContainerTypeScheduledTask",
+                "ContainerTypeRepetitiveTask",
                 "ContainerTypeState"
             ]
         }

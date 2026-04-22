@@ -259,7 +259,7 @@ func (h *Handler) NewTask(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	newProblem, err := h.App.TaskService.AddTask(ctx, req.Task, req.Parent)
+	newTask, err := h.App.TaskService.AddTask(ctx, req.Task, req.Parent)
 
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -270,7 +270,7 @@ func (h *Handler) NewTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, newProblem)
+	c.JSON(200, newTask)
 }
 
 // UpdateTask handles PUT /update-task

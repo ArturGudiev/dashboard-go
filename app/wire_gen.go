@@ -38,8 +38,8 @@ func InitializeApp() (*App, error) {
 	tasksRepository := services.NewTasksRepository(client)
 	taskService := services.NewTaskService(client, containerService, problemService, tasksRepository, childContainerRepository)
 	repetitiveTasksRepository := repositories.NewRepetitiveTasksRepository(client)
-	repetitiveTaskService := services.NewRepetitiveTaskService(client, containerService, problemService, repetitiveTasksRepository, childContainerRepository)
 	repetitiveTaskExecutionsRepository := repositories.NewRepetitiveTaskExecutionsRepository(client)
+	repetitiveTaskService := services.NewRepetitiveTaskService(client, containerService, problemService, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, childContainerRepository)
 	repetitiveTaskExecutionService := services.NewRepetitiveTaskExecutionService(repetitiveTaskExecutionsRepository)
 	epicsRepository := repositories.NewEpicsRepository(client)
 	cliService := services.NewCLIService(client, containerService, problemsRepository, epicsRepository, aliasesRepository)
@@ -64,7 +64,7 @@ func provideEntClient() (*ent.Client, error) {
 	if dbURL == "" {
 		dbName := os.Getenv("DB_NAME")
 		if dbName == "" {
-			dbName = "postgres"
+			dbName = "dashboard"
 		}
 		dbPassword := os.Getenv("DB_PASSWORD")
 		if dbPassword == "" {
@@ -86,8 +86,7 @@ func provideEntClient() (*ent.Client, error) {
 			RawQuery: "sslmode=disable",
 		}
 		dbURL = u.String()
-		print("=======================================")
-		print(dbURL)
+		log.Printf("DATABASE_URL was not set; using constructed DB URL: %s", dbURL)
 	}
 
 	client, err := ent.Open("postgres", dbURL)

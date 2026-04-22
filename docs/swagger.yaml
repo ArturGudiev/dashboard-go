@@ -160,6 +160,13 @@ definitions:
       question:
         $ref: '#/definitions/models.QuestionShort'
     type: object
+  handlers.NewRepetitiveTaskRequest:
+    properties:
+      parent:
+        $ref: '#/definitions/models.ContainerDescription'
+      repetitiveTask:
+        $ref: '#/definitions/models.RepetitiveTaskShort'
+    type: object
   handlers.NewTaskRequest:
     properties:
       parent:
@@ -562,6 +569,31 @@ definitions:
           type: string
         type: array
     type: object
+  models.RepetitiveTaskShort:
+    properties:
+      description:
+        example: Fix login bug
+        type: string
+      notes:
+        example: User cannot log in
+        type: string
+      onceInDays:
+        example: 7
+        type: integer
+      onceInMonths:
+        example: 3
+        type: integer
+      onceInWeeks:
+        example: 2
+        type: integer
+      tags:
+        example:
+        - bug
+        - urgent
+        items:
+          type: string
+        type: array
+    type: object
   models.StoryFull:
     properties:
       actions:
@@ -763,7 +795,7 @@ definitions:
     - knowledge-bit
     - definition
     - action
-    - scheduled-task
+    - repetitive-task
     - state
     type: string
     x-enum-varnames:
@@ -776,7 +808,7 @@ definitions:
     - ContainerTypeKnowledgeBit
     - ContainerTypeDefinition
     - ContainerTypeAction
-    - ContainerTypeScheduledTask
+    - ContainerTypeRepetitiveTask
     - ContainerTypeState
 host: localhost:8080
 info:
@@ -1544,6 +1576,40 @@ paths:
       summary: Create new question
       tags:
       - questions
+  /new-repetitive-task:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new repetitive task with optional parent relationship
+      parameters:
+      - description: Repetitive task creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.NewRepetitiveTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.RepetitiveTask'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new repetitive task
+      tags:
+      - repetitive-tasks
   /new-story:
     post:
       consumes:
@@ -1743,6 +1809,11 @@ paths:
       consumes:
       - application/json
       description: Returns all repetitive tasks
+      parameters:
+      - description: Only actual repetitive tasks
+        in: query
+        name: onlyActual
+        type: boolean
       produces:
       - application/json
       responses:

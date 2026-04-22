@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"arturgudiev/dashboard/ent"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 // GetRepetitiveTasks handles GET /repetitive-tasks/
 // @Summary      Get repetitive tasks
 // @Description  Returns all repetitive tasks
+// @Param onlyActual query boolean false "Only actual repetitive tasks"
 // @Tags         repetitive-tasks
 // @Accept       json
 // @Produce      json
@@ -16,12 +18,16 @@ import (
 // @Failure      500  {object}  map[string]string
 // @Router       /repetitive-tasks/ [get]
 func (h *Handler) GetRepetitiveTasks(c *gin.Context) {
-	repetitiveTasks, err := h.App.RepetitiveTaskService.GetRepetitiveTasks(c.Request.Context())
+	var query RepetitiveTasksQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	repetitiveTasks, err := h.App.RepetitiveTaskService.GetRepetitiveTasks(c.Request.Context(), query.OnlyActual)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(200, repetitiveTasks)
 }
 
@@ -104,4 +110,36 @@ func (h *Handler) GetRepetitiveTaskExecutions(c *gin.Context) {
 		return
 	}
 	c.JSON(200, execs)
+}
+
+// NewRepetitiveTask handles POST /new-repetitive-task
+// @Summary      Create new repetitive task
+// @Description  Creates a new repetitive task with optional parent relationship
+// @Tags         repetitive-tasks
+// @Accept       json
+// @Produce      json
+// @Param        request  body      NewRepetitiveTaskRequest  true  "Repetitive task creation request"
+// @Success      200  {object}  ent.RepetitiveTask
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /new-repetitive-task [post]
+func (h *Handler) NewRepetitiveTask(c *gin.Context) {
+	var req NewRepetitiveTaskRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := c.Request.Context()
+	newRepetitiveTask, err := h.App.RepetitiveTaskService.AddRepetitiveTask(ctx, req.RepetitiveTask, req.Parent)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(404, gin.H{"error": "Parent container not found"})
+			return
+		}
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, newRepetitiveTask)
 }

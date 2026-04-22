@@ -26,9 +26,9 @@ var (
 	// ContainerChildrenColumns holds the columns for the "container_children" table.
 	ContainerChildrenColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "parent_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state"}},
+		{Name: "parent_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state"}},
 		{Name: "parent_id", Type: field.TypeInt},
-		{Name: "child_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state"}},
+		{Name: "child_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state"}},
 		{Name: "child_id", Type: field.TypeInt},
 		{Name: "child_order", Type: field.TypeInt, Default: 0},
 		{Name: "parent_order", Type: field.TypeInt, Default: 0},
@@ -100,7 +100,7 @@ var (
 		{Name: "description", Type: field.TypeString},
 		{Name: "notes", Type: field.TypeString, Default: ""},
 		{Name: "created", Type: field.TypeTime},
-		{Name: "container_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "scheduled-task", "state"}},
+		{Name: "container_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state"}},
 		{Name: "container_id", Type: field.TypeInt, Nullable: true},
 	}
 	// LogMessagesTable holds the schema information for the "log_messages" table.

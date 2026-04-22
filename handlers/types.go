@@ -139,3 +139,13 @@ type logMessagesQuery struct {
 // 	Page        int                  `json:"page"`
 // 	PerPage     int                  `json:"perPage"`
 // }
+
+type NewRepetitiveTaskRequest struct {
+	RepetitiveTask models.RepetitiveTaskShort   `json:"repetitiveTask"`
+	Parent         *models.ContainerDescription `json:"parent,omitempty"`
+}
+
+// RepetitiveTasksQuery represents a request to get repetitive tasks
+type RepetitiveTasksQuery struct {
+	OnlyActual *bool `form:"onlyActual"`
+}

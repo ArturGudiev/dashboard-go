@@ -5,17 +5,17 @@ type ContainerType string
 
 // ContainerType values.
 const (
-	ContainerTypeEpic          ContainerType = "epic"
-	ContainerTypeStory         ContainerType = "story"
-	ContainerTypeTask          ContainerType = "task"
-	ContainerTypeQuestion      ContainerType = "question"
-	ContainerTypeProblem       ContainerType = "problem"
-	ContainerTypeKnowledgeNode ContainerType = "knowledge-node"
-	ContainerTypeKnowledgeBit  ContainerType = "knowledge-bit"
-	ContainerTypeDefinition    ContainerType = "definition"
-	ContainerTypeAction        ContainerType = "action"
-	ContainerTypeScheduledTask ContainerType = "scheduled-task"
-	ContainerTypeState         ContainerType = "state"
+	ContainerTypeEpic           ContainerType = "epic"
+	ContainerTypeStory          ContainerType = "story"
+	ContainerTypeTask           ContainerType = "task"
+	ContainerTypeQuestion       ContainerType = "question"
+	ContainerTypeProblem        ContainerType = "problem"
+	ContainerTypeKnowledgeNode  ContainerType = "knowledge-node"
+	ContainerTypeKnowledgeBit   ContainerType = "knowledge-bit"
+	ContainerTypeDefinition     ContainerType = "definition"
+	ContainerTypeAction         ContainerType = "action"
+	ContainerTypeRepetitiveTask ContainerType = "repetitive-task"
+	ContainerTypeState          ContainerType = "state"
 )
 
 // Values returns all valid ContainerType values.
@@ -30,9 +30,7 @@ func (ContainerType) Values() []string {
 		"knowledge-bit",
 		"definition",
 		"action",
-		"scheduled-task",
+		"repetitive-task",
 		"state",
 	}
 }
-
-

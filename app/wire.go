@@ -58,7 +58,7 @@ func provideEntClient() (*ent.Client, error) {
 	if dbURL == "" {
 		dbName := os.Getenv("DB_NAME")
 		if dbName == "" {
-			dbName = "postgres"
+			dbName = "dashboard"
 		}
 		dbPassword := os.Getenv("DB_PASSWORD")
 		if dbPassword == "" {
@@ -80,8 +80,7 @@ func provideEntClient() (*ent.Client, error) {
 			RawQuery: "sslmode=disable",
 		}
 		dbURL = u.String()
-		print("=======================================")
-		print(dbURL)
+		log.Printf("DATABASE_URL was not set; using constructed DB URL: %s", dbURL)
 	}
 
 	// Create Ent client

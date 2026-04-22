@@ -44,3 +44,4 @@ type TaskShort struct {
 	Tags        []string `json:"tags" example:"bug,urgent"`
 	Notes       string   `json:"notes" example:"User cannot log in"`
 }
+
