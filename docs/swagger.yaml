@@ -951,6 +951,13 @@ paths:
       consumes:
       - application/json
       description: Returns all done tasks where doneDateTime is today
+      parameters:
+      - description: From date-time filter (RFC3339)
+        example: "2026-04-23T00:00:00+03:00"
+        format: date-time
+        in: query
+        name: from
+        type: string
       produces:
       - application/json
       responses:

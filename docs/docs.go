@@ -222,6 +222,16 @@ const docTemplate = `{
                     "tasks"
                 ],
                 "summary": "Get done tasks from today",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-04-23T00:00:00+03:00",
+                        "description": "From date-time filter (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

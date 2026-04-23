@@ -200,7 +200,11 @@ func (s *TaskService) AddTask(ctx context.Context, task models.TaskShort, parent
 	return s.GetTaskFull(ctx, newTask.ID)
 }
 
-func (s *TaskService) GetDoneTasksCount(ctx context.Context) (int, error) {
+func (s *TaskService) GetDoneTasksCount(ctx context.Context, fromTime *time.Time) (int, error) {
+	if fromTime != nil {
+		return s.tasksRepository.getDoneTasksCountInRange(ctx, *fromTime, time.Now())
+	}
+
 	now := time.Now()
 	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	startOfTomorrow := startOfToday.AddDate(0, 0, 1)

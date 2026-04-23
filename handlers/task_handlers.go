@@ -5,6 +5,7 @@ import (
 	"arturgudiev/dashboard/models"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -91,7 +92,8 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 
 // GetDoneTasks handles GET /done-tasks
 // @Summary      Get done tasks from today
-// @Description  Returns all done tasks where doneDateTime is today
+// @Description  Returns all done tasks where doneDateTime is today 
+// @Param from query string false "From date-time filter (RFC3339)" format(date-time) example(2026-04-23T00:00:00+03:00)
 // @Tags         tasks
 // @Accept       json
 // @Produce      json
@@ -99,9 +101,17 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 // @Failure      500  {object}  map[string]string
 // @Router       /done-tasks [get]
 func (h *Handler) GetDoneTasks(c *gin.Context) {
-	tasksCount, err := h.App.TaskService.GetDoneTasksCount(c.Request.Context())
+	var from *time.Time
+	if fromDateRaw := c.Query("from"); fromDateRaw != "" {
+		parsed, parseErr := time.Parse(time.RFC3339, fromDateRaw)
+		if parseErr != nil {
+			c.JSON(400, gin.H{"error": "from must be RFC3339 date-time"})
+			return
+		}
+		from = &parsed
+	}
 
-	
+	tasksCount, err := h.App.TaskService.GetDoneTasksCount(c.Request.Context(), from)
 
 	if err != nil {
 		log.Printf("Error querying done tasksCount: %v", err)
