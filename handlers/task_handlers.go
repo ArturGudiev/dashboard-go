@@ -105,8 +105,12 @@ func (h *Handler) GetDoneTasks(c *gin.Context) {
 	if fromDateRaw := c.Query("from"); fromDateRaw != "" {
 		parsed, parseErr := time.Parse(time.RFC3339, fromDateRaw)
 		if parseErr != nil {
-			c.JSON(400, gin.H{"error": "from must be RFC3339 date-time"})
-			return
+			// Also support UI format used by dashboard-ui: "15:04 02-01-2006"
+			parsed, parseErr = time.ParseInLocation("15:04 02-01-2006", fromDateRaw, time.Local)
+			if parseErr != nil {
+				c.JSON(400, gin.H{"error": "from must be RFC3339 or 'HH:mm DD-MM-YYYY'"})
+				return
+			}
 		}
 		from = &parsed
 	}
