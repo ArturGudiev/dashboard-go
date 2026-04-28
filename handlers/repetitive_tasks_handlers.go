@@ -14,7 +14,7 @@ import (
 // @Tags         repetitive-tasks
 // @Accept       json
 // @Produce      json
-// @Success      200  {array}  ent.RepetitiveTask
+// @Success      200  {array}  models.RepetitiveTaskResponse
 // @Failure      500  {object}  map[string]string
 // @Router       /repetitive-tasks/ [get]
 func (h *Handler) GetRepetitiveTasks(c *gin.Context) {
@@ -38,7 +38,7 @@ func (h *Handler) GetRepetitiveTasks(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      int  true  "Repetitive task ID"
-// @Success      200  {object}  ent.RepetitiveTask
+// @Success      200  {object}  models.RepetitiveTaskResponse
 // @Failure      500  {object}  map[string]string
 // @Router       /repetitive-tasks/{id} [get]
 func (h *Handler) GetRepetitiveTaskById(c *gin.Context) {
@@ -119,7 +119,7 @@ func (h *Handler) GetRepetitiveTaskExecutions(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request  body      NewRepetitiveTaskRequest  true  "Repetitive task creation request"
-// @Success      200  {object}  ent.RepetitiveTask
+// @Success      200  {object}  models.RepetitiveTaskResponse
 // @Failure      400  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /new-repetitive-task [post]

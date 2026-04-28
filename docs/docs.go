@@ -1205,7 +1205,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.RepetitiveTask"
+                            "$ref": "#/definitions/models.RepetitiveTaskResponse"
                         }
                     },
                     "400": {
@@ -1551,7 +1551,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/ent.RepetitiveTask"
+                                "$ref": "#/definitions/models.RepetitiveTaskResponse"
                             }
                         }
                     },
@@ -1593,7 +1593,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.RepetitiveTask"
+                            "$ref": "#/definitions/models.RepetitiveTaskResponse"
                         }
                     },
                     "500": {
@@ -3072,6 +3072,51 @@ const docTemplate = `{
                 "notes": {
                     "type": "string",
                     "example": "User cannot log in"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "bug",
+                        "urgent"
+                    ]
+                }
+            }
+        },
+        "models.RepetitiveTaskResponse": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "closed": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Fix login bug"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "User cannot log in"
+                },
+                "once_in_days": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "once_in_months": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "once_in_weeks": {
+                    "type": "integer",
+                    "example": 2
                 },
                 "tags": {
                     "type": "array",

@@ -569,6 +569,38 @@ definitions:
           type: string
         type: array
     type: object
+  models.RepetitiveTaskResponse:
+    properties:
+      closed:
+        type: boolean
+      description:
+        example: Fix login bug
+        type: string
+      id:
+        example: 1
+        type: integer
+      notes:
+        example: User cannot log in
+        type: string
+      once_in_days:
+        example: 7
+        type: integer
+      once_in_months:
+        example: 3
+        type: integer
+      once_in_weeks:
+        example: 2
+        type: integer
+      tags:
+        example:
+        - bug
+        - urgent
+        items:
+          type: string
+        type: array
+    required:
+    - id
+    type: object
   models.RepetitiveTaskShort:
     properties:
       description:
@@ -1601,7 +1633,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.RepetitiveTask'
+            $ref: '#/definitions/models.RepetitiveTaskResponse'
         "400":
           description: Bad Request
           schema:
@@ -1828,7 +1860,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/ent.RepetitiveTask'
+              $ref: '#/definitions/models.RepetitiveTaskResponse'
             type: array
         "500":
           description: Internal Server Error
@@ -1856,7 +1888,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.RepetitiveTask'
+            $ref: '#/definitions/models.RepetitiveTaskResponse'
         "500":
           description: Internal Server Error
           schema:
