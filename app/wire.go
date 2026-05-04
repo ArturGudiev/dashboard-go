@@ -23,6 +23,7 @@ func InitializeApp() (*App, error) {
 	wire.Build(
 		// Provider for ent.Client (includes migration)
 		provideEntClient,
+		services.NewReportService,
 		services.NewTaskService,
 		services.NewProblemService,
 		services.NewContainerService,

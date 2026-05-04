@@ -18,13 +18,14 @@ type TaskService struct {
 	problemService           *ProblemService
 	tasksRepository          *TasksRepository
 	childContainerRepository *ChildContainerRepository
+	reportService            *ReportService
 }
 
 // NewTaskService creates a new TaskService
 func NewTaskService(client *ent.Client, containerService *ContainerService, problemService *ProblemService,
-	tasksRepository *TasksRepository, childContainerRepository *ChildContainerRepository) *TaskService {
+	tasksRepository *TasksRepository, childContainerRepository *ChildContainerRepository, reportService *ReportService) *TaskService {
 	return &TaskService{client: client, containerService: containerService, problemService: problemService,
-		tasksRepository: tasksRepository, childContainerRepository: childContainerRepository}
+		tasksRepository: tasksRepository, childContainerRepository: childContainerRepository, reportService: reportService}
 }
 
 // GetOpenDescendantTasks recursively gets all descendant tasks that are not done
@@ -217,4 +218,9 @@ func (s *TaskService) UpdateTask(ctx context.Context, taskPartial models.TaskPar
 		return nil, err
 	}
 	return s.GetTaskFull(ctx, taskPartial.ID)
+}
+
+// GetTaskReport returns a tree of done tasks under the given root task, or nil if none (see models.TaskReportTreeNode).
+func (s *TaskService) GetTaskReport(ctx context.Context, rootTaskID int) (*models.TaskReportTreeNode, error) {
+	return s.reportService.GetTaskReport(ctx, rootTaskID)
 }

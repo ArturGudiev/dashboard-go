@@ -43,6 +43,39 @@ func (h *Handler) GetTaskByID(c *gin.Context) {
 	c.JSON(200, taskFull)
 }
 
+// GetTaskReport handles GET /task-report/:id
+// @Summary      Task completion report tree
+// @Description  Returns a tree of done descendant tasks under the root task. The response body is JSON null when there are no done descendants.
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Root task ID"
+// @Success      200  {object}  models.TaskReportTreeNode
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task-report/{id} [get]
+func (h *Handler) GetTaskReport(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid task ID"})
+		return
+	}
+
+	report, err := h.App.TaskService.GetTaskReport(c.Request.Context(), id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(404, gin.H{"error": "Task not found"})
+			return
+		}
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, report)
+}
+
 // GetTasksByIDs handles POST /get-tasks
 // @Summary      Get tasks by IDs
 // @Description  Returns multiple tasks by their IDs

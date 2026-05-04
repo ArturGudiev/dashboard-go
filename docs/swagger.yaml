@@ -772,6 +772,17 @@ definitions:
           type: string
         type: array
     type: object
+  models.TaskReportTreeNode:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.TaskReportTreeNode'
+        type: array
+      depth:
+        type: integer
+      name:
+        type: string
+    type: object
   models.TaskShort:
     properties:
       description:
@@ -799,7 +810,7 @@ definitions:
     - knowledge-bit
     - definition
     - action
-    - scheduled-task
+    - repetitive-task
     - state
     - file
     type: string
@@ -813,7 +824,7 @@ definitions:
     - AliasTypeKnowledgeBit
     - AliasTypeDefinition
     - AliasTypeAction
-    - AliasTypeScheduledTask
+    - AliasTypeRepetitiveTask
     - AliasTypeState
     - AliasTypeFile
   schema.ContainerType:
@@ -2051,6 +2062,46 @@ paths:
       summary: Get story by ID
       tags:
       - stories
+  /task-report/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a tree of done descendant tasks under the root task. The
+        response body is JSON null when there are no done descendants.
+      parameters:
+      - description: Root task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TaskReportTreeNode'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Task completion report tree
+      tags:
+      - tasks
   /task/{id}:
     get:
       consumes:

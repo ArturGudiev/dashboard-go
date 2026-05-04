@@ -1836,6 +1836,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/task-report/{id}": {
+            "get": {
+                "description": "Returns a tree of done descendant tasks under the root task. The response body is JSON null when there are no done descendants.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Task completion report tree",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Root task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TaskReportTreeNode"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/task/{id}": {
             "get": {
                 "description": "Returns a task by its ID",
@@ -3385,6 +3444,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TaskReportTreeNode": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TaskReportTreeNode"
+                    }
+                },
+                "depth": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.TaskShort": {
             "type": "object",
             "properties": {
@@ -3420,7 +3496,7 @@ const docTemplate = `{
                 "knowledge-bit",
                 "definition",
                 "action",
-                "scheduled-task",
+                "repetitive-task",
                 "state",
                 "file"
             ],
@@ -3434,7 +3510,7 @@ const docTemplate = `{
                 "AliasTypeKnowledgeBit",
                 "AliasTypeDefinition",
                 "AliasTypeAction",
-                "AliasTypeScheduledTask",
+                "AliasTypeRepetitiveTask",
                 "AliasTypeState",
                 "AliasTypeFile"
             ]

@@ -166,6 +166,7 @@ func main() {
 
 	// Task routes
 	router.GET("/task/:id", h.GetTaskByID)
+	router.GET("/task-report/:id", h.GetTaskReport)
 	router.POST("/get-tasks", h.GetTasksByIDs)
 	router.PUT("/add-anonymous-task", h.AddAnonymousTask)
 	router.GET("/done-tasks", h.GetDoneTasks)
