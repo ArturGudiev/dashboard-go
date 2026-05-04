@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ktr0731/go-fuzzyfinder"
 	"github.com/niemeyer/pretty"
 )
 
@@ -68,7 +70,6 @@ func PrettyPrint(data any) {
 	}
 }
 
-
 // OpenFile opens a file using the system's default application.
 // On Windows: uses PowerShell to open the file
 // On Linux: uses xdg-open
@@ -91,4 +92,68 @@ func OpenFile(filePath string) error {
 	}
 
 	return cmd.Run()
+}
+
+// OpenDirectory opens a folder in the default file manager (Explorer / Finder / xdg-open).
+func OpenDirectory(dirPath string) error {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("explorer", dirPath)
+	case "darwin":
+		cmd = exec.Command("open", dirPath)
+	case "linux":
+		cmd = exec.Command("xdg-open", dirPath)
+	default:
+		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
+	return cmd.Run()
+}
+
+func SelectItemFromList(list []string) (*string, error) {
+	if len(list) == 0 {
+		return nil, errors.New("empty list")
+	}
+	items := list
+
+	// Find: itemFunc maps index to display string. WithAlignTop pins the UI to the top of the terminal
+	// (upstream go-fuzzyfinder anchors to the bottom by default).
+	idx, err := fuzzyfinder.Find(items, func(i int) string {
+		return items[i]
+	}, fuzzyfinder.WithAlignTop())
+
+	if err != nil {
+		if err == fuzzyfinder.ErrAbort {
+			fmt.Println("Выбор отменен")
+			return nil, errors.New("selection aborted")
+		}
+		return nil, err
+	}
+
+	// 3. Получение результата по выбранному индексу
+	fmt.Printf("Вы выбрали: %s\n", items[idx])
+	return &items[idx], nil
+}
+
+func SelectIndexesFromList(list []string) ([]int, error) {
+	if len(list) == 0 {
+		return []int{}, nil
+	}
+	items := list
+
+	// Find: itemFunc maps index to display string. WithAlignTop pins the UI to the top of the terminal
+	// (upstream go-fuzzyfinder anchors to the bottom by default).
+	indexes, err := fuzzyfinder.FindMulti(items, func(i int) string {
+		return items[i]
+	}, fuzzyfinder.WithAlignTop())
+
+	if err != nil {
+		if err == fuzzyfinder.ErrAbort {
+			fmt.Println("Выбор отменен")
+			return nil, errors.New("selection aborted")
+		}
+		return nil, err
+	}
+
+	return indexes, nil
 }

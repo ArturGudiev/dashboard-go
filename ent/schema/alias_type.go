@@ -14,7 +14,7 @@ const (
 	AliasTypeKnowledgeBit  AliasType = "knowledge-bit"
 	AliasTypeDefinition    AliasType = "definition"
 	AliasTypeAction        AliasType = "action"
-	AliasTypeScheduledTask AliasType = "scheduled-task"
+	AliasTypeRepetitiveTask AliasType = "repetitive-task"
 	AliasTypeState         AliasType = "state"
 	AliasTypeFile          AliasType = "file"
 )

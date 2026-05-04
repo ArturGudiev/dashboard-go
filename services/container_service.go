@@ -166,7 +166,6 @@ func (s *ContainerService) GetOpenProblemsIDs(ctx context.Context, containerType
 	return openProblems, nil
 }
 
-
 func (s *ContainerService) GetOpenQuestionsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
 	openQuestions := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeQuestion)
@@ -799,7 +798,7 @@ func (s *ContainerService) GetFilesFolder(ctx context.Context, containerType sch
 }
 
 func (s *ContainerService) GetFilesFolderPrefix(ctx context.Context, containerType schema.ContainerType, ID int) *string {
-	folderPath := "C:\\Programming\\NodeJS\\dashboard\\files"
+	folderPath := "C:\\Programming\\NodeJS\\Dashboard\\files"
 	var result string
 	switch containerType {
 	case schema.ContainerTypeTask:

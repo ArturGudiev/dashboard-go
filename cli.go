@@ -4,6 +4,7 @@ import (
 	"arturgudiev/dashboard/app"
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/task"
+
 	"arturgudiev/dashboard/utils"
 	"bufio"
 	"context"
@@ -403,7 +404,12 @@ func deleteTask(ctx context.Context, application *app.App, args []string) {
 
 // tempMethod is a temporary method for testing
 func tempMethod(ctx context.Context, a *app.App) {
-	epicFull, _ := a.EpicsService.GetEpicFull(ctx, 3)
-	utils.PrettyPrint(epicFull)
-
+	arr := []string{"яблоко", "банан", "апельсин", "груша"}
+	selectedIndexes, err := utils.SelectIndexesFromList(arr)
+	if err != nil {
+		fmt.Printf("Error selecting item: %v\n", err)
+		return
+	}
+	fmt.Printf("Selected indexes: %v\n", selectedIndexes)
+	return
 }

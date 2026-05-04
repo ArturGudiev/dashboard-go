@@ -10,10 +10,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
-	"runtime"
+	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
+
+	"arturgudiev/dashboard/models"
 
 	"github.com/fatih/color"
 )
@@ -21,16 +23,20 @@ import (
 type CLIService struct {
 	client             *ent.Client
 	containerService   *ContainerService
+	aliasesService     *AliasesService
 	problemsRepository *ProblemsRepository
 	epicsRepository    *repositories.EpicsRepository
 	aliasesRepository  *repositories.AliasesRepository
 }
 
-func NewCLIService(client *ent.Client, containerService *ContainerService, problemsRepository *ProblemsRepository,
+func NewCLIService(client *ent.Client, containerService *ContainerService,
+	aliasesService *AliasesService,
+	problemsRepository *ProblemsRepository,
 	epicsRepository *repositories.EpicsRepository, aliasesRepository *repositories.AliasesRepository) *CLIService {
 	return &CLIService{
 		client:             client,
 		containerService:   containerService,
+		aliasesService:     aliasesService,
 		problemsRepository: problemsRepository,
 		epicsRepository:    epicsRepository,
 		aliasesRepository:  aliasesRepository,
@@ -251,6 +257,28 @@ func (s *CLIService) checkAddQuestionCommand(ctx context.Context, line string, c
 	return false
 }
 
+func (s *CLIService) checkSelectFileCommand(ctx context.Context, line string, filesDir *string, files []os.DirEntry) bool {
+	if strings.HasPrefix(line, "fs ") {
+		if filesDir == nil {
+			return false
+		}
+		indexPart := strings.TrimSpace(line[3:])
+		if index, err := strconv.Atoi(indexPart); err == nil {
+			selectedFile := files[index-1]
+			fullPath := filepath.Join(*filesDir, selectedFile.Name())
+			if selectedFile.IsDir() {
+				utils.OpenDirectory(fullPath)
+			} else {
+				s.ViewFileInteractive(ctx, fullPath)
+				// utils.OpenFile(fullPath)
+				// utils.OpenFile(fullPath)
+			}
+			return true
+		}
+	}
+	return false
+}
+
 func (s *CLIService) checkSelectTaskCommand(ctx context.Context, line string, tasks []*ent.Task) bool {
 	if index, err := strconv.Atoi(line); err == nil {
 		// Validate index
@@ -412,22 +440,7 @@ func (s *CLIService) checkOpenDirCommand(ctx context.Context, line string, conta
 			return true
 		}
 
-		// Open directory in file explorer based on OS
-		var cmd *exec.Cmd
-		switch runtime.GOOS {
-		case "windows":
-			cmd = exec.Command("explorer", *filesDir)
-		case "darwin":
-			cmd = exec.Command("open", *filesDir)
-		case "linux":
-			cmd = exec.Command("xdg-open", *filesDir)
-		default:
-			fmt.Printf("Unsupported operating system: %s\n", runtime.GOOS)
-			utils.WaitForUserInput()
-			return true
-		}
-
-		err := cmd.Run()
+		err := utils.OpenDirectory(*filesDir)
 		if err != nil {
 			fmt.Printf("Error opening directory: %v\n", err)
 			utils.WaitForUserInput()
@@ -439,45 +452,114 @@ func (s *CLIService) checkOpenDirCommand(ctx context.Context, line string, conta
 	return false
 }
 
-func (s *CLIService) printDirectoryContents(dirPath string) {
-	entries, err := os.ReadDir(dirPath)
-	if err != nil {
-		return
+func (s *CLIService) checkAppendAliasToFileCommand(ctx context.Context, line string, filePath string) bool {
+	if strings.HasPrefix(line, "apal ") {
+		alias := strings.TrimSpace(line[5:])
+		_, err := s.aliasesService.AddFileAlias(ctx, filePath, alias)
+		if err != nil {
+			fmt.Printf("Error adding alias: %v\n", err)
+			utils.WaitForUserInput()
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) checkRemoveAliasFromFileCommand(ctx context.Context, line string, filePath string) bool {
+	if strings.HasPrefix(line, "ral ") {
+		aliasStr := strings.TrimSpace(line[4:])
+		_, err := s.aliasesService.RemoveFileAlias(ctx, filePath, aliasStr)
+		if err != nil {
+			fmt.Printf("Error removing alias: %v\n", err)
+			utils.WaitForUserInput()
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) checkRemoveAliasFromContainerCommand(ctx context.Context, line string, containerType schema.ContainerType, id int) bool {
+	if strings.HasPrefix(line, "ral ") {
+		aliasStr := strings.TrimSpace(line[4:])
+		_, err := s.aliasesService.RemoveContainerAlias(ctx, containerType, id, aliasStr)
+		if err != nil {
+			fmt.Printf("Error removing alias: %v\n", err)
+			utils.WaitForUserInput()
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func (s *CLIService) checkAppendAliasToContainerCommand(ctx context.Context, line string, containerType schema.ContainerType, id int) bool {
+	if strings.HasPrefix(line, "apal ") {
+		alias := strings.TrimSpace(line[5:])
+		_, err := s.aliasesService.AddContainerAlias(ctx, containerType, id, alias)
+		if err != nil {
+			fmt.Printf("Error adding alias: %v\n", err)
+			utils.WaitForUserInput()
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func getDirectoryEntries(dirPath *string) ([]os.DirEntry, error) {
+	if dirPath == nil {
+		return []os.DirEntry{}, nil
 	}
 
-	if len(entries) == 0 {
+	entries, err := os.ReadDir(*dirPath)
+	if err != nil {
+		return []os.DirEntry{}, err
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		di, dj := entries[i].IsDir(), entries[j].IsDir()
+		if di != dj {
+			return di
+		}
+		return entries[i].Name() < entries[j].Name()
+	})
+
+	return entries, nil
+}
+
+func (s *CLIService) printDirectoryContents(dirPath string) {
+	entries, err := getDirectoryEntries(&dirPath)
+	if err != nil {
+		fmt.Printf("Error getting directory entries: %v\n", err)
 		return
 	}
 
 	fmt.Println("\nFiles:")
-	for _, entry := range entries {
+	for index, entry := range entries {
 		info, err := entry.Info()
 		if err != nil {
 			continue
 		}
 
-		mode := info.Mode()
+		// mode := info.Mode()
 		size := info.Size()
 		modTime := info.ModTime()
 
-		// Format permissions similar to ls -l
-		permStr := mode.String()
-		if len(permStr) > 10 {
-			permStr = permStr[len(permStr)-10:]
-		}
+		isDir := entry.IsDir()
 
-		// Format similar to ls -l: permissions size date name
-		// Example: -rw-r--r--     1234 Jan 15 14:30 filename.txt
-		dirMark := " "
-		if entry.IsDir() {
-			dirMark = "d"
-		}
-		fmt.Printf("%s%s %8d %s %s\n",
-			dirMark,
-			permStr,
+		line := fmt.Sprintf("%3d %-30s %8d %s",
+			index+1,
+			entry.Name(),
 			size,
-			modTime.Format("Jan 02 15:04"),
-			entry.Name())
+			modTime.Format("2006-01-02 15:04:05"),
+		)
+		if isDir {
+			color.New(color.FgWhite, color.BgBlue).Println(line)
+		} else {
+			fmt.Println(line)
+		}
 	}
 }
 
@@ -546,7 +628,16 @@ func (s *CLIService) PrintQuestionInfo(ctx context.Context, q *ent.Question, sub
 	fmt.Println()
 }
 
-func (s *CLIService) PrintStoryInfo(ctx context.Context, st *ent.Story, subtasks []*ent.Task, problems []*ent.Problem, questions []*ent.Question, stories []*ent.Story, epics []*ent.Epic) {
+func (s *CLIService) PrintStoryInfo(
+	ctx context.Context,
+	st *ent.Story,
+	subtasks []*ent.Task,
+	problems []*ent.Problem,
+	questions []*ent.Question,
+	stories []*ent.Story,
+	epics []*ent.Epic,
+	aliases []*models.AliasModel,
+) {
 	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeStory, st.ID)
 
 	fmt.Println(strings.Repeat("=", 80))
@@ -566,6 +657,7 @@ func (s *CLIService) PrintStoryInfo(ctx context.Context, st *ent.Story, subtasks
 	if filesDir != nil {
 		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
 	}
+	s.aliasesService.PrintAliases(aliases)
 	fmt.Println(strings.Repeat("=", 80))
 
 	s.containerService.PrintSubtasks(subtasks)
@@ -588,7 +680,16 @@ func (s *CLIService) PrintEpicsInfo(epics []*ent.Epic) {
 	fmt.Println()
 }
 
-func (s *CLIService) PrintEpicInfo(ctx context.Context, e *ent.Epic, subtasks []*ent.Task, problems []*ent.Problem, questions []*ent.Question, stories []*ent.Story, epics []*ent.Epic) {
+func (s *CLIService) PrintEpicInfo(
+	ctx context.Context,
+	e *ent.Epic,
+	subtasks []*ent.Task,
+	problems []*ent.Problem,
+	questions []*ent.Question,
+	stories []*ent.Story,
+	epics []*ent.Epic,
+	aliases []*models.AliasModel,
+) {
 	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeEpic, e.ID)
 
 	fmt.Println(strings.Repeat("=", 80))
@@ -608,6 +709,7 @@ func (s *CLIService) PrintEpicInfo(ctx context.Context, e *ent.Epic, subtasks []
 	if filesDir != nil {
 		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
 	}
+	s.aliasesService.PrintAliases(aliases)
 	fmt.Println(strings.Repeat("=", 80))
 
 	s.containerService.PrintSubtasks(subtasks)
@@ -615,13 +717,35 @@ func (s *CLIService) PrintEpicInfo(ctx context.Context, e *ent.Epic, subtasks []
 	s.containerService.PrintQuestions(questions)
 	s.containerService.PrintStories(stories)
 	s.containerService.PrintEpics(epics)
+
 	if filesDir != nil {
 		s.printDirectoryContents(*filesDir)
 	}
 	fmt.Println()
 }
 
-func (s *CLIService) printKnowledgeNodeInfo(ctx context.Context, kn *ent.KnowledgeNode, subtasks []*ent.Task, problems []*ent.Problem, questions []*ent.Question, stories []*ent.Story, epics []*ent.Epic, knowledgeNodes []*ent.KnowledgeNode) {
+func (s *CLIService) PrintFileInfo(ctx context.Context, filePath string, aliases []*models.AliasModel) {
+
+	fmt.Println(strings.Repeat("=", 100))
+	color.Cyan("\tFile Path: " + filePath)
+	s.aliasesService.PrintAliases(aliases)
+	fmt.Println(strings.Repeat("=", 100))
+
+	fmt.Println()
+}
+
+func (s *CLIService) printKnowledgeNodeInfo(
+	ctx context.Context,
+	kn *ent.KnowledgeNode,
+	subtasks []*ent.Task,
+	problems []*ent.Problem,
+	questions []*ent.Question,
+	stories []*ent.Story,
+	epics []*ent.Epic,
+	knowledgeNodes []*ent.KnowledgeNode,
+	files []os.DirEntry,
+	aliases []*models.AliasModel,
+) {
 	s.containerService.PrintParentsPath(ctx, schema.ContainerTypeKnowledgeNode, kn.ID)
 
 	fmt.Println(strings.Repeat("=", 80))
@@ -634,9 +758,7 @@ func (s *CLIService) printKnowledgeNodeInfo(ctx context.Context, kn *ent.Knowled
 		fmt.Printf("Tags: %s\n", strings.Join(kn.Tags, ", "))
 	}
 	filesDir := s.containerService.GetFilesFolder(ctx, schema.ContainerTypeKnowledgeNode, kn.ID)
-	if filesDir != nil {
-		fmt.Printf("\tFiles Directory: %s\n", *filesDir)
-	}
+	s.aliasesService.PrintAliases(aliases)
 	fmt.Println(strings.Repeat("=", 80))
 
 	s.containerService.PrintSubtasks(subtasks)
@@ -648,6 +770,7 @@ func (s *CLIService) printKnowledgeNodeInfo(ctx context.Context, kn *ent.Knowled
 	if filesDir != nil {
 		s.printDirectoryContents(*filesDir)
 	}
+
 	fmt.Println()
 }
 
@@ -884,8 +1007,9 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 		questions, _ := s.containerService.GetOpenQuestions(ctx, schema.ContainerTypeStory, currentID)
 		stories, _ := s.containerService.GetOpenStories(ctx, schema.ContainerTypeStory, currentID)
 		epics, _ := s.containerService.GetOpenEpics(ctx, schema.ContainerTypeStory, currentID)
+		aliases, _ := s.aliasesService.GetAliasesByTaskContainer(ctx, schema.ContainerTypeStory, currentID)
 
-		s.PrintStoryInfo(ctx, story, subtasks, problems, questions, stories, epics)
+		s.PrintStoryInfo(ctx, story, subtasks, problems, questions, stories, epics, aliases)
 
 		line := utils.GetUserInput(scanner)
 		if line == "" {
@@ -899,15 +1023,12 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 		if goToNextIteration := s.checkAddProblemCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddQuestionCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddStoryCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddEpicCommand(ctx, line, schema.ContainerTypeStory, id); goToNextIteration {
 			continue
 		}
@@ -915,24 +1036,27 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkSelectProblemCommand(ctx, line, problems); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkSelectQuestionCommand(ctx, line, questions); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkSelectStoryCommand(ctx, line, stories); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeStory, id); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkAppendAliasToContainerCommand(ctx, line, schema.ContainerTypeStory, id); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkRemoveAliasFromContainerCommand(ctx, line, schema.ContainerTypeStory, id); wasIt {
 			continue
 		}
 
@@ -1043,8 +1167,9 @@ func (s *CLIService) ViewEpicInteractive(ctx context.Context, id int) {
 		questions, _ := s.containerService.GetOpenQuestions(ctx, schema.ContainerTypeEpic, currentID)
 		stories, _ := s.containerService.GetOpenStories(ctx, schema.ContainerTypeEpic, currentID)
 		epics, _ := s.containerService.GetOpenEpics(ctx, schema.ContainerTypeEpic, currentID)
+		aliases, _ := s.aliasesService.GetAliasesByTaskContainer(ctx, schema.ContainerTypeEpic, currentID)
 
-		s.PrintEpicInfo(ctx, epic, subtasks, problems, questions, stories, epics)
+		s.PrintEpicInfo(ctx, epic, subtasks, problems, questions, stories, epics, aliases)
 
 		line := utils.GetUserInput(scanner)
 		if line == "" {
@@ -1092,6 +1217,14 @@ func (s *CLIService) ViewEpicInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeEpic, id); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkAppendAliasToContainerCommand(ctx, line, schema.ContainerTypeEpic, id); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkRemoveAliasFromContainerCommand(ctx, line, schema.ContainerTypeEpic, id); wasIt {
 			continue
 		}
 
@@ -1218,46 +1351,43 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 		stories, _ := s.containerService.GetOpenStories(ctx, schema.ContainerTypeKnowledgeNode, currentID)
 		epics, _ := s.containerService.GetOpenEpics(ctx, schema.ContainerTypeKnowledgeNode, currentID)
 		knowledgeNodes, _ := s.containerService.GetOpenKnowledgeNodes(ctx, schema.ContainerTypeKnowledgeNode, currentID)
-
-		s.printKnowledgeNodeInfo(ctx, knowledgeNode, subtasks, problems, questions, stories, epics, knowledgeNodes)
+		filesDir := s.containerService.GetFilesFolder(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+		files, _ := getDirectoryEntries(filesDir)
+		if err != nil {
+			fmt.Printf("Error getting directory entries: %v\n", err)
+			return
+		}
+		aliases, _ := s.aliasesService.GetAliasesByTaskContainer(ctx, schema.ContainerTypeKnowledgeNode, currentID)
+		s.printKnowledgeNodeInfo(ctx, knowledgeNode, subtasks, problems, questions, stories, epics, knowledgeNodes, files, aliases)
 
 		line := utils.GetUserInput(scanner)
 		if line == "" {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddTaskCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddProblemCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddQuestionCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddStoryCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddEpicCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
 			continue
 		}
-
 		if goToNextIteration := s.checkAddKnowledgeNodeCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
 			continue
 		}
-
 		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkSelectProblemCommand(ctx, line, problems); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkSelectQuestionCommand(ctx, line, questions); wasIt {
 			continue
 		}
@@ -1265,16 +1395,23 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 		if wasIt := s.checkSelectStoryCommand(ctx, line, stories); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
 			continue
 		}
-
 		if wasIt := s.checkSelectKnowledgeNodeCommand(ctx, line, knowledgeNodes); wasIt {
 			continue
 		}
 
 		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); wasIt {
+			continue
+		}
+		if wasIt := s.checkSelectFileCommand(ctx, line, filesDir, files); wasIt {
+			continue
+		}
+		if wasIt := s.checkAppendAliasToContainerCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); wasIt {
+			continue
+		}
+		if wasIt := s.checkRemoveAliasFromContainerCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); wasIt {
 			continue
 		}
 
@@ -1322,6 +1459,57 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 			utils.WaitForUserInput()
 		}
 	}
+}
+
+func (s *CLIService) ViewFileInteractive(ctx context.Context, filePath string) {
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		// Clear screen before printing
+		utils.ClearScreen()
+
+		// Get task
+		aliasModels, _ := s.aliasesService.GetAliasesByFilePath(ctx, filePath)
+		s.PrintFileInfo(ctx, filePath, aliasModels)
+
+		line := utils.GetUserInput(scanner)
+		if line == "" {
+			continue
+		}
+
+		if line == "u" {
+			return
+		}
+
+		if line == "open" {
+			utils.OpenFile(filePath)
+			continue
+		}
+
+		if wasIt := s.checkAppendAliasToFileCommand(ctx, line, filePath); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkRemoveAliasFromFileCommand(ctx, line, filePath); wasIt {
+			continue
+		}
+
+		lineLower := strings.ToLower(line)
+		switch lineLower {
+		case "q", "quit", "exit":
+			os.Exit(0)
+			return
+		case "r", "refresh":
+			// Continue loop to refresh (screen will be cleared at start of loop)
+			continue
+		case "":
+			// Empty input, refresh
+			continue
+		default:
+			fmt.Printf("Unknown command: %s. Type 'q' to quit, 'r' to refresh, 't+ <description>' to add subtask, or 'p+ <description>' to add problem.\n", line)
+			utils.WaitForUserInput()
+		}
+	}
+
 }
 
 func (s *CLIService) NavigateToParent(ctx context.Context, containerType schema.ContainerType, ID int) error {

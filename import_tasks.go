@@ -1234,7 +1234,7 @@ func importAliases(jsonPath string) error {
 		case schema.AliasTypeEpic, schema.AliasTypeStory, schema.AliasTypeTask,
 			schema.AliasTypeQuestion, schema.AliasTypeProblem, schema.AliasTypeKnowledgeNode,
 			schema.AliasTypeKnowledgeBit, schema.AliasTypeDefinition, schema.AliasTypeAction,
-			schema.AliasTypeScheduledTask, schema.AliasTypeState, schema.AliasTypeFile:
+			schema.AliasTypeRepetitiveTask, schema.AliasTypeState, schema.AliasTypeFile:
 			// Valid type
 		default:
 			log.Printf("Warning: Invalid alias type '%s' for alias '%s', skipping", aliasJSON.Type, aliasJSON.Alias)
