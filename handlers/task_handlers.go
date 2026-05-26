@@ -320,6 +320,57 @@ func (h *Handler) NewTask(c *gin.Context) {
 	c.JSON(200, newTask)
 }
 
+// PatchTaskByID handles PATCH /task/:id
+// @Summary      Patch task by ID
+// @Description  Partially updates a task's description and/or notes
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int                   true  "Task ID"
+// @Param        request  body      PatchTaskByIDRequest  true  "Fields to update"
+// @Success      200      {object}  models.TaskFull
+// @Failure      400      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /task/{id} [patch]
+func (h *Handler) PatchTaskByID(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid task ID"})
+		return
+	}
+
+	var req PatchTaskByIDRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if req.Description == nil && req.Notes == nil {
+		c.JSON(400, gin.H{"error": "At least one of description or notes must be provided"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	taskFull, err := h.App.TaskService.UpdateTask(ctx, models.TaskPartial{
+		ID:          id,
+		Description: req.Description,
+		Notes:       req.Notes,
+	})
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(404, gin.H{"error": "Task not found"})
+			return
+		}
+		log.Printf("Error patching task %d: %v", id, err)
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, taskFull)
+}
+
 // UpdateTask handles PUT /update-task
 // @Summary      Update task
 // @Description  Updates an existing task by ID

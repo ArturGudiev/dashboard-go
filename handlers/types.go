@@ -49,6 +49,12 @@ type NewTaskRequest struct {
 	Parent *models.ContainerDescription `json:"parent,omitempty"`
 }
 
+// PatchTaskByIDRequest represents optional fields for PATCH /task/:id
+type PatchTaskByIDRequest struct {
+	Description *string `json:"description"`
+	Notes       *string `json:"notes"`
+}
+
 // UpdateTaskRequest represents a request to update an existing task
 type UpdateTaskRequest struct {
 	ID               int             `json:"id"`

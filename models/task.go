@@ -28,7 +28,7 @@ type TaskPartial struct {
 	Tags         *[]string  `json:"tags"`
 	Notes        *string    `json:"notes"`
 	DoneDateTime *time.Time `json:"doneDateTime"`
-	Done         *bool      `json:"bool"`
+	Done         *bool      `json:"done"`
 }
 
 type TaskFieldsPartial struct {
@@ -36,7 +36,7 @@ type TaskFieldsPartial struct {
 	Tags         *[]string  `json:"tags"`
 	Notes        *string    `json:"notes"`
 	DoneDateTime *time.Time `json:"doneDateTime"`
-	Done         *bool      `json:"bool"`
+	Done         *bool      `json:"done"`
 }
 
 type TaskShort struct {
