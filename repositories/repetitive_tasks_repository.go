@@ -3,6 +3,7 @@ package repositories
 import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/repetitivetask"
+	"arturgudiev/dashboard/models"
 	"context"
 )
 
@@ -42,6 +43,21 @@ func (r *RepetitiveTasksRepository) GetRepetitiveTaskById(ctx context.Context, I
 func (r *RepetitiveTasksRepository) SetRepetitiveTaskClosed(ctx context.Context, ID int, solution string) error {
 	updateBuilder := r.client.RepetitiveTask.UpdateOneID(ID).
 		SetClosed(true)
+
+	_, err := updateBuilder.Save(ctx)
+	return err
+}
+
+func (r *RepetitiveTasksRepository) UpdateRepetitiveTask(ctx context.Context, partial models.RepetitiveTaskPartial) error {
+	updateBuilder := r.client.RepetitiveTask.UpdateOneID(partial.ID)
+
+	if partial.Description != nil {
+		updateBuilder = updateBuilder.SetDescription(*partial.Description)
+	}
+
+	if partial.Notes != nil {
+		updateBuilder = updateBuilder.SetNotes(*partial.Notes)
+	}
 
 	_, err := updateBuilder.Save(ctx)
 	return err

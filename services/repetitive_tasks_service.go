@@ -115,6 +115,13 @@ func (s *RepetitiveTaskService) IsRepetitiveTaskActual(ctx context.Context, task
 	return false, nil
 }
 
+func (s *RepetitiveTaskService) UpdateRepetitiveTask(ctx context.Context, partial models.RepetitiveTaskPartial) (*ent.RepetitiveTask, error) {
+	if err := s.repetitiveTasksRepository.UpdateRepetitiveTask(ctx, partial); err != nil {
+		return nil, err
+	}
+	return s.repetitiveTasksRepository.GetRepetitiveTaskById(ctx, partial.ID)
+}
+
 func (s *RepetitiveTaskService) AddRepetitiveTask(ctx context.Context, task models.RepetitiveTaskShort, parent *models.ContainerDescription) (*ent.RepetitiveTask, error) {
 	newRepetitiveTask, err := s.repetitiveTasksRepository.AddRepetitiveTask(ctx, task.Description, task.Tags, task.Notes, task.OnceInDays, task.OnceInWeeks, task.OnceInMonths)
 	if err != nil {

@@ -202,6 +202,13 @@ definitions:
     - id
     - type
     type: object
+  handlers.PatchContainerByIDRequest:
+    properties:
+      description:
+        type: string
+      notes:
+        type: string
+    type: object
   handlers.PatchTaskByIDRequest:
     properties:
       description:
@@ -1065,6 +1072,50 @@ paths:
       summary: Get epic by ID
       tags:
       - epics
+    patch:
+      consumes:
+      - application/json
+      description: Partially updates an epic's description and/or notes
+      parameters:
+      - description: Epic ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EpicFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Patch epic by ID
+      tags:
+      - epics
   /epics:
     get:
       consumes:
@@ -1822,6 +1873,50 @@ paths:
       summary: Get problem by ID
       tags:
       - problems
+    patch:
+      consumes:
+      - application/json
+      description: Partially updates a problem's description and/or notes
+      parameters:
+      - description: Problem ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProblemFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Patch problem by ID
+      tags:
+      - problems
   /question/{id}:
     get:
       consumes:
@@ -1859,6 +1954,50 @@ paths:
               type: string
             type: object
       summary: Get question by ID
+      tags:
+      - questions
+    patch:
+      consumes:
+      - application/json
+      description: Partially updates a question's description and/or notes
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.QuestionFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Patch question by ID
       tags:
       - questions
   /repetitive-tasks/:
@@ -1914,6 +2053,50 @@ paths:
               type: string
             type: object
       summary: Get repetitive task by ID
+      tags:
+      - repetitive-tasks
+    patch:
+      consumes:
+      - application/json
+      description: Partially updates a repetitive task's description and/or notes
+      parameters:
+      - description: Repetitive task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RepetitiveTaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Patch repetitive task by ID
       tags:
       - repetitive-tasks
   /repetitive-tasks/{id}/executions:
@@ -2067,6 +2250,50 @@ paths:
               type: string
             type: object
       summary: Get story by ID
+      tags:
+      - stories
+    patch:
+      consumes:
+      - application/json
+      description: Partially updates a story's description and/or notes
+      parameters:
+      - description: Story ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StoryFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Patch story by ID
       tags:
       - stories
   /task-report/{id}:

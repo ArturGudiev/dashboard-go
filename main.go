@@ -180,12 +180,14 @@ func main() {
 	// Repetitive task routes
 	router.GET("/repetitive-tasks", h.GetRepetitiveTasks)
 	router.GET("/repetitive-tasks/:id", h.GetRepetitiveTaskById)
+	router.PATCH("/repetitive-tasks/:id", h.PatchRepetitiveTaskByID)
 	router.POST("/repetitive-tasks/:id/executions", h.AddRepetitiveTaskExecution)
 	router.GET("/repetitive-tasks/:id/executions", h.GetRepetitiveTaskExecutions)
 	router.POST("/new-repetitive-task", h.NewRepetitiveTask)
 
 	// Problem routes
 	router.GET("/problem/:id", h.GetProblemByID)
+	router.PATCH("/problem/:id", h.PatchProblemByID)
 	router.POST("/get-problems", h.GetProblemsByIDs)
 	router.POST("/solve-problem/:id", h.SolveProblem)
 	router.POST("/new-problem", h.NewProblem)
@@ -193,6 +195,7 @@ func main() {
 
 	// Question routes
 	router.GET("/question/:id", h.GetQuestionByID)
+	router.PATCH("/question/:id", h.PatchQuestionByID)
 	router.POST("/get-questions", h.GetQuestionsByIDs)
 	router.POST("/new-question", h.NewQuestion)
 	router.PUT("/update-question", h.UpdateQuestion)
@@ -200,12 +203,14 @@ func main() {
 
 	// Stories routes
 	router.GET("/story/:id", h.GetStoryByID)
+	router.PATCH("/story/:id", h.PatchStoryByID)
 	router.POST("/new-story", h.NewStory)
 	router.POST("/get-stories", h.GetStoriesByIDs)
 	router.PUT("/update-story", h.UpdateStory)
 
 	// Epic routes
 	router.GET("/epic/:id", h.GetEpicByID)
+	router.PATCH("/epic/:id", h.PatchEpicByID)
 	router.POST("/get-epics", h.GetEpicsByIDs)
 	router.POST("/new-epic", h.NewEpic)
 	router.PUT("/update-epic", h.UpdateEpic)

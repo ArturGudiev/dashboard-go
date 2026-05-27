@@ -11,6 +11,12 @@ type RepetitiveTaskShort struct {
 
 // RepetitiveTaskResponse documents repetitive task response payload in Swagger.
 // ID intentionally does not use omitempty, so OpenAPI marks it as required.
+type RepetitiveTaskPartial struct {
+	ID          int     `json:"id"`
+	Description *string `json:"description"`
+	Notes       *string `json:"notes"`
+}
+
 type RepetitiveTaskResponse struct {
 	ID           int      `json:"id" binding:"required" example:"1"`
 	Description  string   `json:"description,omitempty" example:"Fix login bug"`

@@ -55,6 +55,9 @@ type PatchTaskByIDRequest struct {
 	Notes       *string `json:"notes"`
 }
 
+// PatchContainerByIDRequest is used by PATCH endpoints that partially update a container name/notes.
+type PatchContainerByIDRequest = PatchTaskByIDRequest
+
 // UpdateTaskRequest represents a request to update an existing task
 type UpdateTaskRequest struct {
 	ID               int             `json:"id"`
