@@ -125,7 +125,7 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 
 // GetDoneTasks handles GET /done-tasks
 // @Summary      Get done tasks from today
-// @Description  Returns all done tasks where doneDateTime is today 
+// @Description  Returns all done tasks where doneDateTime is today
 // @Param from query string false "From date-time filter (RFC3339)" format(date-time) example(2026-04-23T00:00:00+03:00)
 // @Tags         tasks
 // @Accept       json
@@ -318,6 +318,42 @@ func (h *Handler) NewTask(c *gin.Context) {
 	}
 
 	c.JSON(200, newTask)
+}
+
+// NewTask handles POST /change-tasks-order
+// @Summary      Change tasks order
+// @Description  Changes the order of tasks in a container
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        request  body      ChangeTasksOrderRequest  true  "Change tasks order request"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /change-tasks-order [post]
+func (h *Handler) ChangeTasksOrder(c *gin.Context) {
+	var req ChangeTasksOrderRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	_, err := h.App.ContainerService.ChangeTasksOrder(ctx, req.ContainerType, req.ContainerID, req.TasksInNewOrder)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	openTasksIDs, err := h.App.ContainerService.GetOpenSubtasksIDs(ctx, req.ContainerType, req.ContainerID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"subtasksIDs": openTasksIDs})
 }
 
 // PatchTaskByID handles PATCH /task/:id

@@ -209,6 +209,68 @@ const docTemplate = `{
                 }
             }
         },
+        "/change-tasks-order": {
+            "post": {
+                "description": "Changes the order of tasks in a container",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Change tasks order",
+                "parameters": [
+                    {
+                        "description": "Change tasks order request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ChangeTasksOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/done-tasks": {
             "get": {
                 "description": "Returns all done tasks where doneDateTime is today",
@@ -2867,6 +2929,28 @@ const docTemplate = `{
             "properties": {
                 "answer": {
                     "type": "string"
+                }
+            }
+        },
+        "handlers.ChangeTasksOrderRequest": {
+            "type": "object",
+            "required": [
+                "containerID",
+                "containerType",
+                "tasksInNewOrder"
+            ],
+            "properties": {
+                "containerID": {
+                    "type": "integer"
+                },
+                "containerType": {
+                    "$ref": "#/definitions/schema.ContainerType"
+                },
+                "tasksInNewOrder": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },

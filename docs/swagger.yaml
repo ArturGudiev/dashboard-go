@@ -124,6 +124,21 @@ definitions:
     required:
     - answer
     type: object
+  handlers.ChangeTasksOrderRequest:
+    properties:
+      containerID:
+        type: integer
+      containerType:
+        $ref: '#/definitions/schema.ContainerType'
+      tasksInNewOrder:
+        items:
+          type: integer
+        type: array
+    required:
+    - containerID
+    - containerType
+    - tasksInNewOrder
+    type: object
   handlers.IDsRequest:
     properties:
       ids:
@@ -1003,6 +1018,47 @@ paths:
       summary: Answer question
       tags:
       - questions
+  /change-tasks-order:
+    post:
+      consumes:
+      - application/json
+      description: Changes the order of tasks in a container
+      parameters:
+      - description: Change tasks order request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ChangeTasksOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Change tasks order
+      tags:
+      - tasks
   /done-tasks:
     get:
       consumes:

@@ -104,3 +104,16 @@ func (s *ChildContainerRepository) AddConnection(ctx context.Context, parentType
 
 	return newRelation, nil
 }
+
+func (s *ChildContainerRepository) UpdateChildOrders(ctx context.Context, relations []*ent.ContainerChild) error {
+	for _, relation := range relations {
+		if _, err := s.client.ContainerChild.Update().
+			Where(containerchild.IDEQ(relation.ID)).
+			SetChildOrder(relation.ChildOrder).
+			Save(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

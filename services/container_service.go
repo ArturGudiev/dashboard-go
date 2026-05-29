@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/ddddddO/gtree"
@@ -47,6 +48,61 @@ func (s *ContainerService) GetOpenSubtasksIDs(ctx context.Context, containerType
 		}
 	}
 	return openTasksIDs, nil
+}
+
+// func (s *ContainerService) GetAllSubtasksAsRelations(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.ContainerChild, error) {
+// 	allTasksRelations := []*ent.ContainerChild{}
+// 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeTask)
+// 	if err != nil {
+// 		return []*ent.ContainerChild{}, err
+// 	}
+
+// 	return childRelations, nil
+// }
+
+func (s *ContainerService) ChangeTasksOrder(
+	ctx context.Context,
+	parentType schema.ContainerType,
+	parentID int,
+	tasksInNewOrder []int,
+) ([]*ent.ContainerChild, error) {
+
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, parentType, parentID, schema.ContainerTypeTask)
+	if err != nil {
+		return nil, err
+	}
+
+	allowedTaskIDs := make(map[int]struct{}, len(tasksInNewOrder))
+	for _, taskID := range tasksInNewOrder {
+		allowedTaskIDs[taskID] = struct{}{}
+	}
+
+	filteredRelations := make([]*ent.ContainerChild, 0, len(childRelations))
+	for _, relation := range childRelations {
+		if _, ok := allowedTaskIDs[relation.ChildID]; !ok {
+			continue
+		}
+		filteredRelations = append(filteredRelations, relation)
+	}
+
+	orderIndex := make(map[int]int, len(tasksInNewOrder))
+	for i, taskID := range tasksInNewOrder {
+		orderIndex[taskID] = i
+	}
+
+	slices.SortFunc(filteredRelations, func(a, b *ent.ContainerChild) int {
+		return orderIndex[a.ChildID] - orderIndex[b.ChildID]
+	})
+
+	for i, relation := range filteredRelations {
+		relation.ChildOrder = i + 1
+	}
+
+	if err := s.childContainerRepository.UpdateChildOrders(ctx, filteredRelations); err != nil {
+		return nil, err
+	}
+
+	return filteredRelations, nil
 }
 
 func (s *ContainerService) GetOpenSubtasks(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.Task, error) {
