@@ -5,6 +5,7 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/containervariables"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
@@ -17,6 +18,7 @@ import (
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
+	"arturgudiev/dashboard/ent/variablesstack"
 	"context"
 	"errors"
 	"fmt"
@@ -38,6 +40,7 @@ const (
 	// Node types.
 	TypeAlias                   = "Alias"
 	TypeContainerChild          = "ContainerChild"
+	TypeContainerVariables      = "ContainerVariables"
 	TypeEpic                    = "Epic"
 	TypeKnowledgeNode           = "KnowledgeNode"
 	TypeLogMessage              = "LogMessage"
@@ -48,6 +51,7 @@ const (
 	TypeStory                   = "Story"
 	TypeTask                    = "Task"
 	TypeTest                    = "Test"
+	TypeVariablesStack          = "VariablesStack"
 )
 
 // AliasMutation represents an operation that mutates the Alias nodes in the graph.
@@ -1357,6 +1361,503 @@ func (m *ContainerChildMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ContainerChildMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown ContainerChild edge %s", name)
+}
+
+// ContainerVariablesMutation represents an operation that mutates the ContainerVariables nodes in the graph.
+type ContainerVariablesMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *int
+	variable_name          *string
+	variable_value         *string
+	clearedFields          map[string]struct{}
+	variables_stack        *int
+	clearedvariables_stack bool
+	done                   bool
+	oldValue               func(context.Context) (*ContainerVariables, error)
+	predicates             []predicate.ContainerVariables
+}
+
+var _ ent.Mutation = (*ContainerVariablesMutation)(nil)
+
+// containervariablesOption allows management of the mutation configuration using functional options.
+type containervariablesOption func(*ContainerVariablesMutation)
+
+// newContainerVariablesMutation creates new mutation for the ContainerVariables entity.
+func newContainerVariablesMutation(c config, op Op, opts ...containervariablesOption) *ContainerVariablesMutation {
+	m := &ContainerVariablesMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeContainerVariables,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withContainerVariablesID sets the ID field of the mutation.
+func withContainerVariablesID(id int) containervariablesOption {
+	return func(m *ContainerVariablesMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ContainerVariables
+		)
+		m.oldValue = func(ctx context.Context) (*ContainerVariables, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ContainerVariables.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withContainerVariables sets the old ContainerVariables of the mutation.
+func withContainerVariables(node *ContainerVariables) containervariablesOption {
+	return func(m *ContainerVariablesMutation) {
+		m.oldValue = func(context.Context) (*ContainerVariables, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ContainerVariablesMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ContainerVariablesMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ContainerVariables entities.
+func (m *ContainerVariablesMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ContainerVariablesMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ContainerVariablesMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ContainerVariables.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetVariablesStackID sets the "variables_stack_id" field.
+func (m *ContainerVariablesMutation) SetVariablesStackID(i int) {
+	m.variables_stack = &i
+}
+
+// VariablesStackID returns the value of the "variables_stack_id" field in the mutation.
+func (m *ContainerVariablesMutation) VariablesStackID() (r int, exists bool) {
+	v := m.variables_stack
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVariablesStackID returns the old "variables_stack_id" field's value of the ContainerVariables entity.
+// If the ContainerVariables object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContainerVariablesMutation) OldVariablesStackID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVariablesStackID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVariablesStackID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVariablesStackID: %w", err)
+	}
+	return oldValue.VariablesStackID, nil
+}
+
+// ResetVariablesStackID resets all changes to the "variables_stack_id" field.
+func (m *ContainerVariablesMutation) ResetVariablesStackID() {
+	m.variables_stack = nil
+}
+
+// SetVariableName sets the "variable_name" field.
+func (m *ContainerVariablesMutation) SetVariableName(s string) {
+	m.variable_name = &s
+}
+
+// VariableName returns the value of the "variable_name" field in the mutation.
+func (m *ContainerVariablesMutation) VariableName() (r string, exists bool) {
+	v := m.variable_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVariableName returns the old "variable_name" field's value of the ContainerVariables entity.
+// If the ContainerVariables object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContainerVariablesMutation) OldVariableName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVariableName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVariableName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVariableName: %w", err)
+	}
+	return oldValue.VariableName, nil
+}
+
+// ResetVariableName resets all changes to the "variable_name" field.
+func (m *ContainerVariablesMutation) ResetVariableName() {
+	m.variable_name = nil
+}
+
+// SetVariableValue sets the "variable_value" field.
+func (m *ContainerVariablesMutation) SetVariableValue(s string) {
+	m.variable_value = &s
+}
+
+// VariableValue returns the value of the "variable_value" field in the mutation.
+func (m *ContainerVariablesMutation) VariableValue() (r string, exists bool) {
+	v := m.variable_value
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVariableValue returns the old "variable_value" field's value of the ContainerVariables entity.
+// If the ContainerVariables object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContainerVariablesMutation) OldVariableValue(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVariableValue is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVariableValue requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVariableValue: %w", err)
+	}
+	return oldValue.VariableValue, nil
+}
+
+// ResetVariableValue resets all changes to the "variable_value" field.
+func (m *ContainerVariablesMutation) ResetVariableValue() {
+	m.variable_value = nil
+}
+
+// ClearVariablesStack clears the "variables_stack" edge to the VariablesStack entity.
+func (m *ContainerVariablesMutation) ClearVariablesStack() {
+	m.clearedvariables_stack = true
+	m.clearedFields[containervariables.FieldVariablesStackID] = struct{}{}
+}
+
+// VariablesStackCleared reports if the "variables_stack" edge to the VariablesStack entity was cleared.
+func (m *ContainerVariablesMutation) VariablesStackCleared() bool {
+	return m.clearedvariables_stack
+}
+
+// VariablesStackIDs returns the "variables_stack" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// VariablesStackID instead. It exists only for internal usage by the builders.
+func (m *ContainerVariablesMutation) VariablesStackIDs() (ids []int) {
+	if id := m.variables_stack; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetVariablesStack resets all changes to the "variables_stack" edge.
+func (m *ContainerVariablesMutation) ResetVariablesStack() {
+	m.variables_stack = nil
+	m.clearedvariables_stack = false
+}
+
+// Where appends a list predicates to the ContainerVariablesMutation builder.
+func (m *ContainerVariablesMutation) Where(ps ...predicate.ContainerVariables) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ContainerVariablesMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ContainerVariablesMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ContainerVariables, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ContainerVariablesMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ContainerVariablesMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ContainerVariables).
+func (m *ContainerVariablesMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ContainerVariablesMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.variables_stack != nil {
+		fields = append(fields, containervariables.FieldVariablesStackID)
+	}
+	if m.variable_name != nil {
+		fields = append(fields, containervariables.FieldVariableName)
+	}
+	if m.variable_value != nil {
+		fields = append(fields, containervariables.FieldVariableValue)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ContainerVariablesMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case containervariables.FieldVariablesStackID:
+		return m.VariablesStackID()
+	case containervariables.FieldVariableName:
+		return m.VariableName()
+	case containervariables.FieldVariableValue:
+		return m.VariableValue()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ContainerVariablesMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case containervariables.FieldVariablesStackID:
+		return m.OldVariablesStackID(ctx)
+	case containervariables.FieldVariableName:
+		return m.OldVariableName(ctx)
+	case containervariables.FieldVariableValue:
+		return m.OldVariableValue(ctx)
+	}
+	return nil, fmt.Errorf("unknown ContainerVariables field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ContainerVariablesMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case containervariables.FieldVariablesStackID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVariablesStackID(v)
+		return nil
+	case containervariables.FieldVariableName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVariableName(v)
+		return nil
+	case containervariables.FieldVariableValue:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVariableValue(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ContainerVariables field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ContainerVariablesMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ContainerVariablesMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ContainerVariablesMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ContainerVariables numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ContainerVariablesMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ContainerVariablesMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ContainerVariablesMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ContainerVariables nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ContainerVariablesMutation) ResetField(name string) error {
+	switch name {
+	case containervariables.FieldVariablesStackID:
+		m.ResetVariablesStackID()
+		return nil
+	case containervariables.FieldVariableName:
+		m.ResetVariableName()
+		return nil
+	case containervariables.FieldVariableValue:
+		m.ResetVariableValue()
+		return nil
+	}
+	return fmt.Errorf("unknown ContainerVariables field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ContainerVariablesMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.variables_stack != nil {
+		edges = append(edges, containervariables.EdgeVariablesStack)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ContainerVariablesMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case containervariables.EdgeVariablesStack:
+		if id := m.variables_stack; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ContainerVariablesMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ContainerVariablesMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ContainerVariablesMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedvariables_stack {
+		edges = append(edges, containervariables.EdgeVariablesStack)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ContainerVariablesMutation) EdgeCleared(name string) bool {
+	switch name {
+	case containervariables.EdgeVariablesStack:
+		return m.clearedvariables_stack
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ContainerVariablesMutation) ClearEdge(name string) error {
+	switch name {
+	case containervariables.EdgeVariablesStack:
+		m.ClearVariablesStack()
+		return nil
+	}
+	return fmt.Errorf("unknown ContainerVariables unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ContainerVariablesMutation) ResetEdge(name string) error {
+	switch name {
+	case containervariables.EdgeVariablesStack:
+		m.ResetVariablesStack()
+		return nil
+	}
+	return fmt.Errorf("unknown ContainerVariables edge %s", name)
 }
 
 // EpicMutation represents an operation that mutates the Epic nodes in the graph.
@@ -7258,4 +7759,519 @@ func (m *TestMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TestMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Test edge %s", name)
+}
+
+// VariablesStackMutation represents an operation that mutates the VariablesStack nodes in the graph.
+type VariablesStackMutation struct {
+	config
+	op                         Op
+	typ                        string
+	id                         *int
+	container_type             *schema.ContainerType
+	container_id               *int
+	addcontainer_id            *int
+	clearedFields              map[string]struct{}
+	container_variables        map[int]struct{}
+	removedcontainer_variables map[int]struct{}
+	clearedcontainer_variables bool
+	done                       bool
+	oldValue                   func(context.Context) (*VariablesStack, error)
+	predicates                 []predicate.VariablesStack
+}
+
+var _ ent.Mutation = (*VariablesStackMutation)(nil)
+
+// variablesstackOption allows management of the mutation configuration using functional options.
+type variablesstackOption func(*VariablesStackMutation)
+
+// newVariablesStackMutation creates new mutation for the VariablesStack entity.
+func newVariablesStackMutation(c config, op Op, opts ...variablesstackOption) *VariablesStackMutation {
+	m := &VariablesStackMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeVariablesStack,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withVariablesStackID sets the ID field of the mutation.
+func withVariablesStackID(id int) variablesstackOption {
+	return func(m *VariablesStackMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *VariablesStack
+		)
+		m.oldValue = func(ctx context.Context) (*VariablesStack, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().VariablesStack.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withVariablesStack sets the old VariablesStack of the mutation.
+func withVariablesStack(node *VariablesStack) variablesstackOption {
+	return func(m *VariablesStackMutation) {
+		m.oldValue = func(context.Context) (*VariablesStack, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m VariablesStackMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m VariablesStackMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of VariablesStack entities.
+func (m *VariablesStackMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *VariablesStackMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *VariablesStackMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().VariablesStack.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetContainerType sets the "container_type" field.
+func (m *VariablesStackMutation) SetContainerType(st schema.ContainerType) {
+	m.container_type = &st
+}
+
+// ContainerType returns the value of the "container_type" field in the mutation.
+func (m *VariablesStackMutation) ContainerType() (r schema.ContainerType, exists bool) {
+	v := m.container_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerType returns the old "container_type" field's value of the VariablesStack entity.
+// If the VariablesStack object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VariablesStackMutation) OldContainerType(ctx context.Context) (v schema.ContainerType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerType: %w", err)
+	}
+	return oldValue.ContainerType, nil
+}
+
+// ResetContainerType resets all changes to the "container_type" field.
+func (m *VariablesStackMutation) ResetContainerType() {
+	m.container_type = nil
+}
+
+// SetContainerID sets the "container_id" field.
+func (m *VariablesStackMutation) SetContainerID(i int) {
+	m.container_id = &i
+	m.addcontainer_id = nil
+}
+
+// ContainerID returns the value of the "container_id" field in the mutation.
+func (m *VariablesStackMutation) ContainerID() (r int, exists bool) {
+	v := m.container_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerID returns the old "container_id" field's value of the VariablesStack entity.
+// If the VariablesStack object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VariablesStackMutation) OldContainerID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerID: %w", err)
+	}
+	return oldValue.ContainerID, nil
+}
+
+// AddContainerID adds i to the "container_id" field.
+func (m *VariablesStackMutation) AddContainerID(i int) {
+	if m.addcontainer_id != nil {
+		*m.addcontainer_id += i
+	} else {
+		m.addcontainer_id = &i
+	}
+}
+
+// AddedContainerID returns the value that was added to the "container_id" field in this mutation.
+func (m *VariablesStackMutation) AddedContainerID() (r int, exists bool) {
+	v := m.addcontainer_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetContainerID resets all changes to the "container_id" field.
+func (m *VariablesStackMutation) ResetContainerID() {
+	m.container_id = nil
+	m.addcontainer_id = nil
+}
+
+// AddContainerVariableIDs adds the "container_variables" edge to the ContainerVariables entity by ids.
+func (m *VariablesStackMutation) AddContainerVariableIDs(ids ...int) {
+	if m.container_variables == nil {
+		m.container_variables = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.container_variables[ids[i]] = struct{}{}
+	}
+}
+
+// ClearContainerVariables clears the "container_variables" edge to the ContainerVariables entity.
+func (m *VariablesStackMutation) ClearContainerVariables() {
+	m.clearedcontainer_variables = true
+}
+
+// ContainerVariablesCleared reports if the "container_variables" edge to the ContainerVariables entity was cleared.
+func (m *VariablesStackMutation) ContainerVariablesCleared() bool {
+	return m.clearedcontainer_variables
+}
+
+// RemoveContainerVariableIDs removes the "container_variables" edge to the ContainerVariables entity by IDs.
+func (m *VariablesStackMutation) RemoveContainerVariableIDs(ids ...int) {
+	if m.removedcontainer_variables == nil {
+		m.removedcontainer_variables = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.container_variables, ids[i])
+		m.removedcontainer_variables[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedContainerVariables returns the removed IDs of the "container_variables" edge to the ContainerVariables entity.
+func (m *VariablesStackMutation) RemovedContainerVariablesIDs() (ids []int) {
+	for id := range m.removedcontainer_variables {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ContainerVariablesIDs returns the "container_variables" edge IDs in the mutation.
+func (m *VariablesStackMutation) ContainerVariablesIDs() (ids []int) {
+	for id := range m.container_variables {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetContainerVariables resets all changes to the "container_variables" edge.
+func (m *VariablesStackMutation) ResetContainerVariables() {
+	m.container_variables = nil
+	m.clearedcontainer_variables = false
+	m.removedcontainer_variables = nil
+}
+
+// Where appends a list predicates to the VariablesStackMutation builder.
+func (m *VariablesStackMutation) Where(ps ...predicate.VariablesStack) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the VariablesStackMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *VariablesStackMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.VariablesStack, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *VariablesStackMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *VariablesStackMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (VariablesStack).
+func (m *VariablesStackMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *VariablesStackMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.container_type != nil {
+		fields = append(fields, variablesstack.FieldContainerType)
+	}
+	if m.container_id != nil {
+		fields = append(fields, variablesstack.FieldContainerID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *VariablesStackMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case variablesstack.FieldContainerType:
+		return m.ContainerType()
+	case variablesstack.FieldContainerID:
+		return m.ContainerID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *VariablesStackMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case variablesstack.FieldContainerType:
+		return m.OldContainerType(ctx)
+	case variablesstack.FieldContainerID:
+		return m.OldContainerID(ctx)
+	}
+	return nil, fmt.Errorf("unknown VariablesStack field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *VariablesStackMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case variablesstack.FieldContainerType:
+		v, ok := value.(schema.ContainerType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerType(v)
+		return nil
+	case variablesstack.FieldContainerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown VariablesStack field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *VariablesStackMutation) AddedFields() []string {
+	var fields []string
+	if m.addcontainer_id != nil {
+		fields = append(fields, variablesstack.FieldContainerID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *VariablesStackMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case variablesstack.FieldContainerID:
+		return m.AddedContainerID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *VariablesStackMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case variablesstack.FieldContainerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddContainerID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown VariablesStack numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *VariablesStackMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *VariablesStackMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *VariablesStackMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown VariablesStack nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *VariablesStackMutation) ResetField(name string) error {
+	switch name {
+	case variablesstack.FieldContainerType:
+		m.ResetContainerType()
+		return nil
+	case variablesstack.FieldContainerID:
+		m.ResetContainerID()
+		return nil
+	}
+	return fmt.Errorf("unknown VariablesStack field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *VariablesStackMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.container_variables != nil {
+		edges = append(edges, variablesstack.EdgeContainerVariables)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *VariablesStackMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case variablesstack.EdgeContainerVariables:
+		ids := make([]ent.Value, 0, len(m.container_variables))
+		for id := range m.container_variables {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *VariablesStackMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedcontainer_variables != nil {
+		edges = append(edges, variablesstack.EdgeContainerVariables)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *VariablesStackMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case variablesstack.EdgeContainerVariables:
+		ids := make([]ent.Value, 0, len(m.removedcontainer_variables))
+		for id := range m.removedcontainer_variables {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *VariablesStackMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedcontainer_variables {
+		edges = append(edges, variablesstack.EdgeContainerVariables)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *VariablesStackMutation) EdgeCleared(name string) bool {
+	switch name {
+	case variablesstack.EdgeContainerVariables:
+		return m.clearedcontainer_variables
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *VariablesStackMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown VariablesStack unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *VariablesStackMutation) ResetEdge(name string) error {
+	switch name {
+	case variablesstack.EdgeContainerVariables:
+		m.ResetContainerVariables()
+		return nil
+	}
+	return fmt.Errorf("unknown VariablesStack edge %s", name)
 }

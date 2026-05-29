@@ -4,6 +4,7 @@ import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/models"
+	"arturgudiev/dashboard/repositories"
 	"context"
 	"errors"
 	"fmt"
@@ -17,15 +18,30 @@ type TaskService struct {
 	containerService         *ContainerService
 	problemService           *ProblemService
 	tasksRepository          *TasksRepository
-	childContainerRepository *ChildContainerRepository
-	reportService            *ReportService
+	childContainerRepository       *ChildContainerRepository
+	containerVariablesRepository *repositories.ContainerVariablesRepository
+	reportService                  *ReportService
 }
 
 // NewTaskService creates a new TaskService
-func NewTaskService(client *ent.Client, containerService *ContainerService, problemService *ProblemService,
-	tasksRepository *TasksRepository, childContainerRepository *ChildContainerRepository, reportService *ReportService) *TaskService {
-	return &TaskService{client: client, containerService: containerService, problemService: problemService,
-		tasksRepository: tasksRepository, childContainerRepository: childContainerRepository, reportService: reportService}
+func NewTaskService(
+	client *ent.Client,
+	containerService *ContainerService,
+	problemService *ProblemService,
+	tasksRepository *TasksRepository,
+	childContainerRepository *ChildContainerRepository,
+	containerVariablesRepository *repositories.ContainerVariablesRepository,
+	reportService *ReportService,
+) *TaskService {
+	return &TaskService{
+		client:                         client,
+		containerService:               containerService,
+		problemService:                 problemService,
+		tasksRepository:                tasksRepository,
+		childContainerRepository:       childContainerRepository,
+		containerVariablesRepository:   containerVariablesRepository,
+		reportService:                  reportService,
+	}
 }
 
 // GetOpenDescendantTasks recursively gets all descendant tasks that are not done
@@ -99,14 +115,17 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 	subquestions, errQuestions := s.containerService.GetOpenQuestionsIDs(ctx, schema.ContainerTypeTask, ID)
 
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeTask, ID)
+	variables, errVariables := s.containerVariablesRepository.GetVariablesByContainer(ctx, schema.ContainerTypeTask, ID)
 
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errQuestions != nil {
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errQuestions != nil || errVariables != nil {
 		return nil, errors.New("problem not found")
 	}
-	TaskFull := &models.TaskFull{
+
+	taskFull := &models.TaskFull{
 		ID:               ID,
 		Description:      task.Description,
 		Tags:             task.Tags,
+		Done:             task.Done,
 		Notes:            task.Notes,
 		Tasks:            subtasks,
 		Problems:         subproblems,
@@ -116,10 +135,26 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 		KnowledgeBits:    []int{},
 		ParentContainers: parentContainers,
 		KnowledgeNodes:   []int{},
+		Variables:        toContainerVariables(variables),
 		DoneDateTime:     task.DoneDateTime,
 	}
 
-	return TaskFull, nil
+	return taskFull, nil
+}
+
+func toContainerVariables(variables []*ent.ContainerVariables) []models.ContainerVariable {
+	if len(variables) == 0 {
+		return []models.ContainerVariable{}
+	}
+	result := make([]models.ContainerVariable, len(variables))
+	for i, v := range variables {
+		result[i] = models.ContainerVariable{
+			ID:            v.ID,
+			VariableName:  v.VariableName,
+			VariableValue: v.VariableValue,
+		}
+	}
+	return result
 }
 
 func (s *TaskService) GetTasksFull(ctx context.Context, IDs []int) ([]*models.TaskFull, error) {

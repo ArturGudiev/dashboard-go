@@ -32,6 +32,18 @@ func (f ContainerChildFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ContainerChildMutation", m)
 }
 
+// The ContainerVariablesFunc type is an adapter to allow the use of ordinary
+// function as ContainerVariables mutator.
+type ContainerVariablesFunc func(context.Context, *ent.ContainerVariablesMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ContainerVariablesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ContainerVariablesMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ContainerVariablesMutation", m)
+}
+
 // The EpicFunc type is an adapter to allow the use of ordinary
 // function as Epic mutator.
 type EpicFunc func(context.Context, *ent.EpicMutation) (ent.Value, error)
@@ -150,6 +162,18 @@ func (f TestFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TestMutation", m)
+}
+
+// The VariablesStackFunc type is an adapter to allow the use of ordinary
+// function as VariablesStack mutator.
+type VariablesStackFunc func(context.Context, *ent.VariablesStackMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f VariablesStackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.VariablesStackMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VariablesStackMutation", m)
 }
 
 // Condition is a hook condition function.

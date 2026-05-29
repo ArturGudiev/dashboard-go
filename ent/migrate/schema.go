@@ -66,6 +66,39 @@ var (
 			},
 		},
 	}
+	// ContainerVariablesColumns holds the columns for the "container_variables" table.
+	ContainerVariablesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "variable_name", Type: field.TypeString},
+		{Name: "variable_value", Type: field.TypeString, Default: ""},
+		{Name: "variables_stack_id", Type: field.TypeInt},
+	}
+	// ContainerVariablesTable holds the schema information for the "container_variables" table.
+	ContainerVariablesTable = &schema.Table{
+		Name:       "container_variables",
+		Columns:    ContainerVariablesColumns,
+		PrimaryKey: []*schema.Column{ContainerVariablesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "container_variables_variables_stacks_container_variables",
+				Columns:    []*schema.Column{ContainerVariablesColumns[3]},
+				RefColumns: []*schema.Column{VariablesStacksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "containervariables_variables_stack_id_variable_name",
+				Unique:  true,
+				Columns: []*schema.Column{ContainerVariablesColumns[3], ContainerVariablesColumns[1]},
+			},
+			{
+				Name:    "containervariables_variables_stack_id",
+				Unique:  false,
+				Columns: []*schema.Column{ContainerVariablesColumns[3]},
+			},
+		},
+	}
 	// EpicsColumns holds the columns for the "epics" table.
 	EpicsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -219,10 +252,30 @@ var (
 		Columns:    TestsColumns,
 		PrimaryKey: []*schema.Column{TestsColumns[0]},
 	}
+	// VariablesStacksColumns holds the columns for the "variables_stacks" table.
+	VariablesStacksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "container_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state"}},
+		{Name: "container_id", Type: field.TypeInt},
+	}
+	// VariablesStacksTable holds the schema information for the "variables_stacks" table.
+	VariablesStacksTable = &schema.Table{
+		Name:       "variables_stacks",
+		Columns:    VariablesStacksColumns,
+		PrimaryKey: []*schema.Column{VariablesStacksColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "variablesstack_container_type_container_id",
+				Unique:  true,
+				Columns: []*schema.Column{VariablesStacksColumns[1], VariablesStacksColumns[2]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AliasesTable,
 		ContainerChildrenTable,
+		ContainerVariablesTable,
 		EpicsTable,
 		KnowledgeNodesTable,
 		LogMessagesTable,
@@ -233,6 +286,7 @@ var (
 		StoriesTable,
 		TasksTable,
 		TestsTable,
+		VariablesStacksTable,
 	}
 )
 
@@ -243,5 +297,12 @@ func init() {
 	ContainerChildrenTable.Annotation = &entsql.Annotation{
 		Table: "container_children",
 	}
+	ContainerVariablesTable.ForeignKeys[0].RefTable = VariablesStacksTable
+	ContainerVariablesTable.Annotation = &entsql.Annotation{
+		Table: "container_variables",
+	}
 	RepetitiveTaskExecutionsTable.ForeignKeys[0].RefTable = RepetitiveTasksTable
+	VariablesStacksTable.Annotation = &entsql.Annotation{
+		Table: "variables_stacks",
+	}
 }

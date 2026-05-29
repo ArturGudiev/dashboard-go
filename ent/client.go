@@ -13,6 +13,7 @@ import (
 
 	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/containervariables"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
@@ -23,6 +24,7 @@ import (
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
+	"arturgudiev/dashboard/ent/variablesstack"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -39,6 +41,8 @@ type Client struct {
 	Alias *AliasClient
 	// ContainerChild is the client for interacting with the ContainerChild builders.
 	ContainerChild *ContainerChildClient
+	// ContainerVariables is the client for interacting with the ContainerVariables builders.
+	ContainerVariables *ContainerVariablesClient
 	// Epic is the client for interacting with the Epic builders.
 	Epic *EpicClient
 	// KnowledgeNode is the client for interacting with the KnowledgeNode builders.
@@ -59,6 +63,8 @@ type Client struct {
 	Task *TaskClient
 	// Test is the client for interacting with the Test builders.
 	Test *TestClient
+	// VariablesStack is the client for interacting with the VariablesStack builders.
+	VariablesStack *VariablesStackClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -72,6 +78,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alias = NewAliasClient(c.config)
 	c.ContainerChild = NewContainerChildClient(c.config)
+	c.ContainerVariables = NewContainerVariablesClient(c.config)
 	c.Epic = NewEpicClient(c.config)
 	c.KnowledgeNode = NewKnowledgeNodeClient(c.config)
 	c.LogMessage = NewLogMessageClient(c.config)
@@ -82,6 +89,7 @@ func (c *Client) init() {
 	c.Story = NewStoryClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Test = NewTestClient(c.config)
+	c.VariablesStack = NewVariablesStackClient(c.config)
 }
 
 type (
@@ -176,6 +184,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:                  cfg,
 		Alias:                   NewAliasClient(cfg),
 		ContainerChild:          NewContainerChildClient(cfg),
+		ContainerVariables:      NewContainerVariablesClient(cfg),
 		Epic:                    NewEpicClient(cfg),
 		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
 		LogMessage:              NewLogMessageClient(cfg),
@@ -186,6 +195,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Story:                   NewStoryClient(cfg),
 		Task:                    NewTaskClient(cfg),
 		Test:                    NewTestClient(cfg),
+		VariablesStack:          NewVariablesStackClient(cfg),
 	}, nil
 }
 
@@ -207,6 +217,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:                  cfg,
 		Alias:                   NewAliasClient(cfg),
 		ContainerChild:          NewContainerChildClient(cfg),
+		ContainerVariables:      NewContainerVariablesClient(cfg),
 		Epic:                    NewEpicClient(cfg),
 		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
 		LogMessage:              NewLogMessageClient(cfg),
@@ -217,6 +228,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Story:                   NewStoryClient(cfg),
 		Task:                    NewTaskClient(cfg),
 		Test:                    NewTestClient(cfg),
+		VariablesStack:          NewVariablesStackClient(cfg),
 	}, nil
 }
 
@@ -246,9 +258,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alias, c.ContainerChild, c.Epic, c.KnowledgeNode, c.LogMessage, c.Problem,
-		c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story, c.Task,
-		c.Test,
+		c.Alias, c.ContainerChild, c.ContainerVariables, c.Epic, c.KnowledgeNode,
+		c.LogMessage, c.Problem, c.Question, c.RepetitiveTask,
+		c.RepetitiveTaskExecution, c.Story, c.Task, c.Test, c.VariablesStack,
 	} {
 		n.Use(hooks...)
 	}
@@ -258,9 +270,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alias, c.ContainerChild, c.Epic, c.KnowledgeNode, c.LogMessage, c.Problem,
-		c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story, c.Task,
-		c.Test,
+		c.Alias, c.ContainerChild, c.ContainerVariables, c.Epic, c.KnowledgeNode,
+		c.LogMessage, c.Problem, c.Question, c.RepetitiveTask,
+		c.RepetitiveTaskExecution, c.Story, c.Task, c.Test, c.VariablesStack,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -273,6 +285,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Alias.mutate(ctx, m)
 	case *ContainerChildMutation:
 		return c.ContainerChild.mutate(ctx, m)
+	case *ContainerVariablesMutation:
+		return c.ContainerVariables.mutate(ctx, m)
 	case *EpicMutation:
 		return c.Epic.mutate(ctx, m)
 	case *KnowledgeNodeMutation:
@@ -293,6 +307,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Task.mutate(ctx, m)
 	case *TestMutation:
 		return c.Test.mutate(ctx, m)
+	case *VariablesStackMutation:
+		return c.VariablesStack.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -561,6 +577,155 @@ func (c *ContainerChildClient) mutate(ctx context.Context, m *ContainerChildMuta
 		return (&ContainerChildDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ContainerChild mutation op: %q", m.Op())
+	}
+}
+
+// ContainerVariablesClient is a client for the ContainerVariables schema.
+type ContainerVariablesClient struct {
+	config
+}
+
+// NewContainerVariablesClient returns a client for the ContainerVariables from the given config.
+func NewContainerVariablesClient(c config) *ContainerVariablesClient {
+	return &ContainerVariablesClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `containervariables.Hooks(f(g(h())))`.
+func (c *ContainerVariablesClient) Use(hooks ...Hook) {
+	c.hooks.ContainerVariables = append(c.hooks.ContainerVariables, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `containervariables.Intercept(f(g(h())))`.
+func (c *ContainerVariablesClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ContainerVariables = append(c.inters.ContainerVariables, interceptors...)
+}
+
+// Create returns a builder for creating a ContainerVariables entity.
+func (c *ContainerVariablesClient) Create() *ContainerVariablesCreate {
+	mutation := newContainerVariablesMutation(c.config, OpCreate)
+	return &ContainerVariablesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ContainerVariables entities.
+func (c *ContainerVariablesClient) CreateBulk(builders ...*ContainerVariablesCreate) *ContainerVariablesCreateBulk {
+	return &ContainerVariablesCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ContainerVariablesClient) MapCreateBulk(slice any, setFunc func(*ContainerVariablesCreate, int)) *ContainerVariablesCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ContainerVariablesCreateBulk{err: fmt.Errorf("calling to ContainerVariablesClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ContainerVariablesCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ContainerVariablesCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ContainerVariables.
+func (c *ContainerVariablesClient) Update() *ContainerVariablesUpdate {
+	mutation := newContainerVariablesMutation(c.config, OpUpdate)
+	return &ContainerVariablesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ContainerVariablesClient) UpdateOne(_m *ContainerVariables) *ContainerVariablesUpdateOne {
+	mutation := newContainerVariablesMutation(c.config, OpUpdateOne, withContainerVariables(_m))
+	return &ContainerVariablesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ContainerVariablesClient) UpdateOneID(id int) *ContainerVariablesUpdateOne {
+	mutation := newContainerVariablesMutation(c.config, OpUpdateOne, withContainerVariablesID(id))
+	return &ContainerVariablesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ContainerVariables.
+func (c *ContainerVariablesClient) Delete() *ContainerVariablesDelete {
+	mutation := newContainerVariablesMutation(c.config, OpDelete)
+	return &ContainerVariablesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ContainerVariablesClient) DeleteOne(_m *ContainerVariables) *ContainerVariablesDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ContainerVariablesClient) DeleteOneID(id int) *ContainerVariablesDeleteOne {
+	builder := c.Delete().Where(containervariables.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ContainerVariablesDeleteOne{builder}
+}
+
+// Query returns a query builder for ContainerVariables.
+func (c *ContainerVariablesClient) Query() *ContainerVariablesQuery {
+	return &ContainerVariablesQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeContainerVariables},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ContainerVariables entity by its id.
+func (c *ContainerVariablesClient) Get(ctx context.Context, id int) (*ContainerVariables, error) {
+	return c.Query().Where(containervariables.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ContainerVariablesClient) GetX(ctx context.Context, id int) *ContainerVariables {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryVariablesStack queries the variables_stack edge of a ContainerVariables.
+func (c *ContainerVariablesClient) QueryVariablesStack(_m *ContainerVariables) *VariablesStackQuery {
+	query := (&VariablesStackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(containervariables.Table, containervariables.FieldID, id),
+			sqlgraph.To(variablesstack.Table, variablesstack.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, containervariables.VariablesStackTable, containervariables.VariablesStackColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ContainerVariablesClient) Hooks() []Hook {
+	return c.hooks.ContainerVariables
+}
+
+// Interceptors returns the client interceptors.
+func (c *ContainerVariablesClient) Interceptors() []Interceptor {
+	return c.inters.ContainerVariables
+}
+
+func (c *ContainerVariablesClient) mutate(ctx context.Context, m *ContainerVariablesMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ContainerVariablesCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ContainerVariablesUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ContainerVariablesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ContainerVariablesDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ContainerVariables mutation op: %q", m.Op())
 	}
 }
 
@@ -1926,14 +2091,165 @@ func (c *TestClient) mutate(ctx context.Context, m *TestMutation) (Value, error)
 	}
 }
 
+// VariablesStackClient is a client for the VariablesStack schema.
+type VariablesStackClient struct {
+	config
+}
+
+// NewVariablesStackClient returns a client for the VariablesStack from the given config.
+func NewVariablesStackClient(c config) *VariablesStackClient {
+	return &VariablesStackClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `variablesstack.Hooks(f(g(h())))`.
+func (c *VariablesStackClient) Use(hooks ...Hook) {
+	c.hooks.VariablesStack = append(c.hooks.VariablesStack, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `variablesstack.Intercept(f(g(h())))`.
+func (c *VariablesStackClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VariablesStack = append(c.inters.VariablesStack, interceptors...)
+}
+
+// Create returns a builder for creating a VariablesStack entity.
+func (c *VariablesStackClient) Create() *VariablesStackCreate {
+	mutation := newVariablesStackMutation(c.config, OpCreate)
+	return &VariablesStackCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of VariablesStack entities.
+func (c *VariablesStackClient) CreateBulk(builders ...*VariablesStackCreate) *VariablesStackCreateBulk {
+	return &VariablesStackCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VariablesStackClient) MapCreateBulk(slice any, setFunc func(*VariablesStackCreate, int)) *VariablesStackCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VariablesStackCreateBulk{err: fmt.Errorf("calling to VariablesStackClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VariablesStackCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VariablesStackCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for VariablesStack.
+func (c *VariablesStackClient) Update() *VariablesStackUpdate {
+	mutation := newVariablesStackMutation(c.config, OpUpdate)
+	return &VariablesStackUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *VariablesStackClient) UpdateOne(_m *VariablesStack) *VariablesStackUpdateOne {
+	mutation := newVariablesStackMutation(c.config, OpUpdateOne, withVariablesStack(_m))
+	return &VariablesStackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *VariablesStackClient) UpdateOneID(id int) *VariablesStackUpdateOne {
+	mutation := newVariablesStackMutation(c.config, OpUpdateOne, withVariablesStackID(id))
+	return &VariablesStackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for VariablesStack.
+func (c *VariablesStackClient) Delete() *VariablesStackDelete {
+	mutation := newVariablesStackMutation(c.config, OpDelete)
+	return &VariablesStackDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *VariablesStackClient) DeleteOne(_m *VariablesStack) *VariablesStackDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *VariablesStackClient) DeleteOneID(id int) *VariablesStackDeleteOne {
+	builder := c.Delete().Where(variablesstack.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &VariablesStackDeleteOne{builder}
+}
+
+// Query returns a query builder for VariablesStack.
+func (c *VariablesStackClient) Query() *VariablesStackQuery {
+	return &VariablesStackQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeVariablesStack},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a VariablesStack entity by its id.
+func (c *VariablesStackClient) Get(ctx context.Context, id int) (*VariablesStack, error) {
+	return c.Query().Where(variablesstack.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *VariablesStackClient) GetX(ctx context.Context, id int) *VariablesStack {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryContainerVariables queries the container_variables edge of a VariablesStack.
+func (c *VariablesStackClient) QueryContainerVariables(_m *VariablesStack) *ContainerVariablesQuery {
+	query := (&ContainerVariablesClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(variablesstack.Table, variablesstack.FieldID, id),
+			sqlgraph.To(containervariables.Table, containervariables.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, variablesstack.ContainerVariablesTable, variablesstack.ContainerVariablesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *VariablesStackClient) Hooks() []Hook {
+	return c.hooks.VariablesStack
+}
+
+// Interceptors returns the client interceptors.
+func (c *VariablesStackClient) Interceptors() []Interceptor {
+	return c.inters.VariablesStack
+}
+
+func (c *VariablesStackClient) mutate(ctx context.Context, m *VariablesStackMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VariablesStackCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VariablesStackUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VariablesStackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VariablesStackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VariablesStack mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alias, ContainerChild, Epic, KnowledgeNode, LogMessage, Problem, Question,
-		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test []ent.Hook
+		Alias, ContainerChild, ContainerVariables, Epic, KnowledgeNode, LogMessage,
+		Problem, Question, RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
+		VariablesStack []ent.Hook
 	}
 	inters struct {
-		Alias, ContainerChild, Epic, KnowledgeNode, LogMessage, Problem, Question,
-		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test []ent.Interceptor
+		Alias, ContainerChild, ContainerVariables, Epic, KnowledgeNode, LogMessage,
+		Problem, Question, RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
+		VariablesStack []ent.Interceptor
 	}
 )

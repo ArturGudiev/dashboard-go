@@ -165,3 +165,11 @@ type NewRepetitiveTaskRequest struct {
 type RepetitiveTasksQuery struct {
 	Actual *bool `form:"actual"`
 }
+
+// AddContainerVariableRequest adds a variable to a container's variables stack.
+type AddContainerVariableRequest struct {
+	ContainerType schema.ContainerType `json:"containerType" binding:"required"`
+	ContainerID   int                  `json:"containerID" binding:"required,gt=0"`
+	VariableName  string               `json:"variableName" binding:"required"`
+	VariableValue string               `json:"variableValue"`
+}

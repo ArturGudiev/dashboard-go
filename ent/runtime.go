@@ -5,6 +5,7 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/containervariables"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
@@ -16,6 +17,7 @@ import (
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
+	"arturgudiev/dashboard/ent/variablesstack"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -62,6 +64,24 @@ func init() {
 	containerchildDescID := containerchildFields[0].Descriptor()
 	// containerchild.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	containerchild.IDValidator = containerchildDescID.Validators[0].(func(int) error)
+	containervariablesFields := schema.ContainerVariables{}.Fields()
+	_ = containervariablesFields
+	// containervariablesDescVariablesStackID is the schema descriptor for variables_stack_id field.
+	containervariablesDescVariablesStackID := containervariablesFields[1].Descriptor()
+	// containervariables.VariablesStackIDValidator is a validator for the "variables_stack_id" field. It is called by the builders before save.
+	containervariables.VariablesStackIDValidator = containervariablesDescVariablesStackID.Validators[0].(func(int) error)
+	// containervariablesDescVariableName is the schema descriptor for variable_name field.
+	containervariablesDescVariableName := containervariablesFields[2].Descriptor()
+	// containervariables.VariableNameValidator is a validator for the "variable_name" field. It is called by the builders before save.
+	containervariables.VariableNameValidator = containervariablesDescVariableName.Validators[0].(func(string) error)
+	// containervariablesDescVariableValue is the schema descriptor for variable_value field.
+	containervariablesDescVariableValue := containervariablesFields[3].Descriptor()
+	// containervariables.DefaultVariableValue holds the default value on creation for the variable_value field.
+	containervariables.DefaultVariableValue = containervariablesDescVariableValue.Default.(string)
+	// containervariablesDescID is the schema descriptor for id field.
+	containervariablesDescID := containervariablesFields[0].Descriptor()
+	// containervariables.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	containervariables.IDValidator = containervariablesDescID.Validators[0].(func(int) error)
 	epicFields := schema.Epic{}.Fields()
 	_ = epicFields
 	// epicDescDescription is the schema descriptor for description field.
@@ -246,4 +266,14 @@ func init() {
 	testDescID := testFields[0].Descriptor()
 	// test.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	test.IDValidator = testDescID.Validators[0].(func(int) error)
+	variablesstackFields := schema.VariablesStack{}.Fields()
+	_ = variablesstackFields
+	// variablesstackDescContainerID is the schema descriptor for container_id field.
+	variablesstackDescContainerID := variablesstackFields[2].Descriptor()
+	// variablesstack.ContainerIDValidator is a validator for the "container_id" field. It is called by the builders before save.
+	variablesstack.ContainerIDValidator = variablesstackDescContainerID.Validators[0].(func(int) error)
+	// variablesstackDescID is the schema descriptor for id field.
+	variablesstackDescID := variablesstackFields[0].Descriptor()
+	// variablesstack.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	variablesstack.IDValidator = variablesstackDescID.Validators[0].(func(int) error)
 }

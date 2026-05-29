@@ -45,6 +45,8 @@ func InitializeApp() (*App, error) {
 		repositories.NewAliasesRepository,
 		services.NewChildContainerRepository,
 		repositories.NewLogMessagesRepository,
+		repositories.NewVariablesStackRepository,
+		repositories.NewContainerVariablesRepository,
 		repositories.NewRepetitiveTasksRepository,
 		repositories.NewRepetitiveTaskExecutionsRepository,
 		// App provider
@@ -135,6 +137,8 @@ func provideApp(
 	knowledgeNodesService *services.KnowledgeNodesService,
 	childContainerRepository *services.ChildContainerRepository,
 	logMessagesRepository *repositories.LogMessagesRepository,
+	variablesStackRepository *repositories.VariablesStackRepository,
+	containerVariablesRepository *repositories.ContainerVariablesRepository,
 	repetitiveTasksRepository *repositories.RepetitiveTasksRepository,
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
 ) *App {
@@ -159,8 +163,10 @@ func provideApp(
 		AliasesRepository:         aliasesRepository,
 		AliasesService:            aliasesService,
 		ChildContainerRepository:  childContainerRepository,
-		LogMessagesRepository:     logMessagesRepository,
-		RepetitiveTasksRepository:           repetitiveTasksRepository,
+		LogMessagesRepository:              logMessagesRepository,
+		VariablesStackRepository:           variablesStackRepository,
+		ContainerVariablesRepository:       containerVariablesRepository,
+		RepetitiveTasksRepository:          repetitiveTasksRepository,
 		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
 		ctx:                       context.Background(), // Default context for CLI
 	}

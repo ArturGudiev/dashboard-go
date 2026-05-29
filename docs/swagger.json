@@ -269,6 +269,129 @@
                 }
             }
         },
+        "/container-variables": {
+            "post": {
+                "description": "Creates a variable entry for the given container (creates variables stack if needed)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "container variables"
+                ],
+                "summary": "Add variable to container",
+                "parameters": [
+                    {
+                        "description": "Variable creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AddContainerVariableRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.ContainerVariables"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/container-variables/{id}": {
+            "delete": {
+                "description": "Deletes a container variable by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "container variables"
+                ],
+                "summary": "Remove container variable",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Container variable ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/done-tasks": {
             "get": {
                 "description": "Returns all done tasks where doneDateTime is today",
@@ -2752,6 +2875,48 @@
         }
     },
     "definitions": {
+        "ent.ContainerVariables": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the ContainerVariablesQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.ContainerVariablesEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "variable_name": {
+                    "description": "VariableName holds the value of the \"variable_name\" field.",
+                    "type": "string"
+                },
+                "variable_value": {
+                    "description": "VariableValue holds the value of the \"variable_value\" field.",
+                    "type": "string"
+                },
+                "variables_stack_id": {
+                    "description": "VariablesStackID holds the value of the \"variables_stack_id\" field.",
+                    "type": "integer"
+                }
+            }
+        },
+        "ent.ContainerVariablesEdges": {
+            "type": "object",
+            "properties": {
+                "variables_stack": {
+                    "description": "VariablesStack holds the value of the variables_stack edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.VariablesStack"
+                        }
+                    ]
+                }
+            }
+        },
         "ent.LogMessage": {
             "type": "object",
             "properties": {
@@ -2916,6 +3081,69 @@
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "ent.VariablesStack": {
+            "type": "object",
+            "properties": {
+                "container_id": {
+                    "description": "ContainerID holds the value of the \"container_id\" field.",
+                    "type": "integer"
+                },
+                "container_type": {
+                    "description": "ContainerType holds the value of the \"container_type\" field.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/schema.ContainerType"
+                        }
+                    ]
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the VariablesStackQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.VariablesStackEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                }
+            }
+        },
+        "ent.VariablesStackEdges": {
+            "type": "object",
+            "properties": {
+                "container_variables": {
+                    "description": "ContainerVariables holds the value of the container_variables edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.ContainerVariables"
+                    }
+                }
+            }
+        },
+        "handlers.AddContainerVariableRequest": {
+            "type": "object",
+            "required": [
+                "containerID",
+                "containerType",
+                "variableName"
+            ],
+            "properties": {
+                "containerID": {
+                    "type": "integer"
+                },
+                "containerType": {
+                    "$ref": "#/definitions/schema.ContainerType"
+                },
+                "variableName": {
+                    "type": "string"
+                },
+                "variableValue": {
+                    "type": "string"
                 }
             }
         },
@@ -3237,6 +3465,20 @@
                         }
                     ],
                     "example": "task"
+                }
+            }
+        },
+        "models.ContainerVariable": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "variableName": {
+                    "type": "string"
+                },
+                "variableValue": {
+                    "type": "string"
                 }
             }
         },
@@ -3914,6 +4156,12 @@
                     "type": "array",
                     "items": {
                         "type": "integer"
+                    }
+                },
+                "variables": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContainerVariable"
                     }
                 }
             }

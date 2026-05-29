@@ -1,5 +1,34 @@
 basePath: /
 definitions:
+  ent.ContainerVariables:
+    properties:
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.ContainerVariablesEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the ContainerVariablesQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      variable_name:
+        description: VariableName holds the value of the "variable_name" field.
+        type: string
+      variable_value:
+        description: VariableValue holds the value of the "variable_value" field.
+        type: string
+      variables_stack_id:
+        description: VariablesStackID holds the value of the "variables_stack_id"
+          field.
+        type: integer
+    type: object
+  ent.ContainerVariablesEdges:
+    properties:
+      variables_stack:
+        allOf:
+        - $ref: '#/definitions/ent.VariablesStack'
+        description: VariablesStack holds the value of the variables_stack edge.
+    type: object
   ent.LogMessage:
     properties:
       container_id:
@@ -116,6 +145,49 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  ent.VariablesStack:
+    properties:
+      container_id:
+        description: ContainerID holds the value of the "container_id" field.
+        type: integer
+      container_type:
+        allOf:
+        - $ref: '#/definitions/schema.ContainerType'
+        description: ContainerType holds the value of the "container_type" field.
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.VariablesStackEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the VariablesStackQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+    type: object
+  ent.VariablesStackEdges:
+    properties:
+      container_variables:
+        description: ContainerVariables holds the value of the container_variables
+          edge.
+        items:
+          $ref: '#/definitions/ent.ContainerVariables'
+        type: array
+    type: object
+  handlers.AddContainerVariableRequest:
+    properties:
+      containerID:
+        type: integer
+      containerType:
+        $ref: '#/definitions/schema.ContainerType'
+      variableName:
+        type: string
+      variableValue:
+        type: string
+    required:
+    - containerID
+    - containerType
+    - variableName
     type: object
   handlers.AnswerQuestionRequest:
     properties:
@@ -327,6 +399,15 @@ definitions:
         allOf:
         - $ref: '#/definitions/schema.ContainerType'
         example: task
+    type: object
+  models.ContainerVariable:
+    properties:
+      id:
+        type: integer
+      variableName:
+        type: string
+      variableValue:
+        type: string
     type: object
   models.EpicFull:
     properties:
@@ -783,6 +864,10 @@ definitions:
         items:
           type: integer
         type: array
+      variables:
+        items:
+          $ref: '#/definitions/models.ContainerVariable'
+        type: array
     type: object
   models.TaskPartial:
     properties:
@@ -1059,6 +1144,88 @@ paths:
       summary: Change tasks order
       tags:
       - tasks
+  /container-variables:
+    post:
+      consumes:
+      - application/json
+      description: Creates a variable entry for the given container (creates variables
+        stack if needed)
+      parameters:
+      - description: Variable creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AddContainerVariableRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.ContainerVariables'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add variable to container
+      tags:
+      - container variables
+  /container-variables/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a container variable by ID
+      parameters:
+      - description: Container variable ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Remove container variable
+      tags:
+      - container variables
   /done-tasks:
     get:
       consumes:

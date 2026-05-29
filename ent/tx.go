@@ -16,6 +16,8 @@ type Tx struct {
 	Alias *AliasClient
 	// ContainerChild is the client for interacting with the ContainerChild builders.
 	ContainerChild *ContainerChildClient
+	// ContainerVariables is the client for interacting with the ContainerVariables builders.
+	ContainerVariables *ContainerVariablesClient
 	// Epic is the client for interacting with the Epic builders.
 	Epic *EpicClient
 	// KnowledgeNode is the client for interacting with the KnowledgeNode builders.
@@ -36,6 +38,8 @@ type Tx struct {
 	Task *TaskClient
 	// Test is the client for interacting with the Test builders.
 	Test *TestClient
+	// VariablesStack is the client for interacting with the VariablesStack builders.
+	VariablesStack *VariablesStackClient
 
 	// lazily loaded.
 	client     *Client
@@ -169,6 +173,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Alias = NewAliasClient(tx.config)
 	tx.ContainerChild = NewContainerChildClient(tx.config)
+	tx.ContainerVariables = NewContainerVariablesClient(tx.config)
 	tx.Epic = NewEpicClient(tx.config)
 	tx.KnowledgeNode = NewKnowledgeNodeClient(tx.config)
 	tx.LogMessage = NewLogMessageClient(tx.config)
@@ -179,6 +184,7 @@ func (tx *Tx) init() {
 	tx.Story = NewStoryClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Test = NewTestClient(tx.config)
+	tx.VariablesStack = NewVariablesStackClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

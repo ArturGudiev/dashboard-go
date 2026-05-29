@@ -36,8 +36,10 @@ func InitializeApp() (*App, error) {
 	problemsRepository := services.NewProblemsRepository(client)
 	problemService := services.NewProblemService(client, containerService, problemsRepository, childContainerRepository)
 	tasksRepository := services.NewTasksRepository(client)
+	variablesStackRepository := repositories.NewVariablesStackRepository(client)
+	containerVariablesRepository := repositories.NewContainerVariablesRepository(client, variablesStackRepository)
 	reportService := services.NewReportService(containerService, childContainerRepository, tasksRepository)
-	taskService := services.NewTaskService(client, containerService, problemService, tasksRepository, childContainerRepository, reportService)
+	taskService := services.NewTaskService(client, containerService, problemService, tasksRepository, childContainerRepository, containerVariablesRepository, reportService)
 	repetitiveTasksRepository := repositories.NewRepetitiveTasksRepository(client)
 	repetitiveTaskExecutionsRepository := repositories.NewRepetitiveTaskExecutionsRepository(client)
 	repetitiveTaskService := services.NewRepetitiveTaskService(client, containerService, problemService, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, childContainerRepository)
@@ -53,7 +55,7 @@ func InitializeApp() (*App, error) {
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
 	logMessagesRepository := repositories.NewLogMessagesRepository(client)
-	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository)
+	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository)
 	return app, nil
 }
 
@@ -136,6 +138,8 @@ func provideApp(
 	knowledgeNodesService *services.KnowledgeNodesService,
 	childContainerRepository *services.ChildContainerRepository,
 	logMessagesRepository *repositories.LogMessagesRepository,
+	variablesStackRepository *repositories.VariablesStackRepository,
+	containerVariablesRepository *repositories.ContainerVariablesRepository,
 	repetitiveTasksRepository *repositories.RepetitiveTasksRepository,
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
 ) *App {
@@ -161,6 +165,8 @@ func provideApp(
 		AliasesService:                     aliasesService,
 		ChildContainerRepository:           childContainerRepository,
 		LogMessagesRepository:              logMessagesRepository,
+		VariablesStackRepository:           variablesStackRepository,
+		ContainerVariablesRepository:       containerVariablesRepository,
 		RepetitiveTasksRepository:          repetitiveTasksRepository,
 		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
 		ctx:                                context.Background(),

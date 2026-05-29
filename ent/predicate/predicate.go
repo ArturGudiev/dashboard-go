@@ -12,6 +12,9 @@ type Alias func(*sql.Selector)
 // ContainerChild is the predicate function for containerchild builders.
 type ContainerChild func(*sql.Selector)
 
+// ContainerVariables is the predicate function for containervariables builders.
+type ContainerVariables func(*sql.Selector)
+
 // Epic is the predicate function for epic builders.
 type Epic func(*sql.Selector)
 
@@ -41,3 +44,6 @@ type Task func(*sql.Selector)
 
 // Test is the predicate function for test builders.
 type Test func(*sql.Selector)
+
+// VariablesStack is the predicate function for variablesstack builders.
+type VariablesStack func(*sql.Selector)

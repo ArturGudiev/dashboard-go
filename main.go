@@ -222,6 +222,10 @@ func main() {
 	router.GET("/log-messages", h.GetLogMessages)
 	router.POST("/log-messages", h.NewLogMessage)
 
+	// Container variables routes
+	router.POST("/container-variables", h.AddContainerVariable)
+	router.DELETE("/container-variables/:id", h.RemoveContainerVariable)
+
 	// Aliase routes
 	router.GET("/aliases/:alias", h.GetAliasByString)
 

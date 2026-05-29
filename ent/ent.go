@@ -5,6 +5,7 @@ package ent
 import (
 	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
+	"arturgudiev/dashboard/ent/containervariables"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
@@ -15,6 +16,7 @@ import (
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
+	"arturgudiev/dashboard/ent/variablesstack"
 	"context"
 	"errors"
 	"fmt"
@@ -86,6 +88,7 @@ func checkColumn(t, c string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			alias.Table:                   alias.ValidColumn,
 			containerchild.Table:          containerchild.ValidColumn,
+			containervariables.Table:      containervariables.ValidColumn,
 			epic.Table:                    epic.ValidColumn,
 			knowledgenode.Table:           knowledgenode.ValidColumn,
 			logmessage.Table:              logmessage.ValidColumn,
@@ -96,6 +99,7 @@ func checkColumn(t, c string) error {
 			story.Table:                   story.ValidColumn,
 			task.Table:                    task.ValidColumn,
 			test.Table:                    test.ValidColumn,
+			variablesstack.Table:          variablesstack.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

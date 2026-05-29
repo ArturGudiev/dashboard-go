@@ -30,8 +30,10 @@ type App struct {
 	AliasesRepository        *repositories.AliasesRepository
 	AliasesService           *services.AliasesService
 	ChildContainerRepository *services.ChildContainerRepository
-	LogMessagesRepository    *repositories.LogMessagesRepository
-	RepetitiveTasksRepository           *repositories.RepetitiveTasksRepository
+	LogMessagesRepository              *repositories.LogMessagesRepository
+	VariablesStackRepository           *repositories.VariablesStackRepository
+	ContainerVariablesRepository       *repositories.ContainerVariablesRepository
+	RepetitiveTasksRepository          *repositories.RepetitiveTasksRepository
 	RepetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository
 	ctx                      context.Context // Default context for CLI operations
 }
