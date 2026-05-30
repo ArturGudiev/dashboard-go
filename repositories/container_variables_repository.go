@@ -42,6 +42,21 @@ func (r *ContainerVariablesRepository) RemoveVariable(ctx context.Context, id in
 	return r.client.ContainerVariables.DeleteOneID(id).Exec(ctx)
 }
 
+func (r *ContainerVariablesRepository) UpdateVariable(
+	ctx context.Context,
+	id int,
+	name, value *string,
+) (*ent.ContainerVariables, error) {
+	updateBuilder := r.client.ContainerVariables.UpdateOneID(id)
+	if name != nil {
+		updateBuilder = updateBuilder.SetVariableName(*name)
+	}
+	if value != nil {
+		updateBuilder = updateBuilder.SetVariableValue(*value)
+	}
+	return updateBuilder.Save(ctx)
+}
+
 func (r *ContainerVariablesRepository) GetVariablesByContainer(
 	ctx context.Context,
 	containerType schema.ContainerType,

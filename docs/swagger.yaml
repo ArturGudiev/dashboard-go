@@ -296,6 +296,13 @@ definitions:
       notes:
         type: string
     type: object
+  handlers.PatchContainerVariableRequest:
+    properties:
+      variableName:
+        type: string
+      variableValue:
+        type: string
+    type: object
   handlers.PatchTaskByIDRequest:
     properties:
       description:
@@ -1224,6 +1231,56 @@ paths:
               type: string
             type: object
       summary: Remove container variable
+      tags:
+      - container variables
+    patch:
+      consumes:
+      - application/json
+      description: Partially updates a container variable's name and/or value
+      parameters:
+      - description: Container variable ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerVariableRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.ContainerVariables'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update container variable
       tags:
       - container variables
   /done-tasks:

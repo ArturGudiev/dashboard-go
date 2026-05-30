@@ -173,3 +173,9 @@ type AddContainerVariableRequest struct {
 	VariableName  string               `json:"variableName" binding:"required"`
 	VariableValue string               `json:"variableValue"`
 }
+
+// PatchContainerVariableRequest represents optional fields for PATCH /container-variables/:id
+type PatchContainerVariableRequest struct {
+	VariableName  *string `json:"variableName"`
+	VariableValue *string `json:"variableValue"`
+}

@@ -224,6 +224,7 @@ func main() {
 
 	// Container variables routes
 	router.POST("/container-variables", h.AddContainerVariable)
+	router.PATCH("/container-variables/:id", h.PatchContainerVariable)
 	router.DELETE("/container-variables/:id", h.RemoveContainerVariable)
 
 	// Aliase routes
