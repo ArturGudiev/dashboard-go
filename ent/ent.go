@@ -9,6 +9,8 @@ import (
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
+	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/repetitivetask"
@@ -92,6 +94,8 @@ func checkColumn(t, c string) error {
 			epic.Table:                    epic.ValidColumn,
 			knowledgenode.Table:           knowledgenode.ValidColumn,
 			logmessage.Table:              logmessage.ValidColumn,
+			longtask.Table:                longtask.ValidColumn,
+			longtasksubmission.Table:      longtasksubmission.ValidColumn,
 			problem.Table:                 problem.ValidColumn,
 			question.Table:                question.ValidColumn,
 			repetitivetask.Table:          repetitivetask.ValidColumn,

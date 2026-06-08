@@ -9,6 +9,8 @@ import (
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
+	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/repetitivetask"
@@ -140,6 +142,50 @@ func init() {
 	logmessageDescID := logmessageFields[0].Descriptor()
 	// logmessage.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	logmessage.IDValidator = logmessageDescID.Validators[0].(func(int) error)
+	longtaskFields := schema.LongTask{}.Fields()
+	_ = longtaskFields
+	// longtaskDescDescription is the schema descriptor for description field.
+	longtaskDescDescription := longtaskFields[1].Descriptor()
+	// longtask.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	longtask.DescriptionValidator = longtaskDescDescription.Validators[0].(func(string) error)
+	// longtaskDescTags is the schema descriptor for tags field.
+	longtaskDescTags := longtaskFields[2].Descriptor()
+	// longtask.DefaultTags holds the default value on creation for the tags field.
+	longtask.DefaultTags = longtaskDescTags.Default.([]string)
+	// longtaskDescDone is the schema descriptor for done field.
+	longtaskDescDone := longtaskFields[3].Descriptor()
+	// longtask.DefaultDone holds the default value on creation for the done field.
+	longtask.DefaultDone = longtaskDescDone.Default.(bool)
+	// longtaskDescNotes is the schema descriptor for notes field.
+	longtaskDescNotes := longtaskFields[4].Descriptor()
+	// longtask.DefaultNotes holds the default value on creation for the notes field.
+	longtask.DefaultNotes = longtaskDescNotes.Default.(string)
+	// longtaskDescProgressTotal is the schema descriptor for progress_total field.
+	longtaskDescProgressTotal := longtaskFields[6].Descriptor()
+	// longtask.DefaultProgressTotal holds the default value on creation for the progress_total field.
+	longtask.DefaultProgressTotal = longtaskDescProgressTotal.Default.(float64)
+	// longtaskDescProgressDone is the schema descriptor for progress_done field.
+	longtaskDescProgressDone := longtaskFields[7].Descriptor()
+	// longtask.DefaultProgressDone holds the default value on creation for the progress_done field.
+	longtask.DefaultProgressDone = longtaskDescProgressDone.Default.(float64)
+	// longtaskDescProgressUnits is the schema descriptor for progress_units field.
+	longtaskDescProgressUnits := longtaskFields[8].Descriptor()
+	// longtask.DefaultProgressUnits holds the default value on creation for the progress_units field.
+	longtask.DefaultProgressUnits = longtaskDescProgressUnits.Default.(string)
+	// longtaskDescID is the schema descriptor for id field.
+	longtaskDescID := longtaskFields[0].Descriptor()
+	// longtask.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	longtask.IDValidator = longtaskDescID.Validators[0].(func(int) error)
+	longtasksubmissionFields := schema.LongTaskSubmission{}.Fields()
+	_ = longtasksubmissionFields
+	// longtasksubmissionDescLongTaskID is the schema descriptor for long_task_id field.
+	longtasksubmissionDescLongTaskID := longtasksubmissionFields[1].Descriptor()
+	// longtasksubmission.LongTaskIDValidator is a validator for the "long_task_id" field. It is called by the builders before save.
+	longtasksubmission.LongTaskIDValidator = longtasksubmissionDescLongTaskID.Validators[0].(func(int) error)
+	// longtasksubmissionDescID is the schema descriptor for id field.
+	longtasksubmissionDescID := longtasksubmissionFields[0].Descriptor()
+	// longtasksubmission.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	longtasksubmission.IDValidator = longtasksubmissionDescID.Validators[0].(func(int) error)
 	problemFields := schema.Problem{}.Fields()
 	_ = problemFields
 	// problemDescDescription is the schema descriptor for description field.

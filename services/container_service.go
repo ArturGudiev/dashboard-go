@@ -242,6 +242,42 @@ func (s *ContainerService) GetOpenQuestionsIDs(ctx context.Context, containerTyp
 	return openQuestions, nil
 }
 
+func (s *ContainerService) GetOpenLongTasks(ctx context.Context, containerType schema.ContainerType, ID int) ([]*ent.LongTask, error) {
+	var openLongTasks []*ent.LongTask
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeLongTask)
+
+	if err == nil && len(childRelations) > 0 {
+		for _, relation := range childRelations {
+			childLongTask, err := s.client.LongTask.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+			if !childLongTask.Done {
+				openLongTasks = append(openLongTasks, childLongTask)
+			}
+		}
+	}
+	return openLongTasks, nil
+}
+
+func (s *ContainerService) GetOpenLongTasksIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	openLongTasks := []int{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeLongTask)
+
+	if err == nil && len(childRelations) > 0 {
+		for _, relation := range childRelations {
+			childLongTask, err := s.client.LongTask.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+			if !childLongTask.Done {
+				openLongTasks = append(openLongTasks, childLongTask.ID)
+			}
+		}
+	}
+	return openLongTasks, nil
+}
+
 func (s *ContainerService) GetOpenStoriesIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
 	openStories := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeStory)

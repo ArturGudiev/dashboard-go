@@ -24,6 +24,12 @@ type KnowledgeNode func(*sql.Selector)
 // LogMessage is the predicate function for logmessage builders.
 type LogMessage func(*sql.Selector)
 
+// LongTask is the predicate function for longtask builders.
+type LongTask func(*sql.Selector)
+
+// LongTaskSubmission is the predicate function for longtasksubmission builders.
+type LongTaskSubmission func(*sql.Selector)
+
 // Problem is the predicate function for problem builders.
 type Problem func(*sql.Selector)
 

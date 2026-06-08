@@ -44,6 +44,10 @@ func InitializeApp() (*App, error) {
 	repetitiveTaskExecutionsRepository := repositories.NewRepetitiveTaskExecutionsRepository(client)
 	repetitiveTaskService := services.NewRepetitiveTaskService(client, containerService, problemService, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, childContainerRepository)
 	repetitiveTaskExecutionService := services.NewRepetitiveTaskExecutionService(repetitiveTaskExecutionsRepository)
+	longTasksRepository := repositories.NewLongTasksRepository(client)
+	longTasksService := services.NewLongTasksService(longTasksRepository, childContainerRepository)
+	longTaskSubmissionsRepository := repositories.NewLongTaskSubmissionsRepository(client)
+	longTaskSubmissionsService := services.NewLongTaskSubmissionsService(longTasksRepository, longTaskSubmissionsRepository)
 	aliasesService := services.NewAliasesService(client, containerService, aliasesRepository, childContainerRepository)
 	epicsRepository := repositories.NewEpicsRepository(client)
 	cliService := services.NewCLIService(client, containerService, aliasesService, problemsRepository, epicsRepository, aliasesRepository)
@@ -55,7 +59,7 @@ func InitializeApp() (*App, error) {
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
 	logMessagesRepository := repositories.NewLogMessagesRepository(client)
-	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository)
+	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository)
 	return app, nil
 }
 
@@ -121,6 +125,8 @@ func provideApp(
 	taskService *services.TaskService,
 	repetitiveTaskService *services.RepetitiveTaskService,
 	repetitiveTaskExecutionService *services.RepetitiveTaskExecutionService,
+	longTasksService *services.LongTasksService,
+	longTaskSubmissionsService *services.LongTaskSubmissionsService,
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
@@ -142,12 +148,16 @@ func provideApp(
 	containerVariablesRepository *repositories.ContainerVariablesRepository,
 	repetitiveTasksRepository *repositories.RepetitiveTasksRepository,
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
+	longTasksRepository *repositories.LongTasksRepository,
+	longTaskSubmissionsRepository *repositories.LongTaskSubmissionsRepository,
 ) *App {
 	return &App{
 		Client:                             client,
 		TaskService:                        taskService,
 		RepetitiveTaskService:              repetitiveTaskService,
 		RepetitiveTaskExecutionService:     repetitiveTaskExecutionService,
+		LongTasksService:                   longTasksService,
+		LongTaskSubmissionsService:         longTaskSubmissionsService,
 		ProblemService:                     problemService,
 		ContainerService:                   containerService,
 		CLIService:                         cliService,
@@ -169,6 +179,8 @@ func provideApp(
 		ContainerVariablesRepository:       containerVariablesRepository,
 		RepetitiveTasksRepository:          repetitiveTasksRepository,
 		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
+		LongTasksRepository:                longTasksRepository,
+		LongTaskSubmissionsRepository:      longTaskSubmissionsRepository,
 		ctx:                                context.Background(),
 	}
 }

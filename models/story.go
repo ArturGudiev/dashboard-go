@@ -11,6 +11,7 @@ type StoryFull struct {
 	Tasks            []int                  `json:"tasks"`
 	Questions        []int                  `json:"questions"`
 	Problems         []int                  `json:"problems"`
+	LongTasks        []int                  `json:"longTasks"`
 	Actions          []int                  `json:"actions"`
 	Definitions      []int                  `json:"definitions"`
 	KnowledgeBits    []int                  `json:"knowledgeBits"`

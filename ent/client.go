@@ -17,6 +17,8 @@ import (
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
+	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/repetitivetask"
@@ -49,6 +51,10 @@ type Client struct {
 	KnowledgeNode *KnowledgeNodeClient
 	// LogMessage is the client for interacting with the LogMessage builders.
 	LogMessage *LogMessageClient
+	// LongTask is the client for interacting with the LongTask builders.
+	LongTask *LongTaskClient
+	// LongTaskSubmission is the client for interacting with the LongTaskSubmission builders.
+	LongTaskSubmission *LongTaskSubmissionClient
 	// Problem is the client for interacting with the Problem builders.
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
@@ -82,6 +88,8 @@ func (c *Client) init() {
 	c.Epic = NewEpicClient(c.config)
 	c.KnowledgeNode = NewKnowledgeNodeClient(c.config)
 	c.LogMessage = NewLogMessageClient(c.config)
+	c.LongTask = NewLongTaskClient(c.config)
+	c.LongTaskSubmission = NewLongTaskSubmissionClient(c.config)
 	c.Problem = NewProblemClient(c.config)
 	c.Question = NewQuestionClient(c.config)
 	c.RepetitiveTask = NewRepetitiveTaskClient(c.config)
@@ -188,6 +196,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Epic:                    NewEpicClient(cfg),
 		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
 		LogMessage:              NewLogMessageClient(cfg),
+		LongTask:                NewLongTaskClient(cfg),
+		LongTaskSubmission:      NewLongTaskSubmissionClient(cfg),
 		Problem:                 NewProblemClient(cfg),
 		Question:                NewQuestionClient(cfg),
 		RepetitiveTask:          NewRepetitiveTaskClient(cfg),
@@ -221,6 +231,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Epic:                    NewEpicClient(cfg),
 		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
 		LogMessage:              NewLogMessageClient(cfg),
+		LongTask:                NewLongTaskClient(cfg),
+		LongTaskSubmission:      NewLongTaskSubmissionClient(cfg),
 		Problem:                 NewProblemClient(cfg),
 		Question:                NewQuestionClient(cfg),
 		RepetitiveTask:          NewRepetitiveTaskClient(cfg),
@@ -259,8 +271,9 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Alias, c.ContainerChild, c.ContainerVariables, c.Epic, c.KnowledgeNode,
-		c.LogMessage, c.Problem, c.Question, c.RepetitiveTask,
-		c.RepetitiveTaskExecution, c.Story, c.Task, c.Test, c.VariablesStack,
+		c.LogMessage, c.LongTask, c.LongTaskSubmission, c.Problem, c.Question,
+		c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story, c.Task, c.Test,
+		c.VariablesStack,
 	} {
 		n.Use(hooks...)
 	}
@@ -271,8 +284,9 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Alias, c.ContainerChild, c.ContainerVariables, c.Epic, c.KnowledgeNode,
-		c.LogMessage, c.Problem, c.Question, c.RepetitiveTask,
-		c.RepetitiveTaskExecution, c.Story, c.Task, c.Test, c.VariablesStack,
+		c.LogMessage, c.LongTask, c.LongTaskSubmission, c.Problem, c.Question,
+		c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story, c.Task, c.Test,
+		c.VariablesStack,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -293,6 +307,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.KnowledgeNode.mutate(ctx, m)
 	case *LogMessageMutation:
 		return c.LogMessage.mutate(ctx, m)
+	case *LongTaskMutation:
+		return c.LongTask.mutate(ctx, m)
+	case *LongTaskSubmissionMutation:
+		return c.LongTaskSubmission.mutate(ctx, m)
 	case *ProblemMutation:
 		return c.Problem.mutate(ctx, m)
 	case *QuestionMutation:
@@ -1125,6 +1143,304 @@ func (c *LogMessageClient) mutate(ctx context.Context, m *LogMessageMutation) (V
 		return (&LogMessageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown LogMessage mutation op: %q", m.Op())
+	}
+}
+
+// LongTaskClient is a client for the LongTask schema.
+type LongTaskClient struct {
+	config
+}
+
+// NewLongTaskClient returns a client for the LongTask from the given config.
+func NewLongTaskClient(c config) *LongTaskClient {
+	return &LongTaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `longtask.Hooks(f(g(h())))`.
+func (c *LongTaskClient) Use(hooks ...Hook) {
+	c.hooks.LongTask = append(c.hooks.LongTask, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `longtask.Intercept(f(g(h())))`.
+func (c *LongTaskClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LongTask = append(c.inters.LongTask, interceptors...)
+}
+
+// Create returns a builder for creating a LongTask entity.
+func (c *LongTaskClient) Create() *LongTaskCreate {
+	mutation := newLongTaskMutation(c.config, OpCreate)
+	return &LongTaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LongTask entities.
+func (c *LongTaskClient) CreateBulk(builders ...*LongTaskCreate) *LongTaskCreateBulk {
+	return &LongTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LongTaskClient) MapCreateBulk(slice any, setFunc func(*LongTaskCreate, int)) *LongTaskCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LongTaskCreateBulk{err: fmt.Errorf("calling to LongTaskClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LongTaskCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LongTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LongTask.
+func (c *LongTaskClient) Update() *LongTaskUpdate {
+	mutation := newLongTaskMutation(c.config, OpUpdate)
+	return &LongTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LongTaskClient) UpdateOne(_m *LongTask) *LongTaskUpdateOne {
+	mutation := newLongTaskMutation(c.config, OpUpdateOne, withLongTask(_m))
+	return &LongTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LongTaskClient) UpdateOneID(id int) *LongTaskUpdateOne {
+	mutation := newLongTaskMutation(c.config, OpUpdateOne, withLongTaskID(id))
+	return &LongTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LongTask.
+func (c *LongTaskClient) Delete() *LongTaskDelete {
+	mutation := newLongTaskMutation(c.config, OpDelete)
+	return &LongTaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LongTaskClient) DeleteOne(_m *LongTask) *LongTaskDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LongTaskClient) DeleteOneID(id int) *LongTaskDeleteOne {
+	builder := c.Delete().Where(longtask.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LongTaskDeleteOne{builder}
+}
+
+// Query returns a query builder for LongTask.
+func (c *LongTaskClient) Query() *LongTaskQuery {
+	return &LongTaskQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLongTask},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LongTask entity by its id.
+func (c *LongTaskClient) Get(ctx context.Context, id int) (*LongTask, error) {
+	return c.Query().Where(longtask.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LongTaskClient) GetX(ctx context.Context, id int) *LongTask {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySubmissions queries the submissions edge of a LongTask.
+func (c *LongTaskClient) QuerySubmissions(_m *LongTask) *LongTaskSubmissionQuery {
+	query := (&LongTaskSubmissionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(longtask.Table, longtask.FieldID, id),
+			sqlgraph.To(longtasksubmission.Table, longtasksubmission.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, longtask.SubmissionsTable, longtask.SubmissionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LongTaskClient) Hooks() []Hook {
+	return c.hooks.LongTask
+}
+
+// Interceptors returns the client interceptors.
+func (c *LongTaskClient) Interceptors() []Interceptor {
+	return c.inters.LongTask
+}
+
+func (c *LongTaskClient) mutate(ctx context.Context, m *LongTaskMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LongTaskCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LongTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LongTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LongTaskDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LongTask mutation op: %q", m.Op())
+	}
+}
+
+// LongTaskSubmissionClient is a client for the LongTaskSubmission schema.
+type LongTaskSubmissionClient struct {
+	config
+}
+
+// NewLongTaskSubmissionClient returns a client for the LongTaskSubmission from the given config.
+func NewLongTaskSubmissionClient(c config) *LongTaskSubmissionClient {
+	return &LongTaskSubmissionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `longtasksubmission.Hooks(f(g(h())))`.
+func (c *LongTaskSubmissionClient) Use(hooks ...Hook) {
+	c.hooks.LongTaskSubmission = append(c.hooks.LongTaskSubmission, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `longtasksubmission.Intercept(f(g(h())))`.
+func (c *LongTaskSubmissionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LongTaskSubmission = append(c.inters.LongTaskSubmission, interceptors...)
+}
+
+// Create returns a builder for creating a LongTaskSubmission entity.
+func (c *LongTaskSubmissionClient) Create() *LongTaskSubmissionCreate {
+	mutation := newLongTaskSubmissionMutation(c.config, OpCreate)
+	return &LongTaskSubmissionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LongTaskSubmission entities.
+func (c *LongTaskSubmissionClient) CreateBulk(builders ...*LongTaskSubmissionCreate) *LongTaskSubmissionCreateBulk {
+	return &LongTaskSubmissionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LongTaskSubmissionClient) MapCreateBulk(slice any, setFunc func(*LongTaskSubmissionCreate, int)) *LongTaskSubmissionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LongTaskSubmissionCreateBulk{err: fmt.Errorf("calling to LongTaskSubmissionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LongTaskSubmissionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LongTaskSubmissionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LongTaskSubmission.
+func (c *LongTaskSubmissionClient) Update() *LongTaskSubmissionUpdate {
+	mutation := newLongTaskSubmissionMutation(c.config, OpUpdate)
+	return &LongTaskSubmissionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LongTaskSubmissionClient) UpdateOne(_m *LongTaskSubmission) *LongTaskSubmissionUpdateOne {
+	mutation := newLongTaskSubmissionMutation(c.config, OpUpdateOne, withLongTaskSubmission(_m))
+	return &LongTaskSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LongTaskSubmissionClient) UpdateOneID(id int) *LongTaskSubmissionUpdateOne {
+	mutation := newLongTaskSubmissionMutation(c.config, OpUpdateOne, withLongTaskSubmissionID(id))
+	return &LongTaskSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LongTaskSubmission.
+func (c *LongTaskSubmissionClient) Delete() *LongTaskSubmissionDelete {
+	mutation := newLongTaskSubmissionMutation(c.config, OpDelete)
+	return &LongTaskSubmissionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LongTaskSubmissionClient) DeleteOne(_m *LongTaskSubmission) *LongTaskSubmissionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LongTaskSubmissionClient) DeleteOneID(id int) *LongTaskSubmissionDeleteOne {
+	builder := c.Delete().Where(longtasksubmission.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LongTaskSubmissionDeleteOne{builder}
+}
+
+// Query returns a query builder for LongTaskSubmission.
+func (c *LongTaskSubmissionClient) Query() *LongTaskSubmissionQuery {
+	return &LongTaskSubmissionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLongTaskSubmission},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LongTaskSubmission entity by its id.
+func (c *LongTaskSubmissionClient) Get(ctx context.Context, id int) (*LongTaskSubmission, error) {
+	return c.Query().Where(longtasksubmission.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LongTaskSubmissionClient) GetX(ctx context.Context, id int) *LongTaskSubmission {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLongTask queries the long_task edge of a LongTaskSubmission.
+func (c *LongTaskSubmissionClient) QueryLongTask(_m *LongTaskSubmission) *LongTaskQuery {
+	query := (&LongTaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(longtasksubmission.Table, longtasksubmission.FieldID, id),
+			sqlgraph.To(longtask.Table, longtask.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, longtasksubmission.LongTaskTable, longtasksubmission.LongTaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LongTaskSubmissionClient) Hooks() []Hook {
+	return c.hooks.LongTaskSubmission
+}
+
+// Interceptors returns the client interceptors.
+func (c *LongTaskSubmissionClient) Interceptors() []Interceptor {
+	return c.inters.LongTaskSubmission
+}
+
+func (c *LongTaskSubmissionClient) mutate(ctx context.Context, m *LongTaskSubmissionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LongTaskSubmissionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LongTaskSubmissionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LongTaskSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LongTaskSubmissionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LongTaskSubmission mutation op: %q", m.Op())
 	}
 }
 
@@ -2244,12 +2560,12 @@ func (c *VariablesStackClient) mutate(ctx context.Context, m *VariablesStackMuta
 type (
 	hooks struct {
 		Alias, ContainerChild, ContainerVariables, Epic, KnowledgeNode, LogMessage,
-		Problem, Question, RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
-		VariablesStack []ent.Hook
+		LongTask, LongTaskSubmission, Problem, Question, RepetitiveTask,
+		RepetitiveTaskExecution, Story, Task, Test, VariablesStack []ent.Hook
 	}
 	inters struct {
 		Alias, ContainerChild, ContainerVariables, Epic, KnowledgeNode, LogMessage,
-		Problem, Question, RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
-		VariablesStack []ent.Interceptor
+		LongTask, LongTaskSubmission, Problem, Question, RepetitiveTask,
+		RepetitiveTaskExecution, Story, Task, Test, VariablesStack []ent.Interceptor
 	}
 )

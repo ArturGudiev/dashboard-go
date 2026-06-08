@@ -80,6 +80,30 @@ func (f LogMessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogMessageMutation", m)
 }
 
+// The LongTaskFunc type is an adapter to allow the use of ordinary
+// function as LongTask mutator.
+type LongTaskFunc func(context.Context, *ent.LongTaskMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LongTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LongTaskMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LongTaskMutation", m)
+}
+
+// The LongTaskSubmissionFunc type is an adapter to allow the use of ordinary
+// function as LongTaskSubmission mutator.
+type LongTaskSubmissionFunc func(context.Context, *ent.LongTaskSubmissionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LongTaskSubmissionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LongTaskSubmissionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LongTaskSubmissionMutation", m)
+}
+
 // The ProblemFunc type is an adapter to allow the use of ordinary
 // function as Problem mutator.
 type ProblemFunc func(context.Context, *ent.ProblemMutation) (ent.Value, error)

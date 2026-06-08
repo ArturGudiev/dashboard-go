@@ -180,6 +180,42 @@ func (h *Handler) PatchEpicByID(c *gin.Context) {
 // @Failure      404      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /repetitive-tasks/{id} [patch]
+// PatchLongTaskByID handles PATCH /long-tasks/:id
+// @Summary      Patch long task by ID
+// @Description  Partially updates a long task's description and/or notes
+// @Tags         long-tasks
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int                      true  "Long task ID"
+// @Param        request  body      PatchContainerByIDRequest  true  "Fields to update"
+// @Success      200      {object}  ent.LongTask
+// @Failure      400      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /long-tasks/{id} [patch]
+func (h *Handler) PatchLongTaskByID(c *gin.Context) {
+	id, ok := parsePatchID(c, "long task")
+	if !ok {
+		return
+	}
+	req, ok := bindPatchContainerRequest(c)
+	if !ok {
+		return
+	}
+
+	ctx := c.Request.Context()
+	longTask, err := h.App.LongTasksService.UpdateLongTask(ctx, models.LongTaskPartial{
+		ID:          id,
+		Description: req.Description,
+		Notes:       req.Notes,
+	})
+	if err != nil {
+		writePatchError(c, id, "long task", err)
+		return
+	}
+	c.JSON(200, longTask)
+}
+
 func (h *Handler) PatchRepetitiveTaskByID(c *gin.Context) {
 	id, ok := parsePatchID(c, "repetitive task")
 	if !ok {

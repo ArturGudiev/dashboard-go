@@ -24,6 +24,10 @@ type Tx struct {
 	KnowledgeNode *KnowledgeNodeClient
 	// LogMessage is the client for interacting with the LogMessage builders.
 	LogMessage *LogMessageClient
+	// LongTask is the client for interacting with the LongTask builders.
+	LongTask *LongTaskClient
+	// LongTaskSubmission is the client for interacting with the LongTaskSubmission builders.
+	LongTaskSubmission *LongTaskSubmissionClient
 	// Problem is the client for interacting with the Problem builders.
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
@@ -177,6 +181,8 @@ func (tx *Tx) init() {
 	tx.Epic = NewEpicClient(tx.config)
 	tx.KnowledgeNode = NewKnowledgeNodeClient(tx.config)
 	tx.LogMessage = NewLogMessageClient(tx.config)
+	tx.LongTask = NewLongTaskClient(tx.config)
+	tx.LongTaskSubmission = NewLongTaskSubmissionClient(tx.config)
 	tx.Problem = NewProblemClient(tx.config)
 	tx.Question = NewQuestionClient(tx.config)
 	tx.RepetitiveTask = NewRepetitiveTaskClient(tx.config)

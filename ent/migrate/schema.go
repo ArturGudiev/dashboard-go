@@ -26,9 +26,9 @@ var (
 	// ContainerChildrenColumns holds the columns for the "container_children" table.
 	ContainerChildrenColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "parent_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state"}},
+		{Name: "parent_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state"}},
 		{Name: "parent_id", Type: field.TypeInt},
-		{Name: "child_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state"}},
+		{Name: "child_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state"}},
 		{Name: "child_id", Type: field.TypeInt},
 		{Name: "child_order", Type: field.TypeInt, Default: 0},
 		{Name: "parent_order", Type: field.TypeInt, Default: 0},
@@ -133,7 +133,7 @@ var (
 		{Name: "description", Type: field.TypeString},
 		{Name: "notes", Type: field.TypeString, Default: ""},
 		{Name: "created", Type: field.TypeTime},
-		{Name: "container_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state"}},
+		{Name: "container_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state"}},
 		{Name: "container_id", Type: field.TypeInt, Nullable: true},
 	}
 	// LogMessagesTable holds the schema information for the "log_messages" table.
@@ -141,6 +141,47 @@ var (
 		Name:       "log_messages",
 		Columns:    LogMessagesColumns,
 		PrimaryKey: []*schema.Column{LogMessagesColumns[0]},
+	}
+	// LongTasksColumns holds the columns for the "long_tasks" table.
+	LongTasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "done", Type: field.TypeBool, Default: false},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
+		{Name: "progress_total", Type: field.TypeFloat64, Default: 0},
+		{Name: "progress_done", Type: field.TypeFloat64, Default: 0},
+		{Name: "progress_units", Type: field.TypeString, Default: "percents"},
+	}
+	// LongTasksTable holds the schema information for the "long_tasks" table.
+	LongTasksTable = &schema.Table{
+		Name:       "long_tasks",
+		Columns:    LongTasksColumns,
+		PrimaryKey: []*schema.Column{LongTasksColumns[0]},
+	}
+	// LongTaskSubmissionsColumns holds the columns for the "long_task_submissions" table.
+	LongTaskSubmissionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "execution_date", Type: field.TypeTime},
+		{Name: "comments", Type: field.TypeString, Nullable: true},
+		{Name: "progress_to_add", Type: field.TypeFloat64, Nullable: true},
+		{Name: "progress_to_set", Type: field.TypeFloat64, Nullable: true},
+		{Name: "long_task_id", Type: field.TypeInt},
+	}
+	// LongTaskSubmissionsTable holds the schema information for the "long_task_submissions" table.
+	LongTaskSubmissionsTable = &schema.Table{
+		Name:       "long_task_submissions",
+		Columns:    LongTaskSubmissionsColumns,
+		PrimaryKey: []*schema.Column{LongTaskSubmissionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "long_task_submissions_long_tasks_submissions",
+				Columns:    []*schema.Column{LongTaskSubmissionsColumns[5]},
+				RefColumns: []*schema.Column{LongTasksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// ProblemsColumns holds the columns for the "problems" table.
 	ProblemsColumns = []*schema.Column{
@@ -255,7 +296,7 @@ var (
 	// VariablesStacksColumns holds the columns for the "variables_stacks" table.
 	VariablesStacksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "container_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "state"}},
+		{Name: "container_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state"}},
 		{Name: "container_id", Type: field.TypeInt},
 	}
 	// VariablesStacksTable holds the schema information for the "variables_stacks" table.
@@ -279,6 +320,8 @@ var (
 		EpicsTable,
 		KnowledgeNodesTable,
 		LogMessagesTable,
+		LongTasksTable,
+		LongTaskSubmissionsTable,
 		ProblemsTable,
 		QuestionsTable,
 		RepetitiveTasksTable,
@@ -301,6 +344,7 @@ func init() {
 	ContainerVariablesTable.Annotation = &entsql.Annotation{
 		Table: "container_variables",
 	}
+	LongTaskSubmissionsTable.ForeignKeys[0].RefTable = LongTasksTable
 	RepetitiveTaskExecutionsTable.ForeignKeys[0].RefTable = RepetitiveTasksTable
 	VariablesStacksTable.Annotation = &entsql.Annotation{
 		Table: "variables_stacks",

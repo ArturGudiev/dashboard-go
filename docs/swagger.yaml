@@ -51,6 +51,86 @@ definitions:
         description: Notes holds the value of the "notes" field.
         type: string
     type: object
+  ent.LongTask:
+    properties:
+      description:
+        description: Description holds the value of the "description" field.
+        type: string
+      done:
+        description: Done holds the value of the "done" field.
+        type: boolean
+      done_date_time:
+        description: DoneDateTime holds the value of the "done_date_time" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.LongTaskEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the LongTaskQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      notes:
+        description: Notes holds the value of the "notes" field.
+        type: string
+      progress_done:
+        description: ProgressDone holds the value of the "progress_done" field.
+        type: number
+      progress_total:
+        description: ProgressTotal holds the value of the "progress_total" field.
+        type: number
+      progress_units:
+        description: ProgressUnits holds the value of the "progress_units" field.
+        type: string
+      tags:
+        description: Tags holds the value of the "tags" field.
+        items:
+          type: string
+        type: array
+    type: object
+  ent.LongTaskEdges:
+    properties:
+      submissions:
+        description: Submissions holds the value of the submissions edge.
+        items:
+          $ref: '#/definitions/ent.LongTaskSubmission'
+        type: array
+    type: object
+  ent.LongTaskSubmission:
+    properties:
+      comments:
+        description: Comments holds the value of the "comments" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.LongTaskSubmissionEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the LongTaskSubmissionQuery when eager-loading is set.
+      execution_date:
+        description: ExecutionDate holds the value of the "execution_date" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: integer
+      long_task_id:
+        description: LongTaskID holds the value of the "long_task_id" field.
+        type: integer
+      progress_to_add:
+        description: ProgressToAdd holds the value of the "progress_to_add" field.
+        type: number
+      progress_to_set:
+        description: ProgressToSet holds the value of the "progress_to_set" field.
+        type: number
+    type: object
+  ent.LongTaskSubmissionEdges:
+    properties:
+      long_task:
+        allOf:
+        - $ref: '#/definitions/ent.LongTask'
+        description: LongTask holds the value of the long_task edge.
+    type: object
   ent.RepetitiveTask:
     properties:
       closed:
@@ -189,6 +269,15 @@ definitions:
     - containerType
     - variableName
     type: object
+  handlers.AddLongTaskSubmissionRequest:
+    properties:
+      comments:
+        type: string
+      progressToAdd:
+        type: number
+      progressToSet:
+        type: number
+    type: object
   handlers.AnswerQuestionRequest:
     properties:
       answer:
@@ -230,6 +319,13 @@ definitions:
         type: string
       logType:
         type: string
+    type: object
+  handlers.NewLongTaskRequest:
+    properties:
+      longTask:
+        $ref: '#/definitions/models.LongTaskShort'
+      parent:
+        $ref: '#/definitions/models.ContainerDescription'
     type: object
   handlers.NewProblemRequest:
     description: Request to create a new problem with optional parent container
@@ -446,6 +542,10 @@ definitions:
         items:
           type: integer
         type: array
+      longTasks:
+        items:
+          type: integer
+        type: array
       notes:
         type: string
       parentContainers:
@@ -500,6 +600,31 @@ definitions:
         example:
         - bug
         - urgent
+        items:
+          type: string
+        type: array
+    type: object
+  models.LongTaskShort:
+    properties:
+      description:
+        example: Read Go book
+        type: string
+      notes:
+        example: Chapter 1-5
+        type: string
+      progressDone:
+        example: 0
+        type: number
+      progressTotal:
+        example: 100
+        type: number
+      progressUnits:
+        example: percents
+        type: string
+      tags:
+        example:
+        - learning
+        - go
         items:
           type: string
         type: array
@@ -769,6 +894,10 @@ definitions:
         items:
           type: integer
         type: array
+      longTasks:
+        items:
+          type: integer
+        type: array
       notes:
         type: string
       parentContainers:
@@ -846,6 +975,10 @@ definitions:
           type: integer
         type: array
       knowledgeNodes:
+        items:
+          type: integer
+        type: array
+      longTasks:
         items:
           type: integer
         type: array
@@ -960,6 +1093,7 @@ definitions:
     - definition
     - action
     - repetitive-task
+    - long-task
     - state
     type: string
     x-enum-varnames:
@@ -973,6 +1107,7 @@ definitions:
     - ContainerTypeDefinition
     - ContainerTypeAction
     - ContainerTypeRepetitiveTask
+    - ContainerTypeLongTask
     - ContainerTypeState
 host: localhost:8080
 info:
@@ -1844,6 +1979,253 @@ paths:
       summary: Get log message by ID
       tags:
       - log messages
+  /long-tasks:
+    get:
+      consumes:
+      - application/json
+      description: Returns all long tasks; use open=true to return only open (not
+        done) tasks
+      parameters:
+      - description: Return only open long tasks
+        in: query
+        name: open
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.LongTask'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get long tasks
+      tags:
+      - long-tasks
+    post:
+      consumes:
+      - application/json
+      description: Creates a new long task with optional parent relationship
+      parameters:
+      - description: Long task creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.NewLongTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.LongTask'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new long task
+      tags:
+      - long-tasks
+  /long-tasks/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a long task by ID
+      parameters:
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.LongTask'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get long task by ID
+      tags:
+      - long-tasks
+    patch:
+      consumes:
+      - application/json
+      - application/json
+      description: |-
+        Partially updates a repetitive task's description and/or notes
+        Partially updates a long task's description and/or notes
+      parameters:
+      - description: Repetitive task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.LongTask'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Patch long task by ID
+      tags:
+      - repetitive-tasks
+      - long-tasks
+  /long-tasks/{id}/submissions:
+    get:
+      consumes:
+      - application/json
+      description: Returns submission records for the given long task (newest first)
+      parameters:
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.LongTaskSubmission'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List long task submissions
+      tags:
+      - long-tasks
+    post:
+      consumes:
+      - application/json
+      description: Records progress submission; increments progress_done when progressToAdd
+        is set, or sets progress_done when progressToSet is set
+      parameters:
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Submission request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AddLongTaskSubmissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.LongTaskSubmission'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add long task submission
+      tags:
+      - long-tasks
   /new-epic:
     post:
       consumes:
@@ -2338,7 +2720,10 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Partially updates a repetitive task's description and/or notes
+      - application/json
+      description: |-
+        Partially updates a repetitive task's description and/or notes
+        Partially updates a long task's description and/or notes
       parameters:
       - description: Repetitive task ID
         in: path
@@ -2351,13 +2736,25 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
       produces:
+      - application/json
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.RepetitiveTaskResponse'
+            $ref: '#/definitions/ent.LongTask'
         "400":
           description: Bad Request
           schema:
@@ -2376,9 +2773,10 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Patch repetitive task by ID
+      summary: Patch long task by ID
       tags:
       - repetitive-tasks
+      - long-tasks
   /repetitive-tasks/{id}/executions:
     get:
       consumes:

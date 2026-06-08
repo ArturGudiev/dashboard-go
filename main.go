@@ -186,6 +186,14 @@ func main() {
 	router.GET("/repetitive-tasks/:id/executions", h.GetRepetitiveTaskExecutions)
 	router.POST("/new-repetitive-task", h.NewRepetitiveTask)
 
+	// Long task routes
+	router.GET("/long-tasks", h.GetLongTasks)
+	router.GET("/long-tasks/:id", h.GetLongTaskById)
+	router.PATCH("/long-tasks/:id", h.PatchLongTaskByID)
+	router.POST("/long-tasks/:id/submissions", h.AddLongTaskSubmission)
+	router.GET("/long-tasks/:id/submissions", h.GetLongTaskSubmissions)
+	router.POST("/long-tasks", h.NewLongTask)
+
 	// Problem routes
 	router.GET("/problem/:id", h.GetProblemByID)
 	router.PATCH("/problem/:id", h.PatchProblemByID)

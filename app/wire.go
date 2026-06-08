@@ -37,6 +37,8 @@ func InitializeApp() (*App, error) {
 		services.NewAliasesService,
 		services.NewRepetitiveTaskService,
 		services.NewRepetitiveTaskExecutionService,
+		services.NewLongTasksService,
+		services.NewLongTaskSubmissionsService,
 
 		repositories.NewQuestionsRepository,
 		repositories.NewStoriesRepository,
@@ -49,6 +51,8 @@ func InitializeApp() (*App, error) {
 		repositories.NewContainerVariablesRepository,
 		repositories.NewRepetitiveTasksRepository,
 		repositories.NewRepetitiveTaskExecutionsRepository,
+		repositories.NewLongTasksRepository,
+		repositories.NewLongTaskSubmissionsRepository,
 		// App provider
 		provideApp,
 	)
@@ -120,6 +124,8 @@ func provideApp(
 	taskService *services.TaskService,
 	repetitiveTaskService *services.RepetitiveTaskService,
 	repetitiveTaskExecutionService *services.RepetitiveTaskExecutionService,
+	longTasksService *services.LongTasksService,
+	longTaskSubmissionsService *services.LongTaskSubmissionsService,
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
@@ -141,12 +147,16 @@ func provideApp(
 	containerVariablesRepository *repositories.ContainerVariablesRepository,
 	repetitiveTasksRepository *repositories.RepetitiveTasksRepository,
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
+	longTasksRepository *repositories.LongTasksRepository,
+	longTaskSubmissionsRepository *repositories.LongTaskSubmissionsRepository,
 ) *App {
 	return &App{
 		Client:                    client,
 		TaskService:               taskService,
 		RepetitiveTaskService:     repetitiveTaskService,
 		RepetitiveTaskExecutionService: repetitiveTaskExecutionService,
+		LongTasksService:         longTasksService,
+		LongTaskSubmissionsService: longTaskSubmissionsService,
 		ProblemService:            problemService,
 		ContainerService:          containerService,
 		CLIService:                cliService,
@@ -168,6 +178,8 @@ func provideApp(
 		ContainerVariablesRepository:       containerVariablesRepository,
 		RepetitiveTasksRepository:          repetitiveTasksRepository,
 		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
+		LongTasksRepository:                longTasksRepository,
+		LongTaskSubmissionsRepository:     longTaskSubmissionsRepository,
 		ctx:                       context.Background(), // Default context for CLI
 	}
 }

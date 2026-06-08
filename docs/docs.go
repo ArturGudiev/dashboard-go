@@ -1320,6 +1320,371 @@ const docTemplate = `{
                 }
             }
         },
+        "/long-tasks": {
+            "get": {
+                "description": "Returns all long tasks; use open=true to return only open (not done) tasks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-tasks"
+                ],
+                "summary": "Get long tasks",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Return only open long tasks",
+                        "name": "open",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.LongTask"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new long task with optional parent relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-tasks"
+                ],
+                "summary": "Create new long task",
+                "parameters": [
+                    {
+                        "description": "Long task creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NewLongTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.LongTask"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/long-tasks/{id}": {
+            "get": {
+                "description": "Returns a long task by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-tasks"
+                ],
+                "summary": "Get long task by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.LongTask"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes",
+                "consumes": [
+                    "application/json",
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "application/json"
+                ],
+                "tags": [
+                    "repetitive-tasks",
+                    "long-tasks"
+                ],
+                "summary": "Patch long task by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Repetitive task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.LongTask"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/long-tasks/{id}/submissions": {
+            "get": {
+                "description": "Returns submission records for the given long task (newest first)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-tasks"
+                ],
+                "summary": "List long task submissions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.LongTaskSubmission"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Records progress submission; increments progress_done when progressToAdd is set, or sets progress_done when progressToSet is set",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-tasks"
+                ],
+                "summary": "Add long task submission",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Submission request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AddLongTaskSubmissionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.LongTaskSubmission"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/new-epic": {
             "post": {
                 "description": "Creates a new epic with optional parent relationship",
@@ -2066,21 +2431,40 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Partially updates a repetitive task's description and/or notes",
+                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes",
                 "consumes": [
+                    "application/json",
                     "application/json"
                 ],
                 "produces": [
+                    "application/json",
                     "application/json"
                 ],
                 "tags": [
-                    "repetitive-tasks"
+                    "repetitive-tasks",
+                    "long-tasks"
                 ],
-                "summary": "Patch repetitive task by ID",
+                "summary": "Patch long task by ID",
                 "parameters": [
                     {
                         "type": "integer",
                         "description": "Repetitive task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -2099,7 +2483,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.RepetitiveTaskResponse"
+                            "$ref": "#/definitions/ent.LongTask"
                         }
                     },
                     "400": {
@@ -3027,6 +3411,120 @@ const docTemplate = `{
                 }
             }
         },
+        "ent.LongTask": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Description holds the value of the \"description\" field.",
+                    "type": "string"
+                },
+                "done": {
+                    "description": "Done holds the value of the \"done\" field.",
+                    "type": "boolean"
+                },
+                "done_date_time": {
+                    "description": "DoneDateTime holds the value of the \"done_date_time\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the LongTaskQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.LongTaskEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "notes": {
+                    "description": "Notes holds the value of the \"notes\" field.",
+                    "type": "string"
+                },
+                "progress_done": {
+                    "description": "ProgressDone holds the value of the \"progress_done\" field.",
+                    "type": "number"
+                },
+                "progress_total": {
+                    "description": "ProgressTotal holds the value of the \"progress_total\" field.",
+                    "type": "number"
+                },
+                "progress_units": {
+                    "description": "ProgressUnits holds the value of the \"progress_units\" field.",
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "Tags holds the value of the \"tags\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ent.LongTaskEdges": {
+            "type": "object",
+            "properties": {
+                "submissions": {
+                    "description": "Submissions holds the value of the submissions edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.LongTaskSubmission"
+                    }
+                }
+            }
+        },
+        "ent.LongTaskSubmission": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "description": "Comments holds the value of the \"comments\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the LongTaskSubmissionQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.LongTaskSubmissionEdges"
+                        }
+                    ]
+                },
+                "execution_date": {
+                    "description": "ExecutionDate holds the value of the \"execution_date\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "long_task_id": {
+                    "description": "LongTaskID holds the value of the \"long_task_id\" field.",
+                    "type": "integer"
+                },
+                "progress_to_add": {
+                    "description": "ProgressToAdd holds the value of the \"progress_to_add\" field.",
+                    "type": "number"
+                },
+                "progress_to_set": {
+                    "description": "ProgressToSet holds the value of the \"progress_to_set\" field.",
+                    "type": "number"
+                }
+            }
+        },
+        "ent.LongTaskSubmissionEdges": {
+            "type": "object",
+            "properties": {
+                "long_task": {
+                    "description": "LongTask holds the value of the long_task edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.LongTask"
+                        }
+                    ]
+                }
+            }
+        },
         "ent.RepetitiveTask": {
             "type": "object",
             "properties": {
@@ -3224,6 +3722,20 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.AddLongTaskSubmissionRequest": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "progressToAdd": {
+                    "type": "number"
+                },
+                "progressToSet": {
+                    "type": "number"
+                }
+            }
+        },
         "handlers.AnswerQuestionRequest": {
             "type": "object",
             "required": [
@@ -3285,6 +3797,17 @@ const docTemplate = `{
                 },
                 "logType": {
                     "type": "string"
+                }
+            }
+        },
+        "handlers.NewLongTaskRequest": {
+            "type": "object",
+            "properties": {
+                "longTask": {
+                    "$ref": "#/definitions/models.LongTaskShort"
+                },
+                "parent": {
+                    "$ref": "#/definitions/models.ContainerDescription"
                 }
             }
         },
@@ -3615,6 +4138,12 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
+                "longTasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "notes": {
                     "type": "string"
                 },
@@ -3698,6 +4227,41 @@ const docTemplate = `{
                     "example": [
                         "bug",
                         "urgent"
+                    ]
+                }
+            }
+        },
+        "models.LongTaskShort": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Read Go book"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Chapter 1-5"
+                },
+                "progressDone": {
+                    "type": "number",
+                    "example": 0
+                },
+                "progressTotal": {
+                    "type": "number",
+                    "example": 100
+                },
+                "progressUnits": {
+                    "type": "string",
+                    "example": "percents"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "learning",
+                        "go"
                     ]
                 }
             }
@@ -4093,6 +4657,12 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
+                "longTasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "notes": {
                     "type": "string"
                 },
@@ -4208,6 +4778,12 @@ const docTemplate = `{
                     }
                 },
                 "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "longTasks": {
                     "type": "array",
                     "items": {
                         "type": "integer"
@@ -4364,6 +4940,7 @@ const docTemplate = `{
                 "definition",
                 "action",
                 "repetitive-task",
+                "long-task",
                 "state"
             ],
             "x-enum-varnames": [
@@ -4377,6 +4954,7 @@ const docTemplate = `{
                 "ContainerTypeDefinition",
                 "ContainerTypeAction",
                 "ContainerTypeRepetitiveTask",
+                "ContainerTypeLongTask",
                 "ContainerTypeState"
             ]
         }

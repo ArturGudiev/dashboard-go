@@ -29,8 +29,9 @@ func (s *StoriesService) GetStoryFull(ctx context.Context, ID int) (*models.Stor
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeStory, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeStory, ID)
 	subquestions, errSubquestions := s.containerService.GetOpenQuestionsIDs(ctx, schema.ContainerTypeQuestion, ID)
+	longTasks, errLongTasks := s.containerService.GetOpenLongTasksIDs(ctx, schema.ContainerTypeStory, ID)
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeStory, ID)
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errSubquestions != nil {
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errSubquestions != nil || errLongTasks != nil {
 		return nil, errors.New("story not found")
 	}
 	StoryFull := &models.StoryFull{
@@ -42,6 +43,7 @@ func (s *StoriesService) GetStoryFull(ctx context.Context, ID int) (*models.Stor
 		Tasks:            subtasks,
 		Problems:         subproblems,
 		Questions:        subquestions,
+		LongTasks:        longTasks,
 		Actions:          []int{},
 		Definitions:      []int{},
 		KnowledgeBits:    []int{},

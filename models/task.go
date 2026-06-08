@@ -14,6 +14,7 @@ type TaskFull struct {
 	Tasks            []int                  `json:"tasks"`
 	Problems         []int                  `json:"problems"`
 	Questions        []int                  `json:"questions"`
+	LongTasks        []int                  `json:"longTasks"`
 	Actions          []int                  `json:"actions"`
 	Definitions      []int                  `json:"definitions"`
 	KnowledgeBits    []int                  `json:"knowledgeBits"`

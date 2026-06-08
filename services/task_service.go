@@ -113,11 +113,12 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeTask, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeTask, ID)
 	subquestions, errQuestions := s.containerService.GetOpenQuestionsIDs(ctx, schema.ContainerTypeTask, ID)
+	longTasks, errLongTasks := s.containerService.GetOpenLongTasksIDs(ctx, schema.ContainerTypeTask, ID)
 
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeTask, ID)
 	variables, errVariables := s.containerVariablesRepository.GetVariablesByContainer(ctx, schema.ContainerTypeTask, ID)
 
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errQuestions != nil || errVariables != nil {
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errQuestions != nil || errLongTasks != nil || errVariables != nil {
 		return nil, errors.New("problem not found")
 	}
 
@@ -130,6 +131,7 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 		Tasks:            subtasks,
 		Problems:         subproblems,
 		Questions:        subquestions,
+		LongTasks:        longTasks,
 		Actions:          []int{},
 		Definitions:      []int{},
 		KnowledgeBits:    []int{},

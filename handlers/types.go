@@ -166,6 +166,22 @@ type RepetitiveTasksQuery struct {
 	Actual *bool `form:"actual"`
 }
 
+type NewLongTaskRequest struct {
+	LongTask models.LongTaskShort         `json:"longTask"`
+	Parent   *models.ContainerDescription `json:"parent,omitempty"`
+}
+
+// LongTasksQuery represents query params for GET /long-tasks
+type LongTasksQuery struct {
+	Open *bool `form:"open"`
+}
+
+type AddLongTaskSubmissionRequest struct {
+	Comments      *string  `json:"comments"`
+	ProgressToAdd *float64 `json:"progressToAdd"`
+	ProgressToSet *float64 `json:"progressToSet"`
+}
+
 // AddContainerVariableRequest adds a variable to a container's variables stack.
 type AddContainerVariableRequest struct {
 	ContainerType schema.ContainerType `json:"containerType" binding:"required"`
