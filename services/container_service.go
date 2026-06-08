@@ -411,6 +411,13 @@ func (s *ContainerService) GetDescription(ctx context.Context, containerType sch
 		}
 		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, knowledgeNode.Name)
 		return &result, nil
+	case schema.ContainerTypeLongTask:
+		longTask, err := s.client.LongTask.Get(ctx, ID)
+		if err != nil {
+			return nil, err
+		}
+		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, longTask.Description)
+		return &result, nil
 	default:
 		return nil, fmt.Errorf("unsupported container type: %s", containerType)
 	}

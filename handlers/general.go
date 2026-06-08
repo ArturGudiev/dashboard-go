@@ -44,7 +44,7 @@ func (h *Handler) GetParentsPath(c *gin.Context) {
 	case schema.ContainerTypeEpic, schema.ContainerTypeStory, schema.ContainerTypeTask,
 		schema.ContainerTypeQuestion, schema.ContainerTypeProblem, schema.ContainerTypeKnowledgeNode,
 		schema.ContainerTypeKnowledgeBit, schema.ContainerTypeDefinition, schema.ContainerTypeAction,
-		schema.ContainerTypeRepetitiveTask, schema.ContainerTypeState:
+		schema.ContainerTypeRepetitiveTask, schema.ContainerTypeLongTask, schema.ContainerTypeState:
 		// Valid type
 	default:
 		c.JSON(400, gin.H{"error": "Invalid container type"})

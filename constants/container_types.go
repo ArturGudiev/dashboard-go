@@ -12,4 +12,5 @@ var CapitalisedContainerTypes = map[schema.ContainerType]string{
 	schema.ContainerTypeQuestion:      "Question",
 	schema.ContainerTypeKnowledgeBit:  "KnowledgeBit",
 	schema.ContainerTypeKnowledgeNode: "KnowledgeNode",
+	schema.ContainerTypeLongTask:      "LongTask",
 }
