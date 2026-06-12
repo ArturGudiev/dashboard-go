@@ -75,6 +75,20 @@ func (_c *LongTaskSubmissionCreate) SetNillableProgressToSet(v *float64) *LongTa
 	return _c
 }
 
+// SetProgressRaw sets the "progress_raw" field.
+func (_c *LongTaskSubmissionCreate) SetProgressRaw(v string) *LongTaskSubmissionCreate {
+	_c.mutation.SetProgressRaw(v)
+	return _c
+}
+
+// SetNillableProgressRaw sets the "progress_raw" field if the given value is not nil.
+func (_c *LongTaskSubmissionCreate) SetNillableProgressRaw(v *string) *LongTaskSubmissionCreate {
+	if v != nil {
+		_c.SetProgressRaw(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *LongTaskSubmissionCreate) SetID(v int) *LongTaskSubmissionCreate {
 	_c.mutation.SetID(v)
@@ -186,6 +200,10 @@ func (_c *LongTaskSubmissionCreate) createSpec() (*LongTaskSubmission, *sqlgraph
 	if value, ok := _c.mutation.ProgressToSet(); ok {
 		_spec.SetField(longtasksubmission.FieldProgressToSet, field.TypeFloat64, value)
 		_node.ProgressToSet = &value
+	}
+	if value, ok := _c.mutation.ProgressRaw(); ok {
+		_spec.SetField(longtasksubmission.FieldProgressRaw, field.TypeString, value)
+		_node.ProgressRaw = &value
 	}
 	if nodes := _c.mutation.LongTaskIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

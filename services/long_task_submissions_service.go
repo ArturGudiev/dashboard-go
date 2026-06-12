@@ -28,6 +28,7 @@ func (s *LongTaskSubmissionsService) AddLongTaskSubmission(
 	comments *string,
 	progressToAdd *float64,
 	progressToSet *float64,
+	progressRaw *string,
 ) (*ent.LongTaskSubmission, error) {
 	submission, err := s.longTaskSubmissionsRepository.AddLongTaskSubmission(
 		ctx,
@@ -35,9 +36,14 @@ func (s *LongTaskSubmissionsService) AddLongTaskSubmission(
 		comments,
 		progressToAdd,
 		progressToSet,
+		progressRaw,
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	if progressToAdd == nil && progressToSet == nil {
+		return submission, nil
 	}
 
 	longTask, err := s.longTasksRepository.GetLongTask(ctx, longTaskID)
@@ -45,14 +51,18 @@ func (s *LongTaskSubmissionsService) AddLongTaskSubmission(
 		return nil, err
 	}
 
-	newProgressDone := longTask.ProgressDone
+	if longTask.ProgressTotal == nil || longTask.ProgressDone == nil {
+		return submission, nil
+	}
+
+	newProgressDone := *longTask.ProgressDone
 	if progressToSet != nil {
 		newProgressDone = *progressToSet
 	} else if progressToAdd != nil {
 		newProgressDone += *progressToAdd
 	}
 
-	done := longTask.ProgressTotal > 0 && newProgressDone >= longTask.ProgressTotal
+	done := *longTask.ProgressTotal > 0 && newProgressDone >= *longTask.ProgressTotal
 
 	// We update the long task state after recording the submission.
 	_, err = s.longTasksRepository.UpdateLongTaskProgressDoneAndDone(ctx, longTaskID, newProgressDone, done)

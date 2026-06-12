@@ -23,6 +23,7 @@ func (r *LongTaskSubmissionsRepository) AddLongTaskSubmission(
 	comments *string,
 	progressToAdd *float64,
 	progressToSet *float64,
+	progressRaw *string,
 ) (*ent.LongTaskSubmission, error) {
 	createBuilder := r.client.LongTaskSubmission.Create().
 		SetLongTaskID(longTaskID).
@@ -36,6 +37,9 @@ func (r *LongTaskSubmissionsRepository) AddLongTaskSubmission(
 	}
 	if progressToSet != nil {
 		createBuilder = createBuilder.SetNillableProgressToSet(progressToSet)
+	}
+	if progressRaw != nil {
+		createBuilder = createBuilder.SetNillableProgressRaw(progressRaw)
 	}
 
 	return createBuilder.Save(ctx)

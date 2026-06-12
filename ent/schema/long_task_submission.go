@@ -30,6 +30,10 @@ func (LongTaskSubmission) Fields() []ent.Field {
 		field.Float("progress_to_set").
 			Optional().
 			Nillable(),
+		field.String("progress_raw").
+			Optional().
+			Nillable().
+			StructTag(`json:"progress_raw"`),
 	}
 }
 

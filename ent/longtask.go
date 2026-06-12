@@ -29,9 +29,9 @@ type LongTask struct {
 	// DoneDateTime holds the value of the "done_date_time" field.
 	DoneDateTime *time.Time `json:"done_date_time,omitempty"`
 	// ProgressTotal holds the value of the "progress_total" field.
-	ProgressTotal float64 `json:"progress_total"`
+	ProgressTotal *float64 `json:"progress_total"`
 	// ProgressDone holds the value of the "progress_done" field.
-	ProgressDone float64 `json:"progress_done"`
+	ProgressDone *float64 `json:"progress_done"`
 	// ProgressUnits holds the value of the "progress_units" field.
 	ProgressUnits string `json:"progress_units,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -133,13 +133,15 @@ func (_m *LongTask) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field progress_total", values[i])
 			} else if value.Valid {
-				_m.ProgressTotal = value.Float64
+				_m.ProgressTotal = new(float64)
+				*_m.ProgressTotal = value.Float64
 			}
 		case longtask.FieldProgressDone:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field progress_done", values[i])
 			} else if value.Valid {
-				_m.ProgressDone = value.Float64
+				_m.ProgressDone = new(float64)
+				*_m.ProgressDone = value.Float64
 			}
 		case longtask.FieldProgressUnits:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -205,11 +207,15 @@ func (_m *LongTask) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("progress_total=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ProgressTotal))
+	if v := _m.ProgressTotal; v != nil {
+		builder.WriteString("progress_total=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("progress_done=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ProgressDone))
+	if v := _m.ProgressDone; v != nil {
+		builder.WriteString("progress_done=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("progress_units=")
 	builder.WriteString(_m.ProgressUnits)

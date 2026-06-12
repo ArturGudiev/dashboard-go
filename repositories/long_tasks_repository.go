@@ -38,19 +38,26 @@ func (r *LongTasksRepository) AddLongTask(
 	description string,
 	tags []string,
 	notes string,
-	progressTotal float64,
-	progressDone float64,
+	progressTotal *float64,
+	progressDone *float64,
 	progressUnits *string,
 ) (*ent.LongTask, error) {
-	done := progressTotal > 0 && progressDone >= progressTotal
+	done := false
+	if progressTotal != nil && progressDone != nil && *progressTotal > 0 && *progressDone >= *progressTotal {
+		done = true
+	}
 	newTask := r.client.LongTask.Create().
 		SetDescription(description).
 		SetTags(tags).
 		SetNotes(notes).
-		SetProgressTotal(progressTotal).
-		SetProgressDone(progressDone).
 		SetDone(done)
 
+	if progressTotal != nil {
+		newTask = newTask.SetProgressTotal(*progressTotal)
+	}
+	if progressDone != nil {
+		newTask = newTask.SetProgressDone(*progressDone)
+	}
 	if progressUnits != nil {
 		newTask = newTask.SetProgressUnits(*progressUnits)
 	}

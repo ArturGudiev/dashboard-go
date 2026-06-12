@@ -91,8 +91,8 @@ func (h *Handler) AddLongTaskSubmission(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	if req.ProgressToAdd == nil && req.ProgressToSet == nil {
-		c.JSON(400, gin.H{"error": "At least one of progressToAdd or progressToSet must be provided"})
+	if req.ProgressToAdd == nil && req.ProgressToSet == nil && req.ProgressRaw == nil {
+		c.JSON(400, gin.H{"error": "At least one of progressToAdd, progressToSet, or progressRaw must be provided"})
 		return
 	}
 
@@ -102,6 +102,7 @@ func (h *Handler) AddLongTaskSubmission(c *gin.Context) {
 		req.Comments,
 		req.ProgressToAdd,
 		req.ProgressToSet,
+		req.ProgressRaw,
 	)
 	if err != nil {
 		if ent.IsNotFound(err) {

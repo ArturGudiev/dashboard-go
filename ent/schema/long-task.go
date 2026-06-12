@@ -31,10 +31,12 @@ func (LongTask) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 		field.Float("progress_total").
-			Default(0).
+			Optional().
+			Nillable().
 			StructTag(`json:"progress_total"`),
 		field.Float("progress_done").
-			Default(0).
+			Optional().
+			Nillable().
 			StructTag(`json:"progress_done"`),
 		field.String("progress_units").
 			Default("percents"),

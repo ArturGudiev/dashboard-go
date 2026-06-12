@@ -28,6 +28,8 @@ type LongTaskSubmission struct {
 	ProgressToAdd *float64 `json:"progress_to_add,omitempty"`
 	// ProgressToSet holds the value of the "progress_to_set" field.
 	ProgressToSet *float64 `json:"progress_to_set,omitempty"`
+	// ProgressRaw holds the value of the "progress_raw" field.
+	ProgressRaw *string `json:"progress_raw"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LongTaskSubmissionQuery when eager-loading is set.
 	Edges        LongTaskSubmissionEdges `json:"edges"`
@@ -63,7 +65,7 @@ func (*LongTaskSubmission) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case longtasksubmission.FieldID, longtasksubmission.FieldLongTaskID:
 			values[i] = new(sql.NullInt64)
-		case longtasksubmission.FieldComments:
+		case longtasksubmission.FieldComments, longtasksubmission.FieldProgressRaw:
 			values[i] = new(sql.NullString)
 		case longtasksubmission.FieldExecutionDate:
 			values[i] = new(sql.NullTime)
@@ -120,6 +122,13 @@ func (_m *LongTaskSubmission) assignValues(columns []string, values []any) error
 			} else if value.Valid {
 				_m.ProgressToSet = new(float64)
 				*_m.ProgressToSet = value.Float64
+			}
+		case longtasksubmission.FieldProgressRaw:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field progress_raw", values[i])
+			} else if value.Valid {
+				_m.ProgressRaw = new(string)
+				*_m.ProgressRaw = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -181,6 +190,11 @@ func (_m *LongTaskSubmission) String() string {
 	if v := _m.ProgressToSet; v != nil {
 		builder.WriteString("progress_to_set=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ProgressRaw; v != nil {
+		builder.WriteString("progress_raw=")
+		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')
 	return builder.String()

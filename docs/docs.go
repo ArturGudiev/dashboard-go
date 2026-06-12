@@ -3502,6 +3502,10 @@ const docTemplate = `{
                     "description": "LongTaskID holds the value of the \"long_task_id\" field.",
                     "type": "integer"
                 },
+                "progress_raw": {
+                    "description": "ProgressRaw holds the value of the \"progress_raw\" field.",
+                    "type": "string"
+                },
                 "progress_to_add": {
                     "description": "ProgressToAdd holds the value of the \"progress_to_add\" field.",
                     "type": "number"
@@ -3726,6 +3730,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "comments": {
+                    "type": "string"
+                },
+                "progressRaw": {
                     "type": "string"
                 },
                 "progressToAdd": {

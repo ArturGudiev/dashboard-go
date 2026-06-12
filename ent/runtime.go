@@ -160,14 +160,6 @@ func init() {
 	longtaskDescNotes := longtaskFields[4].Descriptor()
 	// longtask.DefaultNotes holds the default value on creation for the notes field.
 	longtask.DefaultNotes = longtaskDescNotes.Default.(string)
-	// longtaskDescProgressTotal is the schema descriptor for progress_total field.
-	longtaskDescProgressTotal := longtaskFields[6].Descriptor()
-	// longtask.DefaultProgressTotal holds the default value on creation for the progress_total field.
-	longtask.DefaultProgressTotal = longtaskDescProgressTotal.Default.(float64)
-	// longtaskDescProgressDone is the schema descriptor for progress_done field.
-	longtaskDescProgressDone := longtaskFields[7].Descriptor()
-	// longtask.DefaultProgressDone holds the default value on creation for the progress_done field.
-	longtask.DefaultProgressDone = longtaskDescProgressDone.Default.(float64)
 	// longtaskDescProgressUnits is the schema descriptor for progress_units field.
 	longtaskDescProgressUnits := longtaskFields[8].Descriptor()
 	// longtask.DefaultProgressUnits holds the default value on creation for the progress_units field.

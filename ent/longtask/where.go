@@ -320,6 +320,16 @@ func ProgressTotalLTE(v float64) predicate.LongTask {
 	return predicate.LongTask(sql.FieldLTE(FieldProgressTotal, v))
 }
 
+// ProgressTotalIsNil applies the IsNil predicate on the "progress_total" field.
+func ProgressTotalIsNil() predicate.LongTask {
+	return predicate.LongTask(sql.FieldIsNull(FieldProgressTotal))
+}
+
+// ProgressTotalNotNil applies the NotNil predicate on the "progress_total" field.
+func ProgressTotalNotNil() predicate.LongTask {
+	return predicate.LongTask(sql.FieldNotNull(FieldProgressTotal))
+}
+
 // ProgressDoneEQ applies the EQ predicate on the "progress_done" field.
 func ProgressDoneEQ(v float64) predicate.LongTask {
 	return predicate.LongTask(sql.FieldEQ(FieldProgressDone, v))
@@ -358,6 +368,16 @@ func ProgressDoneLT(v float64) predicate.LongTask {
 // ProgressDoneLTE applies the LTE predicate on the "progress_done" field.
 func ProgressDoneLTE(v float64) predicate.LongTask {
 	return predicate.LongTask(sql.FieldLTE(FieldProgressDone, v))
+}
+
+// ProgressDoneIsNil applies the IsNil predicate on the "progress_done" field.
+func ProgressDoneIsNil() predicate.LongTask {
+	return predicate.LongTask(sql.FieldIsNull(FieldProgressDone))
+}
+
+// ProgressDoneNotNil applies the NotNil predicate on the "progress_done" field.
+func ProgressDoneNotNil() predicate.LongTask {
+	return predicate.LongTask(sql.FieldNotNull(FieldProgressDone))
 }
 
 // ProgressUnitsEQ applies the EQ predicate on the "progress_units" field.

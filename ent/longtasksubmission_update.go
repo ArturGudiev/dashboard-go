@@ -131,6 +131,26 @@ func (_u *LongTaskSubmissionUpdate) ClearProgressToSet() *LongTaskSubmissionUpda
 	return _u
 }
 
+// SetProgressRaw sets the "progress_raw" field.
+func (_u *LongTaskSubmissionUpdate) SetProgressRaw(v string) *LongTaskSubmissionUpdate {
+	_u.mutation.SetProgressRaw(v)
+	return _u
+}
+
+// SetNillableProgressRaw sets the "progress_raw" field if the given value is not nil.
+func (_u *LongTaskSubmissionUpdate) SetNillableProgressRaw(v *string) *LongTaskSubmissionUpdate {
+	if v != nil {
+		_u.SetProgressRaw(*v)
+	}
+	return _u
+}
+
+// ClearProgressRaw clears the value of the "progress_raw" field.
+func (_u *LongTaskSubmissionUpdate) ClearProgressRaw() *LongTaskSubmissionUpdate {
+	_u.mutation.ClearProgressRaw()
+	return _u
+}
+
 // SetLongTask sets the "long_task" edge to the LongTask entity.
 func (_u *LongTaskSubmissionUpdate) SetLongTask(v *LongTask) *LongTaskSubmissionUpdate {
 	return _u.SetLongTaskID(v.ID)
@@ -225,6 +245,12 @@ func (_u *LongTaskSubmissionUpdate) sqlSave(ctx context.Context) (_node int, err
 	}
 	if _u.mutation.ProgressToSetCleared() {
 		_spec.ClearField(longtasksubmission.FieldProgressToSet, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.ProgressRaw(); ok {
+		_spec.SetField(longtasksubmission.FieldProgressRaw, field.TypeString, value)
+	}
+	if _u.mutation.ProgressRawCleared() {
+		_spec.ClearField(longtasksubmission.FieldProgressRaw, field.TypeString)
 	}
 	if _u.mutation.LongTaskCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -377,6 +403,26 @@ func (_u *LongTaskSubmissionUpdateOne) ClearProgressToSet() *LongTaskSubmissionU
 	return _u
 }
 
+// SetProgressRaw sets the "progress_raw" field.
+func (_u *LongTaskSubmissionUpdateOne) SetProgressRaw(v string) *LongTaskSubmissionUpdateOne {
+	_u.mutation.SetProgressRaw(v)
+	return _u
+}
+
+// SetNillableProgressRaw sets the "progress_raw" field if the given value is not nil.
+func (_u *LongTaskSubmissionUpdateOne) SetNillableProgressRaw(v *string) *LongTaskSubmissionUpdateOne {
+	if v != nil {
+		_u.SetProgressRaw(*v)
+	}
+	return _u
+}
+
+// ClearProgressRaw clears the value of the "progress_raw" field.
+func (_u *LongTaskSubmissionUpdateOne) ClearProgressRaw() *LongTaskSubmissionUpdateOne {
+	_u.mutation.ClearProgressRaw()
+	return _u
+}
+
 // SetLongTask sets the "long_task" edge to the LongTask entity.
 func (_u *LongTaskSubmissionUpdateOne) SetLongTask(v *LongTask) *LongTaskSubmissionUpdateOne {
 	return _u.SetLongTaskID(v.ID)
@@ -501,6 +547,12 @@ func (_u *LongTaskSubmissionUpdateOne) sqlSave(ctx context.Context) (_node *Long
 	}
 	if _u.mutation.ProgressToSetCleared() {
 		_spec.ClearField(longtasksubmission.FieldProgressToSet, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.ProgressRaw(); ok {
+		_spec.SetField(longtasksubmission.FieldProgressRaw, field.TypeString, value)
+	}
+	if _u.mutation.ProgressRawCleared() {
+		_spec.ClearField(longtasksubmission.FieldProgressRaw, field.TypeString)
 	}
 	if _u.mutation.LongTaskCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -150,8 +150,8 @@ var (
 		{Name: "done", Type: field.TypeBool, Default: false},
 		{Name: "notes", Type: field.TypeString, Default: ""},
 		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
-		{Name: "progress_total", Type: field.TypeFloat64, Default: 0},
-		{Name: "progress_done", Type: field.TypeFloat64, Default: 0},
+		{Name: "progress_total", Type: field.TypeFloat64, Nullable: true},
+		{Name: "progress_done", Type: field.TypeFloat64, Nullable: true},
 		{Name: "progress_units", Type: field.TypeString, Default: "percents"},
 	}
 	// LongTasksTable holds the schema information for the "long_tasks" table.
@@ -167,6 +167,7 @@ var (
 		{Name: "comments", Type: field.TypeString, Nullable: true},
 		{Name: "progress_to_add", Type: field.TypeFloat64, Nullable: true},
 		{Name: "progress_to_set", Type: field.TypeFloat64, Nullable: true},
+		{Name: "progress_raw", Type: field.TypeString, Nullable: true},
 		{Name: "long_task_id", Type: field.TypeInt},
 	}
 	// LongTaskSubmissionsTable holds the schema information for the "long_task_submissions" table.
@@ -177,7 +178,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "long_task_submissions_long_tasks_submissions",
-				Columns:    []*schema.Column{LongTaskSubmissionsColumns[5]},
+				Columns:    []*schema.Column{LongTaskSubmissionsColumns[6]},
 				RefColumns: []*schema.Column{LongTasksColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

@@ -180,6 +180,7 @@ type AddLongTaskSubmissionRequest struct {
 	Comments      *string  `json:"comments"`
 	ProgressToAdd *float64 `json:"progressToAdd"`
 	ProgressToSet *float64 `json:"progressToSet"`
+	ProgressRaw   *string  `json:"progressRaw"`
 }
 
 // AddContainerVariableRequest adds a variable to a container's variables stack.

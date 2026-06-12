@@ -22,6 +22,8 @@ const (
 	FieldProgressToAdd = "progress_to_add"
 	// FieldProgressToSet holds the string denoting the progress_to_set field in the database.
 	FieldProgressToSet = "progress_to_set"
+	// FieldProgressRaw holds the string denoting the progress_raw field in the database.
+	FieldProgressRaw = "progress_raw"
 	// EdgeLongTask holds the string denoting the long_task edge name in mutations.
 	EdgeLongTask = "long_task"
 	// Table holds the table name of the longtasksubmission in the database.
@@ -43,6 +45,7 @@ var Columns = []string{
 	FieldComments,
 	FieldProgressToAdd,
 	FieldProgressToSet,
+	FieldProgressRaw,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -93,6 +96,11 @@ func ByProgressToAdd(opts ...sql.OrderTermOption) OrderOption {
 // ByProgressToSet orders the results by the progress_to_set field.
 func ByProgressToSet(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProgressToSet, opts...).ToFunc()
+}
+
+// ByProgressRaw orders the results by the progress_raw field.
+func ByProgressRaw(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProgressRaw, opts...).ToFunc()
 }
 
 // ByLongTaskField orders the results by long_task field.
