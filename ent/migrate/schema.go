@@ -26,9 +26,9 @@ var (
 	// ContainerChildrenColumns holds the columns for the "container_children" table.
 	ContainerChildrenColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "parent_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state"}},
+		{Name: "parent_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "direction", "state"}},
 		{Name: "parent_id", Type: field.TypeInt},
-		{Name: "child_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state"}},
+		{Name: "child_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "direction", "state"}},
 		{Name: "child_id", Type: field.TypeInt},
 		{Name: "child_order", Type: field.TypeInt, Default: 0},
 		{Name: "parent_order", Type: field.TypeInt, Default: 0},
@@ -99,6 +99,41 @@ var (
 			},
 		},
 	}
+	// DirectionsColumns holds the columns for the "directions" table.
+	DirectionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+		{Name: "closed", Type: field.TypeBool, Default: false},
+	}
+	// DirectionsTable holds the schema information for the "directions" table.
+	DirectionsTable = &schema.Table{
+		Name:       "directions",
+		Columns:    DirectionsColumns,
+		PrimaryKey: []*schema.Column{DirectionsColumns[0]},
+	}
+	// DirectionSubmissionsColumns holds the columns for the "direction_submissions" table.
+	DirectionSubmissionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "execution_date", Type: field.TypeTime},
+		{Name: "text", Type: field.TypeString, Nullable: true},
+		{Name: "direction_id", Type: field.TypeInt},
+	}
+	// DirectionSubmissionsTable holds the schema information for the "direction_submissions" table.
+	DirectionSubmissionsTable = &schema.Table{
+		Name:       "direction_submissions",
+		Columns:    DirectionSubmissionsColumns,
+		PrimaryKey: []*schema.Column{DirectionSubmissionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "direction_submissions_directions_submissions",
+				Columns:    []*schema.Column{DirectionSubmissionsColumns[3]},
+				RefColumns: []*schema.Column{DirectionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// EpicsColumns holds the columns for the "epics" table.
 	EpicsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -133,7 +168,7 @@ var (
 		{Name: "description", Type: field.TypeString},
 		{Name: "notes", Type: field.TypeString, Default: ""},
 		{Name: "created", Type: field.TypeTime},
-		{Name: "container_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state"}},
+		{Name: "container_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "direction", "state"}},
 		{Name: "container_id", Type: field.TypeInt, Nullable: true},
 	}
 	// LogMessagesTable holds the schema information for the "log_messages" table.
@@ -297,7 +332,7 @@ var (
 	// VariablesStacksColumns holds the columns for the "variables_stacks" table.
 	VariablesStacksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "container_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state"}},
+		{Name: "container_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "direction", "state"}},
 		{Name: "container_id", Type: field.TypeInt},
 	}
 	// VariablesStacksTable holds the schema information for the "variables_stacks" table.
@@ -318,6 +353,8 @@ var (
 		AliasesTable,
 		ContainerChildrenTable,
 		ContainerVariablesTable,
+		DirectionsTable,
+		DirectionSubmissionsTable,
 		EpicsTable,
 		KnowledgeNodesTable,
 		LogMessagesTable,
@@ -345,6 +382,7 @@ func init() {
 	ContainerVariablesTable.Annotation = &entsql.Annotation{
 		Table: "container_variables",
 	}
+	DirectionSubmissionsTable.ForeignKeys[0].RefTable = DirectionsTable
 	LongTaskSubmissionsTable.ForeignKeys[0].RefTable = LongTasksTable
 	RepetitiveTaskExecutionsTable.ForeignKeys[0].RefTable = RepetitiveTasksTable
 	VariablesStacksTable.Annotation = &entsql.Annotation{

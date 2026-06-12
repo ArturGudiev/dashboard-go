@@ -193,6 +193,49 @@ func (h *Handler) PatchEpicByID(c *gin.Context) {
 // @Failure      404      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /long-tasks/{id} [patch]
+// PatchDirectionByID handles PATCH /directions/:id
+// @Summary      Patch direction by ID
+// @Description  Partially updates a direction's description, notes, and/or closed state
+// @Tags         directions
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int                         true  "Direction ID"
+// @Param        request  body      PatchDirectionByIDRequest  true  "Fields to update"
+// @Success      200      {object}  models.DirectionFull
+// @Failure      400      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /directions/{id} [patch]
+func (h *Handler) PatchDirectionByID(c *gin.Context) {
+	id, ok := parsePatchID(c, "direction")
+	if !ok {
+		return
+	}
+
+	var req PatchDirectionByIDRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Description == nil && req.Notes == nil && req.Closed == nil {
+		c.JSON(400, gin.H{"error": "At least one of description, notes, or closed must be provided"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	directionFull, err := h.App.DirectionsService.UpdateDirection(ctx, models.DirectionPartial{
+		ID:          id,
+		Description: req.Description,
+		Notes:       req.Notes,
+		Closed:      req.Closed,
+	})
+	if err != nil {
+		writePatchError(c, id, "direction", err)
+		return
+	}
+	c.JSON(200, directionFull)
+}
+
 func (h *Handler) PatchLongTaskByID(c *gin.Context) {
 	id, ok := parsePatchID(c, "long task")
 	if !ok {

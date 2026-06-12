@@ -16,6 +16,7 @@ const (
 	ContainerTypeAction         ContainerType = "action"
 	ContainerTypeRepetitiveTask ContainerType = "repetitive-task"
 	ContainerTypeLongTask       ContainerType = "long-task"
+	ContainerTypeDirection      ContainerType = "direction"
 	ContainerTypeState          ContainerType = "state"
 )
 
@@ -33,6 +34,7 @@ func (ContainerType) Values() []string {
 		"action",
 		"repetitive-task",
 		"long-task",
+		"direction",
 		"state",
 	}
 }

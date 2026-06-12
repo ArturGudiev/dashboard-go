@@ -14,6 +14,8 @@ import (
 	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/containervariables"
+	"arturgudiev/dashboard/ent/direction"
+	"arturgudiev/dashboard/ent/directionsubmission"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
@@ -45,6 +47,10 @@ type Client struct {
 	ContainerChild *ContainerChildClient
 	// ContainerVariables is the client for interacting with the ContainerVariables builders.
 	ContainerVariables *ContainerVariablesClient
+	// Direction is the client for interacting with the Direction builders.
+	Direction *DirectionClient
+	// DirectionSubmission is the client for interacting with the DirectionSubmission builders.
+	DirectionSubmission *DirectionSubmissionClient
 	// Epic is the client for interacting with the Epic builders.
 	Epic *EpicClient
 	// KnowledgeNode is the client for interacting with the KnowledgeNode builders.
@@ -85,6 +91,8 @@ func (c *Client) init() {
 	c.Alias = NewAliasClient(c.config)
 	c.ContainerChild = NewContainerChildClient(c.config)
 	c.ContainerVariables = NewContainerVariablesClient(c.config)
+	c.Direction = NewDirectionClient(c.config)
+	c.DirectionSubmission = NewDirectionSubmissionClient(c.config)
 	c.Epic = NewEpicClient(c.config)
 	c.KnowledgeNode = NewKnowledgeNodeClient(c.config)
 	c.LogMessage = NewLogMessageClient(c.config)
@@ -193,6 +201,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Alias:                   NewAliasClient(cfg),
 		ContainerChild:          NewContainerChildClient(cfg),
 		ContainerVariables:      NewContainerVariablesClient(cfg),
+		Direction:               NewDirectionClient(cfg),
+		DirectionSubmission:     NewDirectionSubmissionClient(cfg),
 		Epic:                    NewEpicClient(cfg),
 		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
 		LogMessage:              NewLogMessageClient(cfg),
@@ -228,6 +238,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Alias:                   NewAliasClient(cfg),
 		ContainerChild:          NewContainerChildClient(cfg),
 		ContainerVariables:      NewContainerVariablesClient(cfg),
+		Direction:               NewDirectionClient(cfg),
+		DirectionSubmission:     NewDirectionSubmissionClient(cfg),
 		Epic:                    NewEpicClient(cfg),
 		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
 		LogMessage:              NewLogMessageClient(cfg),
@@ -270,10 +282,10 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alias, c.ContainerChild, c.ContainerVariables, c.Epic, c.KnowledgeNode,
-		c.LogMessage, c.LongTask, c.LongTaskSubmission, c.Problem, c.Question,
-		c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story, c.Task, c.Test,
-		c.VariablesStack,
+		c.Alias, c.ContainerChild, c.ContainerVariables, c.Direction,
+		c.DirectionSubmission, c.Epic, c.KnowledgeNode, c.LogMessage, c.LongTask,
+		c.LongTaskSubmission, c.Problem, c.Question, c.RepetitiveTask,
+		c.RepetitiveTaskExecution, c.Story, c.Task, c.Test, c.VariablesStack,
 	} {
 		n.Use(hooks...)
 	}
@@ -283,10 +295,10 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alias, c.ContainerChild, c.ContainerVariables, c.Epic, c.KnowledgeNode,
-		c.LogMessage, c.LongTask, c.LongTaskSubmission, c.Problem, c.Question,
-		c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story, c.Task, c.Test,
-		c.VariablesStack,
+		c.Alias, c.ContainerChild, c.ContainerVariables, c.Direction,
+		c.DirectionSubmission, c.Epic, c.KnowledgeNode, c.LogMessage, c.LongTask,
+		c.LongTaskSubmission, c.Problem, c.Question, c.RepetitiveTask,
+		c.RepetitiveTaskExecution, c.Story, c.Task, c.Test, c.VariablesStack,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -301,6 +313,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ContainerChild.mutate(ctx, m)
 	case *ContainerVariablesMutation:
 		return c.ContainerVariables.mutate(ctx, m)
+	case *DirectionMutation:
+		return c.Direction.mutate(ctx, m)
+	case *DirectionSubmissionMutation:
+		return c.DirectionSubmission.mutate(ctx, m)
 	case *EpicMutation:
 		return c.Epic.mutate(ctx, m)
 	case *KnowledgeNodeMutation:
@@ -744,6 +760,304 @@ func (c *ContainerVariablesClient) mutate(ctx context.Context, m *ContainerVaria
 		return (&ContainerVariablesDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ContainerVariables mutation op: %q", m.Op())
+	}
+}
+
+// DirectionClient is a client for the Direction schema.
+type DirectionClient struct {
+	config
+}
+
+// NewDirectionClient returns a client for the Direction from the given config.
+func NewDirectionClient(c config) *DirectionClient {
+	return &DirectionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `direction.Hooks(f(g(h())))`.
+func (c *DirectionClient) Use(hooks ...Hook) {
+	c.hooks.Direction = append(c.hooks.Direction, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `direction.Intercept(f(g(h())))`.
+func (c *DirectionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Direction = append(c.inters.Direction, interceptors...)
+}
+
+// Create returns a builder for creating a Direction entity.
+func (c *DirectionClient) Create() *DirectionCreate {
+	mutation := newDirectionMutation(c.config, OpCreate)
+	return &DirectionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Direction entities.
+func (c *DirectionClient) CreateBulk(builders ...*DirectionCreate) *DirectionCreateBulk {
+	return &DirectionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DirectionClient) MapCreateBulk(slice any, setFunc func(*DirectionCreate, int)) *DirectionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DirectionCreateBulk{err: fmt.Errorf("calling to DirectionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DirectionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DirectionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Direction.
+func (c *DirectionClient) Update() *DirectionUpdate {
+	mutation := newDirectionMutation(c.config, OpUpdate)
+	return &DirectionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DirectionClient) UpdateOne(_m *Direction) *DirectionUpdateOne {
+	mutation := newDirectionMutation(c.config, OpUpdateOne, withDirection(_m))
+	return &DirectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DirectionClient) UpdateOneID(id int) *DirectionUpdateOne {
+	mutation := newDirectionMutation(c.config, OpUpdateOne, withDirectionID(id))
+	return &DirectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Direction.
+func (c *DirectionClient) Delete() *DirectionDelete {
+	mutation := newDirectionMutation(c.config, OpDelete)
+	return &DirectionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DirectionClient) DeleteOne(_m *Direction) *DirectionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DirectionClient) DeleteOneID(id int) *DirectionDeleteOne {
+	builder := c.Delete().Where(direction.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DirectionDeleteOne{builder}
+}
+
+// Query returns a query builder for Direction.
+func (c *DirectionClient) Query() *DirectionQuery {
+	return &DirectionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDirection},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Direction entity by its id.
+func (c *DirectionClient) Get(ctx context.Context, id int) (*Direction, error) {
+	return c.Query().Where(direction.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DirectionClient) GetX(ctx context.Context, id int) *Direction {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySubmissions queries the submissions edge of a Direction.
+func (c *DirectionClient) QuerySubmissions(_m *Direction) *DirectionSubmissionQuery {
+	query := (&DirectionSubmissionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(direction.Table, direction.FieldID, id),
+			sqlgraph.To(directionsubmission.Table, directionsubmission.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, direction.SubmissionsTable, direction.SubmissionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DirectionClient) Hooks() []Hook {
+	return c.hooks.Direction
+}
+
+// Interceptors returns the client interceptors.
+func (c *DirectionClient) Interceptors() []Interceptor {
+	return c.inters.Direction
+}
+
+func (c *DirectionClient) mutate(ctx context.Context, m *DirectionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DirectionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DirectionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DirectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DirectionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Direction mutation op: %q", m.Op())
+	}
+}
+
+// DirectionSubmissionClient is a client for the DirectionSubmission schema.
+type DirectionSubmissionClient struct {
+	config
+}
+
+// NewDirectionSubmissionClient returns a client for the DirectionSubmission from the given config.
+func NewDirectionSubmissionClient(c config) *DirectionSubmissionClient {
+	return &DirectionSubmissionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `directionsubmission.Hooks(f(g(h())))`.
+func (c *DirectionSubmissionClient) Use(hooks ...Hook) {
+	c.hooks.DirectionSubmission = append(c.hooks.DirectionSubmission, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `directionsubmission.Intercept(f(g(h())))`.
+func (c *DirectionSubmissionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DirectionSubmission = append(c.inters.DirectionSubmission, interceptors...)
+}
+
+// Create returns a builder for creating a DirectionSubmission entity.
+func (c *DirectionSubmissionClient) Create() *DirectionSubmissionCreate {
+	mutation := newDirectionSubmissionMutation(c.config, OpCreate)
+	return &DirectionSubmissionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DirectionSubmission entities.
+func (c *DirectionSubmissionClient) CreateBulk(builders ...*DirectionSubmissionCreate) *DirectionSubmissionCreateBulk {
+	return &DirectionSubmissionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DirectionSubmissionClient) MapCreateBulk(slice any, setFunc func(*DirectionSubmissionCreate, int)) *DirectionSubmissionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DirectionSubmissionCreateBulk{err: fmt.Errorf("calling to DirectionSubmissionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DirectionSubmissionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DirectionSubmissionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DirectionSubmission.
+func (c *DirectionSubmissionClient) Update() *DirectionSubmissionUpdate {
+	mutation := newDirectionSubmissionMutation(c.config, OpUpdate)
+	return &DirectionSubmissionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DirectionSubmissionClient) UpdateOne(_m *DirectionSubmission) *DirectionSubmissionUpdateOne {
+	mutation := newDirectionSubmissionMutation(c.config, OpUpdateOne, withDirectionSubmission(_m))
+	return &DirectionSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DirectionSubmissionClient) UpdateOneID(id int) *DirectionSubmissionUpdateOne {
+	mutation := newDirectionSubmissionMutation(c.config, OpUpdateOne, withDirectionSubmissionID(id))
+	return &DirectionSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DirectionSubmission.
+func (c *DirectionSubmissionClient) Delete() *DirectionSubmissionDelete {
+	mutation := newDirectionSubmissionMutation(c.config, OpDelete)
+	return &DirectionSubmissionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DirectionSubmissionClient) DeleteOne(_m *DirectionSubmission) *DirectionSubmissionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DirectionSubmissionClient) DeleteOneID(id int) *DirectionSubmissionDeleteOne {
+	builder := c.Delete().Where(directionsubmission.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DirectionSubmissionDeleteOne{builder}
+}
+
+// Query returns a query builder for DirectionSubmission.
+func (c *DirectionSubmissionClient) Query() *DirectionSubmissionQuery {
+	return &DirectionSubmissionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDirectionSubmission},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DirectionSubmission entity by its id.
+func (c *DirectionSubmissionClient) Get(ctx context.Context, id int) (*DirectionSubmission, error) {
+	return c.Query().Where(directionsubmission.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DirectionSubmissionClient) GetX(ctx context.Context, id int) *DirectionSubmission {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryDirection queries the direction edge of a DirectionSubmission.
+func (c *DirectionSubmissionClient) QueryDirection(_m *DirectionSubmission) *DirectionQuery {
+	query := (&DirectionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(directionsubmission.Table, directionsubmission.FieldID, id),
+			sqlgraph.To(direction.Table, direction.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, directionsubmission.DirectionTable, directionsubmission.DirectionColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DirectionSubmissionClient) Hooks() []Hook {
+	return c.hooks.DirectionSubmission
+}
+
+// Interceptors returns the client interceptors.
+func (c *DirectionSubmissionClient) Interceptors() []Interceptor {
+	return c.inters.DirectionSubmission
+}
+
+func (c *DirectionSubmissionClient) mutate(ctx context.Context, m *DirectionSubmissionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DirectionSubmissionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DirectionSubmissionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DirectionSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DirectionSubmissionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DirectionSubmission mutation op: %q", m.Op())
 	}
 }
 
@@ -2559,13 +2873,15 @@ func (c *VariablesStackClient) mutate(ctx context.Context, m *VariablesStackMuta
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alias, ContainerChild, ContainerVariables, Epic, KnowledgeNode, LogMessage,
-		LongTask, LongTaskSubmission, Problem, Question, RepetitiveTask,
-		RepetitiveTaskExecution, Story, Task, Test, VariablesStack []ent.Hook
+		Alias, ContainerChild, ContainerVariables, Direction, DirectionSubmission, Epic,
+		KnowledgeNode, LogMessage, LongTask, LongTaskSubmission, Problem, Question,
+		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
+		VariablesStack []ent.Hook
 	}
 	inters struct {
-		Alias, ContainerChild, ContainerVariables, Epic, KnowledgeNode, LogMessage,
-		LongTask, LongTaskSubmission, Problem, Question, RepetitiveTask,
-		RepetitiveTaskExecution, Story, Task, Test, VariablesStack []ent.Interceptor
+		Alias, ContainerChild, ContainerVariables, Direction, DirectionSubmission, Epic,
+		KnowledgeNode, LogMessage, LongTask, LongTaskSubmission, Problem, Question,
+		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
+		VariablesStack []ent.Interceptor
 	}
 )

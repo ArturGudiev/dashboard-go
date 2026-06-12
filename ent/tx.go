@@ -18,6 +18,10 @@ type Tx struct {
 	ContainerChild *ContainerChildClient
 	// ContainerVariables is the client for interacting with the ContainerVariables builders.
 	ContainerVariables *ContainerVariablesClient
+	// Direction is the client for interacting with the Direction builders.
+	Direction *DirectionClient
+	// DirectionSubmission is the client for interacting with the DirectionSubmission builders.
+	DirectionSubmission *DirectionSubmissionClient
 	// Epic is the client for interacting with the Epic builders.
 	Epic *EpicClient
 	// KnowledgeNode is the client for interacting with the KnowledgeNode builders.
@@ -178,6 +182,8 @@ func (tx *Tx) init() {
 	tx.Alias = NewAliasClient(tx.config)
 	tx.ContainerChild = NewContainerChildClient(tx.config)
 	tx.ContainerVariables = NewContainerVariablesClient(tx.config)
+	tx.Direction = NewDirectionClient(tx.config)
+	tx.DirectionSubmission = NewDirectionSubmissionClient(tx.config)
 	tx.Epic = NewEpicClient(tx.config)
 	tx.KnowledgeNode = NewKnowledgeNodeClient(tx.config)
 	tx.LogMessage = NewLogMessageClient(tx.config)

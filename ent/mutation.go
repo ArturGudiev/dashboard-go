@@ -6,6 +6,8 @@ import (
 	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/containervariables"
+	"arturgudiev/dashboard/ent/direction"
+	"arturgudiev/dashboard/ent/directionsubmission"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
@@ -43,6 +45,8 @@ const (
 	TypeAlias                   = "Alias"
 	TypeContainerChild          = "ContainerChild"
 	TypeContainerVariables      = "ContainerVariables"
+	TypeDirection               = "Direction"
+	TypeDirectionSubmission     = "DirectionSubmission"
 	TypeEpic                    = "Epic"
 	TypeKnowledgeNode           = "KnowledgeNode"
 	TypeLogMessage              = "LogMessage"
@@ -1862,6 +1866,1128 @@ func (m *ContainerVariablesMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown ContainerVariables edge %s", name)
+}
+
+// DirectionMutation represents an operation that mutates the Direction nodes in the graph.
+type DirectionMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *int
+	description        *string
+	tags               *[]string
+	appendtags         []string
+	notes              *string
+	closed             *bool
+	clearedFields      map[string]struct{}
+	submissions        map[int]struct{}
+	removedsubmissions map[int]struct{}
+	clearedsubmissions bool
+	done               bool
+	oldValue           func(context.Context) (*Direction, error)
+	predicates         []predicate.Direction
+}
+
+var _ ent.Mutation = (*DirectionMutation)(nil)
+
+// directionOption allows management of the mutation configuration using functional options.
+type directionOption func(*DirectionMutation)
+
+// newDirectionMutation creates new mutation for the Direction entity.
+func newDirectionMutation(c config, op Op, opts ...directionOption) *DirectionMutation {
+	m := &DirectionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDirection,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDirectionID sets the ID field of the mutation.
+func withDirectionID(id int) directionOption {
+	return func(m *DirectionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Direction
+		)
+		m.oldValue = func(ctx context.Context) (*Direction, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Direction.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDirection sets the old Direction of the mutation.
+func withDirection(node *Direction) directionOption {
+	return func(m *DirectionMutation) {
+		m.oldValue = func(context.Context) (*Direction, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DirectionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DirectionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Direction entities.
+func (m *DirectionMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DirectionMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DirectionMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Direction.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDescription sets the "description" field.
+func (m *DirectionMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *DirectionMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Direction entity.
+// If the Direction object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DirectionMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *DirectionMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetTags sets the "tags" field.
+func (m *DirectionMutation) SetTags(s []string) {
+	m.tags = &s
+	m.appendtags = nil
+}
+
+// Tags returns the value of the "tags" field in the mutation.
+func (m *DirectionMutation) Tags() (r []string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old "tags" field's value of the Direction entity.
+// If the Direction object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DirectionMutation) OldTags(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTags is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// AppendTags adds s to the "tags" field.
+func (m *DirectionMutation) AppendTags(s []string) {
+	m.appendtags = append(m.appendtags, s...)
+}
+
+// AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
+func (m *DirectionMutation) AppendedTags() ([]string, bool) {
+	if len(m.appendtags) == 0 {
+		return nil, false
+	}
+	return m.appendtags, true
+}
+
+// ResetTags resets all changes to the "tags" field.
+func (m *DirectionMutation) ResetTags() {
+	m.tags = nil
+	m.appendtags = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *DirectionMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *DirectionMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the Direction entity.
+// If the Direction object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DirectionMutation) OldNotes(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *DirectionMutation) ResetNotes() {
+	m.notes = nil
+}
+
+// SetClosed sets the "closed" field.
+func (m *DirectionMutation) SetClosed(b bool) {
+	m.closed = &b
+}
+
+// Closed returns the value of the "closed" field in the mutation.
+func (m *DirectionMutation) Closed() (r bool, exists bool) {
+	v := m.closed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClosed returns the old "closed" field's value of the Direction entity.
+// If the Direction object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DirectionMutation) OldClosed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClosed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClosed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClosed: %w", err)
+	}
+	return oldValue.Closed, nil
+}
+
+// ResetClosed resets all changes to the "closed" field.
+func (m *DirectionMutation) ResetClosed() {
+	m.closed = nil
+}
+
+// AddSubmissionIDs adds the "submissions" edge to the DirectionSubmission entity by ids.
+func (m *DirectionMutation) AddSubmissionIDs(ids ...int) {
+	if m.submissions == nil {
+		m.submissions = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.submissions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSubmissions clears the "submissions" edge to the DirectionSubmission entity.
+func (m *DirectionMutation) ClearSubmissions() {
+	m.clearedsubmissions = true
+}
+
+// SubmissionsCleared reports if the "submissions" edge to the DirectionSubmission entity was cleared.
+func (m *DirectionMutation) SubmissionsCleared() bool {
+	return m.clearedsubmissions
+}
+
+// RemoveSubmissionIDs removes the "submissions" edge to the DirectionSubmission entity by IDs.
+func (m *DirectionMutation) RemoveSubmissionIDs(ids ...int) {
+	if m.removedsubmissions == nil {
+		m.removedsubmissions = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.submissions, ids[i])
+		m.removedsubmissions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSubmissions returns the removed IDs of the "submissions" edge to the DirectionSubmission entity.
+func (m *DirectionMutation) RemovedSubmissionsIDs() (ids []int) {
+	for id := range m.removedsubmissions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SubmissionsIDs returns the "submissions" edge IDs in the mutation.
+func (m *DirectionMutation) SubmissionsIDs() (ids []int) {
+	for id := range m.submissions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSubmissions resets all changes to the "submissions" edge.
+func (m *DirectionMutation) ResetSubmissions() {
+	m.submissions = nil
+	m.clearedsubmissions = false
+	m.removedsubmissions = nil
+}
+
+// Where appends a list predicates to the DirectionMutation builder.
+func (m *DirectionMutation) Where(ps ...predicate.Direction) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DirectionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DirectionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Direction, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DirectionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DirectionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Direction).
+func (m *DirectionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DirectionMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.description != nil {
+		fields = append(fields, direction.FieldDescription)
+	}
+	if m.tags != nil {
+		fields = append(fields, direction.FieldTags)
+	}
+	if m.notes != nil {
+		fields = append(fields, direction.FieldNotes)
+	}
+	if m.closed != nil {
+		fields = append(fields, direction.FieldClosed)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DirectionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case direction.FieldDescription:
+		return m.Description()
+	case direction.FieldTags:
+		return m.Tags()
+	case direction.FieldNotes:
+		return m.Notes()
+	case direction.FieldClosed:
+		return m.Closed()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DirectionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case direction.FieldDescription:
+		return m.OldDescription(ctx)
+	case direction.FieldTags:
+		return m.OldTags(ctx)
+	case direction.FieldNotes:
+		return m.OldNotes(ctx)
+	case direction.FieldClosed:
+		return m.OldClosed(ctx)
+	}
+	return nil, fmt.Errorf("unknown Direction field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DirectionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case direction.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case direction.FieldTags:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
+		return nil
+	case direction.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	case direction.FieldClosed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClosed(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Direction field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DirectionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DirectionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DirectionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Direction numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DirectionMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DirectionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DirectionMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Direction nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DirectionMutation) ResetField(name string) error {
+	switch name {
+	case direction.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case direction.FieldTags:
+		m.ResetTags()
+		return nil
+	case direction.FieldNotes:
+		m.ResetNotes()
+		return nil
+	case direction.FieldClosed:
+		m.ResetClosed()
+		return nil
+	}
+	return fmt.Errorf("unknown Direction field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DirectionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.submissions != nil {
+		edges = append(edges, direction.EdgeSubmissions)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DirectionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case direction.EdgeSubmissions:
+		ids := make([]ent.Value, 0, len(m.submissions))
+		for id := range m.submissions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DirectionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedsubmissions != nil {
+		edges = append(edges, direction.EdgeSubmissions)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DirectionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case direction.EdgeSubmissions:
+		ids := make([]ent.Value, 0, len(m.removedsubmissions))
+		for id := range m.removedsubmissions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DirectionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedsubmissions {
+		edges = append(edges, direction.EdgeSubmissions)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DirectionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case direction.EdgeSubmissions:
+		return m.clearedsubmissions
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DirectionMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Direction unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DirectionMutation) ResetEdge(name string) error {
+	switch name {
+	case direction.EdgeSubmissions:
+		m.ResetSubmissions()
+		return nil
+	}
+	return fmt.Errorf("unknown Direction edge %s", name)
+}
+
+// DirectionSubmissionMutation represents an operation that mutates the DirectionSubmission nodes in the graph.
+type DirectionSubmissionMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *int
+	execution_date   *time.Time
+	text             *string
+	clearedFields    map[string]struct{}
+	direction        *int
+	cleareddirection bool
+	done             bool
+	oldValue         func(context.Context) (*DirectionSubmission, error)
+	predicates       []predicate.DirectionSubmission
+}
+
+var _ ent.Mutation = (*DirectionSubmissionMutation)(nil)
+
+// directionsubmissionOption allows management of the mutation configuration using functional options.
+type directionsubmissionOption func(*DirectionSubmissionMutation)
+
+// newDirectionSubmissionMutation creates new mutation for the DirectionSubmission entity.
+func newDirectionSubmissionMutation(c config, op Op, opts ...directionsubmissionOption) *DirectionSubmissionMutation {
+	m := &DirectionSubmissionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDirectionSubmission,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDirectionSubmissionID sets the ID field of the mutation.
+func withDirectionSubmissionID(id int) directionsubmissionOption {
+	return func(m *DirectionSubmissionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DirectionSubmission
+		)
+		m.oldValue = func(ctx context.Context) (*DirectionSubmission, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DirectionSubmission.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDirectionSubmission sets the old DirectionSubmission of the mutation.
+func withDirectionSubmission(node *DirectionSubmission) directionsubmissionOption {
+	return func(m *DirectionSubmissionMutation) {
+		m.oldValue = func(context.Context) (*DirectionSubmission, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DirectionSubmissionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DirectionSubmissionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DirectionSubmission entities.
+func (m *DirectionSubmissionMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DirectionSubmissionMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DirectionSubmissionMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DirectionSubmission.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDirectionID sets the "direction_id" field.
+func (m *DirectionSubmissionMutation) SetDirectionID(i int) {
+	m.direction = &i
+}
+
+// DirectionID returns the value of the "direction_id" field in the mutation.
+func (m *DirectionSubmissionMutation) DirectionID() (r int, exists bool) {
+	v := m.direction
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDirectionID returns the old "direction_id" field's value of the DirectionSubmission entity.
+// If the DirectionSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DirectionSubmissionMutation) OldDirectionID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDirectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDirectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDirectionID: %w", err)
+	}
+	return oldValue.DirectionID, nil
+}
+
+// ResetDirectionID resets all changes to the "direction_id" field.
+func (m *DirectionSubmissionMutation) ResetDirectionID() {
+	m.direction = nil
+}
+
+// SetExecutionDate sets the "execution_date" field.
+func (m *DirectionSubmissionMutation) SetExecutionDate(t time.Time) {
+	m.execution_date = &t
+}
+
+// ExecutionDate returns the value of the "execution_date" field in the mutation.
+func (m *DirectionSubmissionMutation) ExecutionDate() (r time.Time, exists bool) {
+	v := m.execution_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExecutionDate returns the old "execution_date" field's value of the DirectionSubmission entity.
+// If the DirectionSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DirectionSubmissionMutation) OldExecutionDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExecutionDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExecutionDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExecutionDate: %w", err)
+	}
+	return oldValue.ExecutionDate, nil
+}
+
+// ResetExecutionDate resets all changes to the "execution_date" field.
+func (m *DirectionSubmissionMutation) ResetExecutionDate() {
+	m.execution_date = nil
+}
+
+// SetText sets the "text" field.
+func (m *DirectionSubmissionMutation) SetText(s string) {
+	m.text = &s
+}
+
+// Text returns the value of the "text" field in the mutation.
+func (m *DirectionSubmissionMutation) Text() (r string, exists bool) {
+	v := m.text
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldText returns the old "text" field's value of the DirectionSubmission entity.
+// If the DirectionSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DirectionSubmissionMutation) OldText(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldText is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldText requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldText: %w", err)
+	}
+	return oldValue.Text, nil
+}
+
+// ClearText clears the value of the "text" field.
+func (m *DirectionSubmissionMutation) ClearText() {
+	m.text = nil
+	m.clearedFields[directionsubmission.FieldText] = struct{}{}
+}
+
+// TextCleared returns if the "text" field was cleared in this mutation.
+func (m *DirectionSubmissionMutation) TextCleared() bool {
+	_, ok := m.clearedFields[directionsubmission.FieldText]
+	return ok
+}
+
+// ResetText resets all changes to the "text" field.
+func (m *DirectionSubmissionMutation) ResetText() {
+	m.text = nil
+	delete(m.clearedFields, directionsubmission.FieldText)
+}
+
+// ClearDirection clears the "direction" edge to the Direction entity.
+func (m *DirectionSubmissionMutation) ClearDirection() {
+	m.cleareddirection = true
+	m.clearedFields[directionsubmission.FieldDirectionID] = struct{}{}
+}
+
+// DirectionCleared reports if the "direction" edge to the Direction entity was cleared.
+func (m *DirectionSubmissionMutation) DirectionCleared() bool {
+	return m.cleareddirection
+}
+
+// DirectionIDs returns the "direction" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DirectionID instead. It exists only for internal usage by the builders.
+func (m *DirectionSubmissionMutation) DirectionIDs() (ids []int) {
+	if id := m.direction; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDirection resets all changes to the "direction" edge.
+func (m *DirectionSubmissionMutation) ResetDirection() {
+	m.direction = nil
+	m.cleareddirection = false
+}
+
+// Where appends a list predicates to the DirectionSubmissionMutation builder.
+func (m *DirectionSubmissionMutation) Where(ps ...predicate.DirectionSubmission) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DirectionSubmissionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DirectionSubmissionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DirectionSubmission, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DirectionSubmissionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DirectionSubmissionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DirectionSubmission).
+func (m *DirectionSubmissionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DirectionSubmissionMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.direction != nil {
+		fields = append(fields, directionsubmission.FieldDirectionID)
+	}
+	if m.execution_date != nil {
+		fields = append(fields, directionsubmission.FieldExecutionDate)
+	}
+	if m.text != nil {
+		fields = append(fields, directionsubmission.FieldText)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DirectionSubmissionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case directionsubmission.FieldDirectionID:
+		return m.DirectionID()
+	case directionsubmission.FieldExecutionDate:
+		return m.ExecutionDate()
+	case directionsubmission.FieldText:
+		return m.Text()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DirectionSubmissionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case directionsubmission.FieldDirectionID:
+		return m.OldDirectionID(ctx)
+	case directionsubmission.FieldExecutionDate:
+		return m.OldExecutionDate(ctx)
+	case directionsubmission.FieldText:
+		return m.OldText(ctx)
+	}
+	return nil, fmt.Errorf("unknown DirectionSubmission field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DirectionSubmissionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case directionsubmission.FieldDirectionID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDirectionID(v)
+		return nil
+	case directionsubmission.FieldExecutionDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExecutionDate(v)
+		return nil
+	case directionsubmission.FieldText:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetText(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DirectionSubmission field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DirectionSubmissionMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DirectionSubmissionMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DirectionSubmissionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown DirectionSubmission numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DirectionSubmissionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(directionsubmission.FieldText) {
+		fields = append(fields, directionsubmission.FieldText)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DirectionSubmissionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DirectionSubmissionMutation) ClearField(name string) error {
+	switch name {
+	case directionsubmission.FieldText:
+		m.ClearText()
+		return nil
+	}
+	return fmt.Errorf("unknown DirectionSubmission nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DirectionSubmissionMutation) ResetField(name string) error {
+	switch name {
+	case directionsubmission.FieldDirectionID:
+		m.ResetDirectionID()
+		return nil
+	case directionsubmission.FieldExecutionDate:
+		m.ResetExecutionDate()
+		return nil
+	case directionsubmission.FieldText:
+		m.ResetText()
+		return nil
+	}
+	return fmt.Errorf("unknown DirectionSubmission field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DirectionSubmissionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.direction != nil {
+		edges = append(edges, directionsubmission.EdgeDirection)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DirectionSubmissionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case directionsubmission.EdgeDirection:
+		if id := m.direction; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DirectionSubmissionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DirectionSubmissionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DirectionSubmissionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareddirection {
+		edges = append(edges, directionsubmission.EdgeDirection)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DirectionSubmissionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case directionsubmission.EdgeDirection:
+		return m.cleareddirection
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DirectionSubmissionMutation) ClearEdge(name string) error {
+	switch name {
+	case directionsubmission.EdgeDirection:
+		m.ClearDirection()
+		return nil
+	}
+	return fmt.Errorf("unknown DirectionSubmission unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DirectionSubmissionMutation) ResetEdge(name string) error {
+	switch name {
+	case directionsubmission.EdgeDirection:
+		m.ResetDirection()
+		return nil
+	}
+	return fmt.Errorf("unknown DirectionSubmission edge %s", name)
 }
 
 // EpicMutation represents an operation that mutates the Epic nodes in the graph.

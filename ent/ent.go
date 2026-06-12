@@ -6,6 +6,8 @@ import (
 	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/containervariables"
+	"arturgudiev/dashboard/ent/direction"
+	"arturgudiev/dashboard/ent/directionsubmission"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
@@ -91,6 +93,8 @@ func checkColumn(t, c string) error {
 			alias.Table:                   alias.ValidColumn,
 			containerchild.Table:          containerchild.ValidColumn,
 			containervariables.Table:      containervariables.ValidColumn,
+			direction.Table:               direction.ValidColumn,
+			directionsubmission.Table:     directionsubmission.ValidColumn,
 			epic.Table:                    epic.ValidColumn,
 			knowledgenode.Table:           knowledgenode.ValidColumn,
 			logmessage.Table:              logmessage.ValidColumn,

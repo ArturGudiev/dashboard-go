@@ -39,6 +39,7 @@ func InitializeApp() (*App, error) {
 		services.NewRepetitiveTaskExecutionService,
 		services.NewLongTasksService,
 		services.NewLongTaskSubmissionsService,
+		services.NewDirectionsService,
 
 		repositories.NewQuestionsRepository,
 		repositories.NewStoriesRepository,
@@ -53,6 +54,8 @@ func InitializeApp() (*App, error) {
 		repositories.NewRepetitiveTaskExecutionsRepository,
 		repositories.NewLongTasksRepository,
 		repositories.NewLongTaskSubmissionsRepository,
+		repositories.NewDirectionsRepository,
+		repositories.NewDirectionSubmissionsRepository,
 		// App provider
 		provideApp,
 	)
@@ -126,6 +129,7 @@ func provideApp(
 	repetitiveTaskExecutionService *services.RepetitiveTaskExecutionService,
 	longTasksService *services.LongTasksService,
 	longTaskSubmissionsService *services.LongTaskSubmissionsService,
+	directionsService *services.DirectionsService,
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
@@ -149,6 +153,8 @@ func provideApp(
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
 	longTasksRepository *repositories.LongTasksRepository,
 	longTaskSubmissionsRepository *repositories.LongTaskSubmissionsRepository,
+	directionsRepository *repositories.DirectionsRepository,
+	directionSubmissionsRepository *repositories.DirectionSubmissionsRepository,
 ) *App {
 	return &App{
 		Client:                    client,
@@ -157,6 +163,7 @@ func provideApp(
 		RepetitiveTaskExecutionService: repetitiveTaskExecutionService,
 		LongTasksService:         longTasksService,
 		LongTaskSubmissionsService: longTaskSubmissionsService,
+		DirectionsService:         directionsService,
 		ProblemService:            problemService,
 		ContainerService:          containerService,
 		CLIService:                cliService,
@@ -180,6 +187,8 @@ func provideApp(
 		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
 		LongTasksRepository:                longTasksRepository,
 		LongTaskSubmissionsRepository:     longTaskSubmissionsRepository,
+		DirectionsRepository:              directionsRepository,
+		DirectionSubmissionsRepository:    directionSubmissionsRepository,
 		ctx:                       context.Background(), // Default context for CLI
 	}
 }

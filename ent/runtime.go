@@ -6,6 +6,8 @@ import (
 	"arturgudiev/dashboard/ent/alias"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/containervariables"
+	"arturgudiev/dashboard/ent/direction"
+	"arturgudiev/dashboard/ent/directionsubmission"
 	"arturgudiev/dashboard/ent/epic"
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
@@ -84,6 +86,38 @@ func init() {
 	containervariablesDescID := containervariablesFields[0].Descriptor()
 	// containervariables.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	containervariables.IDValidator = containervariablesDescID.Validators[0].(func(int) error)
+	directionFields := schema.Direction{}.Fields()
+	_ = directionFields
+	// directionDescDescription is the schema descriptor for description field.
+	directionDescDescription := directionFields[1].Descriptor()
+	// direction.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	direction.DescriptionValidator = directionDescDescription.Validators[0].(func(string) error)
+	// directionDescTags is the schema descriptor for tags field.
+	directionDescTags := directionFields[2].Descriptor()
+	// direction.DefaultTags holds the default value on creation for the tags field.
+	direction.DefaultTags = directionDescTags.Default.([]string)
+	// directionDescNotes is the schema descriptor for notes field.
+	directionDescNotes := directionFields[3].Descriptor()
+	// direction.DefaultNotes holds the default value on creation for the notes field.
+	direction.DefaultNotes = directionDescNotes.Default.(string)
+	// directionDescClosed is the schema descriptor for closed field.
+	directionDescClosed := directionFields[4].Descriptor()
+	// direction.DefaultClosed holds the default value on creation for the closed field.
+	direction.DefaultClosed = directionDescClosed.Default.(bool)
+	// directionDescID is the schema descriptor for id field.
+	directionDescID := directionFields[0].Descriptor()
+	// direction.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	direction.IDValidator = directionDescID.Validators[0].(func(int) error)
+	directionsubmissionFields := schema.DirectionSubmission{}.Fields()
+	_ = directionsubmissionFields
+	// directionsubmissionDescDirectionID is the schema descriptor for direction_id field.
+	directionsubmissionDescDirectionID := directionsubmissionFields[1].Descriptor()
+	// directionsubmission.DirectionIDValidator is a validator for the "direction_id" field. It is called by the builders before save.
+	directionsubmission.DirectionIDValidator = directionsubmissionDescDirectionID.Validators[0].(func(int) error)
+	// directionsubmissionDescID is the schema descriptor for id field.
+	directionsubmissionDescID := directionsubmissionFields[0].Descriptor()
+	// directionsubmission.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	directionsubmission.IDValidator = directionsubmissionDescID.Validators[0].(func(int) error)
 	epicFields := schema.Epic{}.Fields()
 	_ = epicFields
 	// epicDescDescription is the schema descriptor for description field.

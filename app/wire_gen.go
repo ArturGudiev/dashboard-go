@@ -48,6 +48,9 @@ func InitializeApp() (*App, error) {
 	longTasksService := services.NewLongTasksService(longTasksRepository, childContainerRepository)
 	longTaskSubmissionsRepository := repositories.NewLongTaskSubmissionsRepository(client)
 	longTaskSubmissionsService := services.NewLongTaskSubmissionsService(longTasksRepository, longTaskSubmissionsRepository)
+	directionsRepository := repositories.NewDirectionsRepository(client)
+	directionSubmissionsRepository := repositories.NewDirectionSubmissionsRepository(client)
+	directionsService := services.NewDirectionsService(directionsRepository, directionSubmissionsRepository, longTaskSubmissionsRepository, longTasksRepository, containerService, childContainerRepository)
 	aliasesService := services.NewAliasesService(client, containerService, aliasesRepository, childContainerRepository)
 	epicsRepository := repositories.NewEpicsRepository(client)
 	cliService := services.NewCLIService(client, containerService, aliasesService, problemsRepository, epicsRepository, aliasesRepository)
@@ -59,7 +62,7 @@ func InitializeApp() (*App, error) {
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
 	logMessagesRepository := repositories.NewLogMessagesRepository(client)
-	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository)
+	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, directionsService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository)
 	return app, nil
 }
 
@@ -127,6 +130,7 @@ func provideApp(
 	repetitiveTaskExecutionService *services.RepetitiveTaskExecutionService,
 	longTasksService *services.LongTasksService,
 	longTaskSubmissionsService *services.LongTaskSubmissionsService,
+	directionsService *services.DirectionsService,
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
@@ -150,6 +154,8 @@ func provideApp(
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
 	longTasksRepository *repositories.LongTasksRepository,
 	longTaskSubmissionsRepository *repositories.LongTaskSubmissionsRepository,
+	directionsRepository *repositories.DirectionsRepository,
+	directionSubmissionsRepository *repositories.DirectionSubmissionsRepository,
 ) *App {
 	return &App{
 		Client:                             client,
@@ -158,6 +164,7 @@ func provideApp(
 		RepetitiveTaskExecutionService:     repetitiveTaskExecutionService,
 		LongTasksService:                   longTasksService,
 		LongTaskSubmissionsService:         longTaskSubmissionsService,
+		DirectionsService:                  directionsService,
 		ProblemService:                     problemService,
 		ContainerService:                   containerService,
 		CLIService:                         cliService,
@@ -181,6 +188,8 @@ func provideApp(
 		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
 		LongTasksRepository:                longTasksRepository,
 		LongTaskSubmissionsRepository:      longTaskSubmissionsRepository,
+		DirectionsRepository:               directionsRepository,
+		DirectionSubmissionsRepository:     directionSubmissionsRepository,
 		ctx:                                context.Background(),
 	}
 }

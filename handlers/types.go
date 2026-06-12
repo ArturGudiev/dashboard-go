@@ -183,6 +183,25 @@ type AddLongTaskSubmissionRequest struct {
 	ProgressRaw   *string  `json:"progressRaw"`
 }
 
+type DirectionsQuery struct {
+	Open *bool `form:"open"`
+}
+
+type NewDirectionRequest struct {
+	Direction models.DirectionShort         `json:"direction"`
+	Parent    *models.ContainerDescription `json:"parent,omitempty"`
+}
+
+type AddDirectionSubmissionRequest struct {
+	Text *string `json:"text"`
+}
+
+type PatchDirectionByIDRequest struct {
+	Description *string `json:"description"`
+	Notes       *string `json:"notes"`
+	Closed      *bool   `json:"closed"`
+}
+
 // AddContainerVariableRequest adds a variable to a container's variables stack.
 type AddContainerVariableRequest struct {
 	ContainerType schema.ContainerType `json:"containerType" binding:"required"`

@@ -44,6 +44,30 @@ func (f ContainerVariablesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ContainerVariablesMutation", m)
 }
 
+// The DirectionFunc type is an adapter to allow the use of ordinary
+// function as Direction mutator.
+type DirectionFunc func(context.Context, *ent.DirectionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DirectionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DirectionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DirectionMutation", m)
+}
+
+// The DirectionSubmissionFunc type is an adapter to allow the use of ordinary
+// function as DirectionSubmission mutator.
+type DirectionSubmissionFunc func(context.Context, *ent.DirectionSubmissionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DirectionSubmissionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DirectionSubmissionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DirectionSubmissionMutation", m)
+}
+
 // The EpicFunc type is an adapter to allow the use of ordinary
 // function as Epic mutator.
 type EpicFunc func(context.Context, *ent.EpicMutation) (ent.Value, error)

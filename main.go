@@ -194,6 +194,15 @@ func main() {
 	router.GET("/long-tasks/:id/submissions", h.GetLongTaskSubmissions)
 	router.POST("/long-tasks", h.NewLongTask)
 
+	// Direction routes
+	router.GET("/directions", h.GetDirections)
+	router.GET("/directions/:id", h.GetDirectionById)
+	router.PATCH("/directions/:id", h.PatchDirectionByID)
+	router.POST("/directions/:id/submissions", h.AddDirectionSubmission)
+	router.GET("/directions/:id/submissions", h.GetDirectionSubmissions)
+	router.GET("/directions/:id/stats", h.GetDirectionStats)
+	router.POST("/directions", h.NewDirection)
+
 	// Problem routes
 	router.GET("/problem/:id", h.GetProblemByID)
 	router.PATCH("/problem/:id", h.PatchProblemByID)

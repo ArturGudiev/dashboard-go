@@ -469,6 +469,452 @@ const docTemplate = `{
                 }
             }
         },
+        "/directions": {
+            "get": {
+                "description": "Returns all directions; use open=true to return only open directions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "directions"
+                ],
+                "summary": "Get directions",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Return only open directions",
+                        "name": "open",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.Direction"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new direction with optional parent relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "directions"
+                ],
+                "summary": "Create new direction",
+                "parameters": [
+                    {
+                        "description": "Direction creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NewDirectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DirectionFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/directions/{id}": {
+            "get": {
+                "description": "Returns a direction by ID with child container IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "directions"
+                ],
+                "summary": "Get direction by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Direction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DirectionFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes\nPartially updates a direction's description, notes, and/or closed state",
+                "consumes": [
+                    "application/json",
+                    "application/json",
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "application/json",
+                    "application/json"
+                ],
+                "tags": [
+                    "repetitive-tasks",
+                    "long-tasks",
+                    "directions"
+                ],
+                "summary": "Patch direction by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Repetitive task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Direction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchDirectionByIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DirectionFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/directions/{id}/stats": {
+            "get": {
+                "description": "Returns aggregated stats entries for a direction including submissions and descendant activity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "directions"
+                ],
+                "summary": "Get direction stats",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Direction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.DirectionStatsEntry"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/directions/{id}/submissions": {
+            "get": {
+                "description": "Returns submission records for the given direction (newest first)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "directions"
+                ],
+                "summary": "List direction submissions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Direction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.DirectionSubmission"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Records a text submission for a direction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "directions"
+                ],
+                "summary": "Add direction submission",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Direction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Submission request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AddDirectionSubmissionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.DirectionSubmission"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/done-tasks": {
             "get": {
                 "description": "Returns all done tasks where doneDateTime is today",
@@ -1481,20 +1927,23 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes",
+                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes\nPartially updates a direction's description, notes, and/or closed state",
                 "consumes": [
+                    "application/json",
                     "application/json",
                     "application/json"
                 ],
                 "produces": [
                     "application/json",
+                    "application/json",
                     "application/json"
                 ],
                 "tags": [
                     "repetitive-tasks",
-                    "long-tasks"
+                    "long-tasks",
+                    "directions"
                 ],
-                "summary": "Patch long task by ID",
+                "summary": "Patch direction by ID",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1527,13 +1976,29 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
                         }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Direction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchDirectionByIDRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.LongTask"
+                            "$ref": "#/definitions/models.DirectionFull"
                         }
                     },
                     "400": {
@@ -2431,20 +2896,23 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes",
+                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes\nPartially updates a direction's description, notes, and/or closed state",
                 "consumes": [
+                    "application/json",
                     "application/json",
                     "application/json"
                 ],
                 "produces": [
                     "application/json",
+                    "application/json",
                     "application/json"
                 ],
                 "tags": [
                     "repetitive-tasks",
-                    "long-tasks"
+                    "long-tasks",
+                    "directions"
                 ],
-                "summary": "Patch long task by ID",
+                "summary": "Patch direction by ID",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2477,13 +2945,29 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
                         }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Direction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchDirectionByIDRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.LongTask"
+                            "$ref": "#/definitions/models.DirectionFull"
                         }
                     },
                     "400": {
@@ -3378,6 +3862,96 @@ const docTemplate = `{
                 }
             }
         },
+        "ent.Direction": {
+            "type": "object",
+            "properties": {
+                "closed": {
+                    "description": "Closed holds the value of the \"closed\" field.",
+                    "type": "boolean"
+                },
+                "description": {
+                    "description": "Description holds the value of the \"description\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the DirectionQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.DirectionEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "notes": {
+                    "description": "Notes holds the value of the \"notes\" field.",
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "Tags holds the value of the \"tags\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ent.DirectionEdges": {
+            "type": "object",
+            "properties": {
+                "submissions": {
+                    "description": "Submissions holds the value of the submissions edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.DirectionSubmission"
+                    }
+                }
+            }
+        },
+        "ent.DirectionSubmission": {
+            "type": "object",
+            "properties": {
+                "direction_id": {
+                    "description": "DirectionID holds the value of the \"direction_id\" field.",
+                    "type": "integer"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the DirectionSubmissionQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.DirectionSubmissionEdges"
+                        }
+                    ]
+                },
+                "execution_date": {
+                    "description": "ExecutionDate holds the value of the \"execution_date\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "text": {
+                    "description": "Text holds the value of the \"text\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.DirectionSubmissionEdges": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "description": "Direction holds the value of the direction edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Direction"
+                        }
+                    ]
+                }
+            }
+        },
         "ent.LogMessage": {
             "type": "object",
             "properties": {
@@ -3726,6 +4300,14 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.AddDirectionSubmissionRequest": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.AddLongTaskSubmissionRequest": {
             "type": "object",
             "properties": {
@@ -3787,6 +4369,17 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "handlers.NewDirectionRequest": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "$ref": "#/definitions/models.DirectionShort"
+                },
+                "parent": {
+                    "$ref": "#/definitions/models.ContainerDescription"
                 }
             }
         },
@@ -3923,6 +4516,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "variableValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.PatchDirectionByIDRequest": {
+            "type": "object",
+            "properties": {
+                "closed": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "notes": {
                     "type": "string"
                 }
             }
@@ -4096,6 +4703,105 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "variableValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DirectionFull": {
+            "type": "object",
+            "properties": {
+                "closed": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "directions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "longTasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parentContainers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContainerDescription"
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "stories": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.DirectionShort": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Improve backend"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Q2 goals"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "backend",
+                        "infra"
+                    ]
+                }
+            }
+        },
+        "models.DirectionStatsEntry": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 }
             }
@@ -4948,6 +5654,7 @@ const docTemplate = `{
                 "action",
                 "repetitive-task",
                 "long-task",
+                "direction",
                 "state"
             ],
             "x-enum-varnames": [
@@ -4962,6 +5669,7 @@ const docTemplate = `{
                 "ContainerTypeAction",
                 "ContainerTypeRepetitiveTask",
                 "ContainerTypeLongTask",
+                "ContainerTypeDirection",
                 "ContainerTypeState"
             ]
         }

@@ -59,7 +59,7 @@ var (
 // ContainerTypeValidator is a validator for the "container_type" field enum values. It is called by the builders before save.
 func ContainerTypeValidator(ct schema.ContainerType) error {
 	switch ct {
-	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "state":
+	case "epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "direction", "state":
 		return nil
 	default:
 		return fmt.Errorf("variablesstack: invalid enum value for container_type field: %q", ct)

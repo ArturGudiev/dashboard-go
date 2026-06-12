@@ -15,6 +15,12 @@ type ContainerChild func(*sql.Selector)
 // ContainerVariables is the predicate function for containervariables builders.
 type ContainerVariables func(*sql.Selector)
 
+// Direction is the predicate function for direction builders.
+type Direction func(*sql.Selector)
+
+// DirectionSubmission is the predicate function for directionsubmission builders.
+type DirectionSubmission func(*sql.Selector)
+
 // Epic is the predicate function for epic builders.
 type Epic func(*sql.Selector)
 

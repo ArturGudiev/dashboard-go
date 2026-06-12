@@ -29,6 +29,68 @@ definitions:
         - $ref: '#/definitions/ent.VariablesStack'
         description: VariablesStack holds the value of the variables_stack edge.
     type: object
+  ent.Direction:
+    properties:
+      closed:
+        description: Closed holds the value of the "closed" field.
+        type: boolean
+      description:
+        description: Description holds the value of the "description" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.DirectionEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the DirectionQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      notes:
+        description: Notes holds the value of the "notes" field.
+        type: string
+      tags:
+        description: Tags holds the value of the "tags" field.
+        items:
+          type: string
+        type: array
+    type: object
+  ent.DirectionEdges:
+    properties:
+      submissions:
+        description: Submissions holds the value of the submissions edge.
+        items:
+          $ref: '#/definitions/ent.DirectionSubmission'
+        type: array
+    type: object
+  ent.DirectionSubmission:
+    properties:
+      direction_id:
+        description: DirectionID holds the value of the "direction_id" field.
+        type: integer
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.DirectionSubmissionEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the DirectionSubmissionQuery when eager-loading is set.
+      execution_date:
+        description: ExecutionDate holds the value of the "execution_date" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: integer
+      text:
+        description: Text holds the value of the "text" field.
+        type: string
+    type: object
+  ent.DirectionSubmissionEdges:
+    properties:
+      direction:
+        allOf:
+        - $ref: '#/definitions/ent.Direction'
+        description: Direction holds the value of the direction edge.
+    type: object
   ent.LogMessage:
     properties:
       container_id:
@@ -272,6 +334,11 @@ definitions:
     - containerType
     - variableName
     type: object
+  handlers.AddDirectionSubmissionRequest:
+    properties:
+      text:
+        type: string
+    type: object
   handlers.AddLongTaskSubmissionRequest:
     properties:
       comments:
@@ -313,6 +380,13 @@ definitions:
         type: array
     required:
     - ids
+    type: object
+  handlers.NewDirectionRequest:
+    properties:
+      direction:
+        $ref: '#/definitions/models.DirectionShort'
+      parent:
+        $ref: '#/definitions/models.ContainerDescription'
     type: object
   handlers.NewLogMessageRequest:
     properties:
@@ -402,6 +476,15 @@ definitions:
       variableName:
         type: string
       variableValue:
+        type: string
+    type: object
+  handlers.PatchDirectionByIDRequest:
+    properties:
+      closed:
+        type: boolean
+      description:
+        type: string
+      notes:
         type: string
     type: object
   handlers.PatchTaskByIDRequest:
@@ -515,6 +598,72 @@ definitions:
       variableName:
         type: string
       variableValue:
+        type: string
+    type: object
+  models.DirectionFull:
+    properties:
+      closed:
+        type: boolean
+      description:
+        type: string
+      directions:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      longTasks:
+        items:
+          type: integer
+        type: array
+      notes:
+        type: string
+      parentContainers:
+        items:
+          $ref: '#/definitions/models.ContainerDescription'
+        type: array
+      problems:
+        items:
+          type: integer
+        type: array
+      questions:
+        items:
+          type: integer
+        type: array
+      stories:
+        items:
+          type: integer
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      tasks:
+        items:
+          type: integer
+        type: array
+    type: object
+  models.DirectionShort:
+    properties:
+      description:
+        example: Improve backend
+        type: string
+      notes:
+        example: Q2 goals
+        type: string
+      tags:
+        example:
+        - backend
+        - infra
+        items:
+          type: string
+        type: array
+    type: object
+  models.DirectionStatsEntry:
+    properties:
+      date:
+        type: string
+      text:
         type: string
     type: object
   models.EpicFull:
@@ -1099,6 +1248,7 @@ definitions:
     - action
     - repetitive-task
     - long-task
+    - direction
     - state
     type: string
     x-enum-varnames:
@@ -1113,6 +1263,7 @@ definitions:
     - ContainerTypeAction
     - ContainerTypeRepetitiveTask
     - ContainerTypeLongTask
+    - ContainerTypeDirection
     - ContainerTypeState
 host: localhost:8080
 info:
@@ -1423,6 +1574,308 @@ paths:
       summary: Update container variable
       tags:
       - container variables
+  /directions:
+    get:
+      consumes:
+      - application/json
+      description: Returns all directions; use open=true to return only open directions
+      parameters:
+      - description: Return only open directions
+        in: query
+        name: open
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.Direction'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get directions
+      tags:
+      - directions
+    post:
+      consumes:
+      - application/json
+      description: Creates a new direction with optional parent relationship
+      parameters:
+      - description: Direction creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.NewDirectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DirectionFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new direction
+      tags:
+      - directions
+  /directions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a direction by ID with child container IDs
+      parameters:
+      - description: Direction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DirectionFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get direction by ID
+      tags:
+      - directions
+    patch:
+      consumes:
+      - application/json
+      - application/json
+      - application/json
+      description: |-
+        Partially updates a repetitive task's description and/or notes
+        Partially updates a long task's description and/or notes
+        Partially updates a direction's description, notes, and/or closed state
+      parameters:
+      - description: Repetitive task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      - description: Direction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchDirectionByIDRequest'
+      produces:
+      - application/json
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DirectionFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Patch direction by ID
+      tags:
+      - repetitive-tasks
+      - long-tasks
+      - directions
+  /directions/{id}/stats:
+    get:
+      consumes:
+      - application/json
+      description: Returns aggregated stats entries for a direction including submissions
+        and descendant activity
+      parameters:
+      - description: Direction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DirectionStatsEntry'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get direction stats
+      tags:
+      - directions
+  /directions/{id}/submissions:
+    get:
+      consumes:
+      - application/json
+      description: Returns submission records for the given direction (newest first)
+      parameters:
+      - description: Direction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.DirectionSubmission'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List direction submissions
+      tags:
+      - directions
+    post:
+      consumes:
+      - application/json
+      description: Records a text submission for a direction
+      parameters:
+      - description: Direction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Submission request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AddDirectionSubmissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.DirectionSubmission'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add direction submission
+      tags:
+      - directions
   /done-tasks:
     get:
       consumes:
@@ -2095,9 +2548,11 @@ paths:
       consumes:
       - application/json
       - application/json
+      - application/json
       description: |-
         Partially updates a repetitive task's description and/or notes
         Partially updates a long task's description and/or notes
+        Partially updates a direction's description, notes, and/or closed state
       parameters:
       - description: Repetitive task ID
         in: path
@@ -2121,14 +2576,26 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      - description: Direction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchDirectionByIDRequest'
       produces:
+      - application/json
       - application/json
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.LongTask'
+            $ref: '#/definitions/models.DirectionFull'
         "400":
           description: Bad Request
           schema:
@@ -2147,10 +2614,11 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Patch long task by ID
+      summary: Patch direction by ID
       tags:
       - repetitive-tasks
       - long-tasks
+      - directions
   /long-tasks/{id}/submissions:
     get:
       consumes:
@@ -2726,9 +3194,11 @@ paths:
       consumes:
       - application/json
       - application/json
+      - application/json
       description: |-
         Partially updates a repetitive task's description and/or notes
         Partially updates a long task's description and/or notes
+        Partially updates a direction's description, notes, and/or closed state
       parameters:
       - description: Repetitive task ID
         in: path
@@ -2752,14 +3222,26 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+      - description: Direction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchDirectionByIDRequest'
       produces:
+      - application/json
       - application/json
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.LongTask'
+            $ref: '#/definitions/models.DirectionFull'
         "400":
           description: Bad Request
           schema:
@@ -2778,10 +3260,11 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Patch long task by ID
+      summary: Patch direction by ID
       tags:
       - repetitive-tasks
       - long-tasks
+      - directions
   /repetitive-tasks/{id}/executions:
     get:
       consumes:

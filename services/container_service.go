@@ -5,6 +5,7 @@ import (
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/repositories"
 	"context"
 	"fmt"
@@ -278,6 +279,100 @@ func (s *ContainerService) GetOpenLongTasksIDs(ctx context.Context, containerTyp
 	return openLongTasks, nil
 }
 
+// CollectDescendantTaskAndLongTaskIDs returns all task and long-task IDs under a container tree.
+func (s *ContainerService) CollectDescendantTaskAndLongTaskIDs(
+	ctx context.Context,
+	parentType schema.ContainerType,
+	parentID int,
+) ([]int, []int, error) {
+	taskIDs := []int{}
+	longTaskIDs := []int{}
+	if err := s.collectDescendantTaskAndLongTaskIDs(ctx, parentType, parentID, &taskIDs, &longTaskIDs); err != nil {
+		return nil, nil, err
+	}
+	return taskIDs, longTaskIDs, nil
+}
+
+func (s *ContainerService) collectDescendantTaskAndLongTaskIDs(
+	ctx context.Context,
+	parentType schema.ContainerType,
+	parentID int,
+	taskIDs *[]int,
+	longTaskIDs *[]int,
+) error {
+	longTaskRelations, err := s.childContainerRepository.GetChildContainers(ctx, parentType, parentID, schema.ContainerTypeLongTask)
+	if err != nil {
+		return err
+	}
+	for _, relation := range longTaskRelations {
+		*longTaskIDs = append(*longTaskIDs, relation.ChildID)
+	}
+
+	taskRelations, err := s.childContainerRepository.GetChildContainers(ctx, parentType, parentID, schema.ContainerTypeTask)
+	if err != nil {
+		return err
+	}
+	for _, relation := range taskRelations {
+		*taskIDs = append(*taskIDs, relation.ChildID)
+		if err := s.collectDescendantTaskAndLongTaskIDs(ctx, schema.ContainerTypeTask, relation.ChildID, taskIDs, longTaskIDs); err != nil {
+			return err
+		}
+	}
+
+	storyRelations, err := s.childContainerRepository.GetChildContainers(ctx, parentType, parentID, schema.ContainerTypeStory)
+	if err != nil {
+		return err
+	}
+	for _, relation := range storyRelations {
+		if err := s.collectDescendantTaskAndLongTaskIDs(ctx, schema.ContainerTypeStory, relation.ChildID, taskIDs, longTaskIDs); err != nil {
+			return err
+		}
+	}
+
+	directionRelations, err := s.childContainerRepository.GetChildContainers(ctx, parentType, parentID, schema.ContainerTypeDirection)
+	if err != nil {
+		return err
+	}
+	for _, relation := range directionRelations {
+		if err := s.collectDescendantTaskAndLongTaskIDs(ctx, schema.ContainerTypeDirection, relation.ChildID, taskIDs, longTaskIDs); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// GetDoneTasksByIDs returns done tasks with a done_date_time among the given IDs.
+func (s *ContainerService) GetDoneTasksByIDs(ctx context.Context, taskIDs []int) ([]*ent.Task, error) {
+	if len(taskIDs) == 0 {
+		return []*ent.Task{}, nil
+	}
+	return s.client.Task.Query().
+		Where(
+			task.DoneEQ(true),
+			task.DoneDateTimeNotNil(),
+			task.IDIn(taskIDs...),
+		).
+		All(ctx)
+}
+
+func (s *ContainerService) GetOpenDirectionsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	openDirections := []int{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeDirection)
+
+	if err == nil && len(childRelations) > 0 {
+		for _, relation := range childRelations {
+			childDirection, err := s.client.Direction.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+			if !childDirection.Closed {
+				openDirections = append(openDirections, childDirection.ID)
+			}
+		}
+	}
+	return openDirections, nil
+}
+
 func (s *ContainerService) GetOpenStoriesIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
 	openStories := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeStory)
@@ -417,6 +512,13 @@ func (s *ContainerService) GetDescription(ctx context.Context, containerType sch
 			return nil, err
 		}
 		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, longTask.Description)
+		return &result, nil
+	case schema.ContainerTypeDirection:
+		direction, err := s.client.Direction.Get(ctx, ID)
+		if err != nil {
+			return nil, err
+		}
+		result := fmt.Sprintf("%s-%d %s", capitalContainerType, ID, direction.Description)
 		return &result, nil
 	default:
 		return nil, fmt.Errorf("unsupported container type: %s", containerType)
