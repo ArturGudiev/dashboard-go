@@ -58,8 +58,19 @@ func (h *Handler) AddLongTaskProgressSubmission(c *gin.Context) {
 		return
 	}
 
-	submission, err := h.App.LongTaskProgressesService.AddLongTaskProgressSubmission(c.Request.Context(), longTaskProgressID, req.Comments, req.ProgressToAdd, req.ProgressToSet, req.ProgressRaw)
+	submission, err := h.App.LongTaskProgressesService.AddLongTaskProgressSubmission(
+		c.Request.Context(),
+		longTaskProgressID,
+		req.Comments,
+		req.ProgressToAdd,
+		req.ProgressToSet,
+		req.ProgressRaw,
+		req.ExecutionDate,
+	)
 	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(200, submission)
 }

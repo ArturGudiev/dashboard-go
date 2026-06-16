@@ -5,6 +5,7 @@ import (
 	"arturgudiev/dashboard/models"
 	"arturgudiev/dashboard/repositories"
 	"context"
+	"time"
 )
 
 type LongTaskProgressesService struct {
@@ -29,6 +30,37 @@ func (s *LongTaskProgressesService) GetLongTaskProgresses(
 	return s.longTasksProgressesRepository.GetLongTaskProgressesByIDs(ctx, []int{longTaskID})
 }
 
+func (s *LongTaskProgressesService) AddLongTaskProgressSubmission(
+	ctx context.Context,
+	longTaskProgressID int,
+	comments *string,
+	progressToAdd *float64,
+	progressToSet *float64,
+	progressRaw *float64,
+	executionDate *time.Time,
+) (*ent.LongTaskProgressSubmission, error) {
+	execDate := time.Now()
+	if executionDate != nil {
+		execDate = *executionDate
+	}
+
+	var progressToAddInt *int
+	if progressToAdd != nil {
+		v := int(*progressToAdd)
+		progressToAddInt = &v
+	}
+
+	return s.longTasksProgressSubmissionsRepository.AddLongTaskProgressSubmission(
+		ctx,
+		longTaskProgressID,
+		comments,
+		progressToAddInt,
+		progressToSet,
+		progressRaw,
+		execDate,
+	)
+}
+
 func (s *LongTaskProgressesService) AddLongTaskProgress(
 	ctx context.Context,
 	name string,
@@ -50,7 +82,7 @@ func (s *LongTaskProgressesService) GetLongTaskProgressByID(ctx context.Context,
 	if err != nil && !ent.IsNotFound(err) {
 		return nil, err
 	}
-		
+
 	return &models.LongTaskProgressFull{
 		ID:          progress.ID,
 		Name:        progress.Name,

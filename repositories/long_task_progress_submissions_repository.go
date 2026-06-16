@@ -26,7 +26,7 @@ func (r *LongTasksProgressesSubmissionsRepository) GetLongTaskProgressSubmission
 	return r.client.LongTaskProgressSubmission.Query().
 		Where(longtaskprogresssubmission.IDIn(ids...)).
 		Order(longtaskprogresssubmission.ByExecutionDate(sql.OrderDesc())).
-		All(ctx)	
+		All(ctx)
 }
 
 func (r *LongTasksProgressesSubmissionsRepository) AddLongTaskProgressSubmission(
@@ -38,9 +38,27 @@ func (r *LongTasksProgressesSubmissionsRepository) AddLongTaskProgressSubmission
 	progressRaw *float64,
 	executionDate time.Time,
 ) (*ent.LongTaskProgressSubmission, error) {
-	return r.client.LongTaskProgressSubmission.Create().Save(ctx)
-}
+	builder := r.client.LongTaskProgressSubmission.Create().
+		SetLongTaskProgressID(longTaskProgressID).
+		SetExecutionDate(executionDate)
 
+	if comments != nil {
+		builder = builder.SetComments(*comments)
+	} else {
+		builder = builder.SetComments("")
+	}
+	if progressToAdd != nil {
+		builder = builder.SetProgressToAdd(*progressToAdd)
+	}
+	if progressToSet != nil {
+		builder = builder.SetProgressToSet(*progressToSet)
+	}
+	if progressRaw != nil {
+		builder = builder.SetProgressRaw(*progressRaw)
+	}
+
+	return builder.Save(ctx)
+}
 
 func (r *LongTasksProgressesSubmissionsRepository) GetLongTaskProgressSubmissionsByLongTaskProgressID(
 	ctx context.Context,
@@ -49,5 +67,5 @@ func (r *LongTasksProgressesSubmissionsRepository) GetLongTaskProgressSubmission
 	return r.client.LongTaskProgressSubmission.Query().
 		Where(longtaskprogresssubmission.LongTaskProgressIDEQ(longTaskProgressID)).
 		Order(longtaskprogresssubmission.ByID(sql.OrderDesc())).
-		All(ctx);	
+		All(ctx)
 }
