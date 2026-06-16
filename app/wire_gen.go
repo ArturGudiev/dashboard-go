@@ -45,9 +45,12 @@ func InitializeApp() (*App, error) {
 	repetitiveTaskService := services.NewRepetitiveTaskService(client, containerService, problemService, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, childContainerRepository)
 	repetitiveTaskExecutionService := services.NewRepetitiveTaskExecutionService(repetitiveTaskExecutionsRepository)
 	longTasksRepository := repositories.NewLongTasksRepository(client)
-	longTasksService := services.NewLongTasksService(longTasksRepository, childContainerRepository)
+	longTasksProgressesRepository := repositories.NewLongTasksProgressesRepository(client)
+	longTasksService := services.NewLongTasksService(longTasksRepository, childContainerRepository, longTasksProgressesRepository)
 	longTaskSubmissionsRepository := repositories.NewLongTaskSubmissionsRepository(client)
 	longTaskSubmissionsService := services.NewLongTaskSubmissionsService(longTasksRepository, longTaskSubmissionsRepository)
+	longTasksProgressesSubmissionsRepository := repositories.NewLongTasksProgressesSubmissionsRepository(client)
+	longTaskProgressesService := services.NewLongTaskProgressesService(longTasksProgressesRepository, longTasksProgressesSubmissionsRepository)
 	directionsRepository := repositories.NewDirectionsRepository(client)
 	directionSubmissionsRepository := repositories.NewDirectionSubmissionsRepository(client)
 	directionsService := services.NewDirectionsService(directionsRepository, directionSubmissionsRepository, longTaskSubmissionsRepository, longTasksRepository, containerService, childContainerRepository)
@@ -62,7 +65,7 @@ func InitializeApp() (*App, error) {
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
 	logMessagesRepository := repositories.NewLogMessagesRepository(client)
-	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, directionsService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository)
+	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, longTaskProgressesService, directionsService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository, longTasksProgressesSubmissionsRepository, longTasksProgressesRepository)
 	return app, nil
 }
 
@@ -130,6 +133,7 @@ func provideApp(
 	repetitiveTaskExecutionService *services.RepetitiveTaskExecutionService,
 	longTasksService *services.LongTasksService,
 	longTaskSubmissionsService *services.LongTaskSubmissionsService,
+	longTaskProgressesService *services.LongTaskProgressesService,
 	directionsService *services.DirectionsService,
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
@@ -156,40 +160,45 @@ func provideApp(
 	longTaskSubmissionsRepository *repositories.LongTaskSubmissionsRepository,
 	directionsRepository *repositories.DirectionsRepository,
 	directionSubmissionsRepository *repositories.DirectionSubmissionsRepository,
+	longTasksProgressesSubmissionsRepository *repositories.LongTasksProgressesSubmissionsRepository,
+	longTasksProgressesRepository *repositories.LongTasksProgressesRepository,
 ) *App {
 	return &App{
-		Client:                             client,
-		TaskService:                        taskService,
-		RepetitiveTaskService:              repetitiveTaskService,
-		RepetitiveTaskExecutionService:     repetitiveTaskExecutionService,
-		LongTasksService:                   longTasksService,
-		LongTaskSubmissionsService:         longTaskSubmissionsService,
-		DirectionsService:                  directionsService,
-		ProblemService:                     problemService,
-		ContainerService:                   containerService,
-		CLIService:                         cliService,
-		TasksRepository:                    tasksRepository,
-		ProblemsRepository:                 problemsRepository,
-		QuestionsRepository:                questionsRepository,
-		QuestionsService:                   questionsService,
-		StoriesRepository:                  storiesRepository,
-		StoriesService:                     storiesService,
-		EpicsRepository:                    epicsRepository,
-		EpicsService:                       epicsService,
-		KnowledgeNodesRepository:           knowledgeNodesRepository,
-		KnowledgeNodesService:              knowledgeNodesService,
-		AliasesRepository:                  aliasesRepository,
-		AliasesService:                     aliasesService,
-		ChildContainerRepository:           childContainerRepository,
-		LogMessagesRepository:              logMessagesRepository,
-		VariablesStackRepository:           variablesStackRepository,
-		ContainerVariablesRepository:       containerVariablesRepository,
-		RepetitiveTasksRepository:          repetitiveTasksRepository,
-		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
-		LongTasksRepository:                longTasksRepository,
-		LongTaskSubmissionsRepository:      longTaskSubmissionsRepository,
-		DirectionsRepository:               directionsRepository,
-		DirectionSubmissionsRepository:     directionSubmissionsRepository,
-		ctx:                                context.Background(),
+		Client:                                   client,
+		TaskService:                              taskService,
+		RepetitiveTaskService:                    repetitiveTaskService,
+		RepetitiveTaskExecutionService:           repetitiveTaskExecutionService,
+		LongTasksService:                         longTasksService,
+		LongTaskSubmissionsService:               longTaskSubmissionsService,
+		LongTaskProgressesService:                longTaskProgressesService,
+		DirectionsService:                        directionsService,
+		ProblemService:                           problemService,
+		ContainerService:                         containerService,
+		CLIService:                               cliService,
+		TasksRepository:                          tasksRepository,
+		ProblemsRepository:                       problemsRepository,
+		QuestionsRepository:                      questionsRepository,
+		QuestionsService:                         questionsService,
+		StoriesRepository:                        storiesRepository,
+		StoriesService:                           storiesService,
+		EpicsRepository:                          epicsRepository,
+		EpicsService:                             epicsService,
+		KnowledgeNodesRepository:                 knowledgeNodesRepository,
+		KnowledgeNodesService:                    knowledgeNodesService,
+		AliasesRepository:                        aliasesRepository,
+		AliasesService:                           aliasesService,
+		ChildContainerRepository:                 childContainerRepository,
+		LogMessagesRepository:                    logMessagesRepository,
+		VariablesStackRepository:                 variablesStackRepository,
+		ContainerVariablesRepository:             containerVariablesRepository,
+		RepetitiveTasksRepository:                repetitiveTasksRepository,
+		RepetitiveTaskExecutionsRepository:       repetitiveTaskExecutionsRepository,
+		LongTasksRepository:                      longTasksRepository,
+		LongTaskSubmissionsRepository:            longTaskSubmissionsRepository,
+		DirectionsRepository:                     directionsRepository,
+		DirectionSubmissionsRepository:           directionSubmissionsRepository,
+		LongTasksProgressesSubmissionsRepository: longTasksProgressesSubmissionsRepository,
+		LongTasksProgressesRepository:            longTasksProgressesRepository,
+		ctx:                                      context.Background(),
 	}
 }

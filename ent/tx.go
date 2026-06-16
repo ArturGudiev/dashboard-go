@@ -30,6 +30,10 @@ type Tx struct {
 	LogMessage *LogMessageClient
 	// LongTask is the client for interacting with the LongTask builders.
 	LongTask *LongTaskClient
+	// LongTaskProgress is the client for interacting with the LongTaskProgress builders.
+	LongTaskProgress *LongTaskProgressClient
+	// LongTaskProgressSubmission is the client for interacting with the LongTaskProgressSubmission builders.
+	LongTaskProgressSubmission *LongTaskProgressSubmissionClient
 	// LongTaskSubmission is the client for interacting with the LongTaskSubmission builders.
 	LongTaskSubmission *LongTaskSubmissionClient
 	// Problem is the client for interacting with the Problem builders.
@@ -188,6 +192,8 @@ func (tx *Tx) init() {
 	tx.KnowledgeNode = NewKnowledgeNodeClient(tx.config)
 	tx.LogMessage = NewLogMessageClient(tx.config)
 	tx.LongTask = NewLongTaskClient(tx.config)
+	tx.LongTaskProgress = NewLongTaskProgressClient(tx.config)
+	tx.LongTaskProgressSubmission = NewLongTaskProgressSubmissionClient(tx.config)
 	tx.LongTaskSubmission = NewLongTaskSubmissionClient(tx.config)
 	tx.Problem = NewProblemClient(tx.config)
 	tx.Question = NewQuestionClient(tx.config)

@@ -33,6 +33,12 @@ type LogMessage func(*sql.Selector)
 // LongTask is the predicate function for longtask builders.
 type LongTask func(*sql.Selector)
 
+// LongTaskProgress is the predicate function for longtaskprogress builders.
+type LongTaskProgress func(*sql.Selector)
+
+// LongTaskProgressSubmission is the predicate function for longtaskprogresssubmission builders.
+type LongTaskProgressSubmission func(*sql.Selector)
+
 // LongTaskSubmission is the predicate function for longtasksubmission builders.
 type LongTaskSubmission func(*sql.Selector)
 

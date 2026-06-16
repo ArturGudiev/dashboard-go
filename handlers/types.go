@@ -171,6 +171,27 @@ type NewLongTaskRequest struct {
 	Parent   *models.ContainerDescription `json:"parent,omitempty"`
 }
 
+type NewLongTaskProgressRequest struct {
+	Name string `json:"name" binding:"required"`
+	Value *float64 `json:"value"`
+	Total *float64 `json:"total"`
+	Units *string `json:"units"`
+}
+
+// field.String("name").
+// NotEmpty(),
+// field.Int("long_task_id").
+// Positive(),
+// field.Float("value").
+// Optional().
+// Nillable(),
+// field.Float("total").
+// Optional().
+// Nillable(),
+// field.String("units").
+// Optional().
+// Nillable(),
+
 // LongTasksQuery represents query params for GET /long-tasks
 type LongTasksQuery struct {
 	Open *bool `form:"open"`
@@ -182,6 +203,22 @@ type AddLongTaskSubmissionRequest struct {
 	ProgressToSet *float64 `json:"progressToSet"`
 	ProgressRaw   *string  `json:"progressRaw"`
 }
+
+type AddLongTaskProgressRequest struct {
+	Name          string   `json:"name"`
+	Value         *float64 `json:"value"`
+	Total         *float64 `json:"total"`
+	Units         *string  `json:"units"`
+}
+
+type AddLongTaskProgressSubmissionRequest struct {
+	Comments      *string  `json:"comments"`
+	ProgressToAdd *float64 `json:"progressToAdd"`
+	ProgressToSet *float64 `json:"progressToSet"`
+	ProgressRaw   *float64 `json:"progressRaw"`
+	ExecutionDate *time.Time `json:"executionDate"`
+}
+
 
 type DirectionsQuery struct {
 	Open *bool `form:"open"`

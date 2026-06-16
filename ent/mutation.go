@@ -12,6 +12,8 @@ import (
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtaskprogress"
+	"arturgudiev/dashboard/ent/longtaskprogresssubmission"
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/predicate"
 	"arturgudiev/dashboard/ent/problem"
@@ -42,24 +44,26 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAlias                   = "Alias"
-	TypeContainerChild          = "ContainerChild"
-	TypeContainerVariables      = "ContainerVariables"
-	TypeDirection               = "Direction"
-	TypeDirectionSubmission     = "DirectionSubmission"
-	TypeEpic                    = "Epic"
-	TypeKnowledgeNode           = "KnowledgeNode"
-	TypeLogMessage              = "LogMessage"
-	TypeLongTask                = "LongTask"
-	TypeLongTaskSubmission      = "LongTaskSubmission"
-	TypeProblem                 = "Problem"
-	TypeQuestion                = "Question"
-	TypeRepetitiveTask          = "RepetitiveTask"
-	TypeRepetitiveTaskExecution = "RepetitiveTaskExecution"
-	TypeStory                   = "Story"
-	TypeTask                    = "Task"
-	TypeTest                    = "Test"
-	TypeVariablesStack          = "VariablesStack"
+	TypeAlias                      = "Alias"
+	TypeContainerChild             = "ContainerChild"
+	TypeContainerVariables         = "ContainerVariables"
+	TypeDirection                  = "Direction"
+	TypeDirectionSubmission        = "DirectionSubmission"
+	TypeEpic                       = "Epic"
+	TypeKnowledgeNode              = "KnowledgeNode"
+	TypeLogMessage                 = "LogMessage"
+	TypeLongTask                   = "LongTask"
+	TypeLongTaskProgress           = "LongTaskProgress"
+	TypeLongTaskProgressSubmission = "LongTaskProgressSubmission"
+	TypeLongTaskSubmission         = "LongTaskSubmission"
+	TypeProblem                    = "Problem"
+	TypeQuestion                   = "Question"
+	TypeRepetitiveTask             = "RepetitiveTask"
+	TypeRepetitiveTaskExecution    = "RepetitiveTaskExecution"
+	TypeStory                      = "Story"
+	TypeTask                       = "Task"
+	TypeTest                       = "Test"
+	TypeVariablesStack             = "VariablesStack"
 )
 
 // AliasMutation represents an operation that mutates the Alias nodes in the graph.
@@ -4679,6 +4683,9 @@ type LongTaskMutation struct {
 	submissions        map[int]struct{}
 	removedsubmissions map[int]struct{}
 	clearedsubmissions bool
+	progresses         map[int]struct{}
+	removedprogresses  map[int]struct{}
+	clearedprogresses  bool
 	done               bool
 	oldValue           func(context.Context) (*LongTask, error)
 	predicates         []predicate.LongTask
@@ -5226,6 +5233,60 @@ func (m *LongTaskMutation) ResetSubmissions() {
 	m.removedsubmissions = nil
 }
 
+// AddProgressIDs adds the "progresses" edge to the LongTaskProgress entity by ids.
+func (m *LongTaskMutation) AddProgressIDs(ids ...int) {
+	if m.progresses == nil {
+		m.progresses = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.progresses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProgresses clears the "progresses" edge to the LongTaskProgress entity.
+func (m *LongTaskMutation) ClearProgresses() {
+	m.clearedprogresses = true
+}
+
+// ProgressesCleared reports if the "progresses" edge to the LongTaskProgress entity was cleared.
+func (m *LongTaskMutation) ProgressesCleared() bool {
+	return m.clearedprogresses
+}
+
+// RemoveProgressIDs removes the "progresses" edge to the LongTaskProgress entity by IDs.
+func (m *LongTaskMutation) RemoveProgressIDs(ids ...int) {
+	if m.removedprogresses == nil {
+		m.removedprogresses = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.progresses, ids[i])
+		m.removedprogresses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProgresses returns the removed IDs of the "progresses" edge to the LongTaskProgress entity.
+func (m *LongTaskMutation) RemovedProgressesIDs() (ids []int) {
+	for id := range m.removedprogresses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProgressesIDs returns the "progresses" edge IDs in the mutation.
+func (m *LongTaskMutation) ProgressesIDs() (ids []int) {
+	for id := range m.progresses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProgresses resets all changes to the "progresses" edge.
+func (m *LongTaskMutation) ResetProgresses() {
+	m.progresses = nil
+	m.clearedprogresses = false
+	m.removedprogresses = nil
+}
+
 // Where appends a list predicates to the LongTaskMutation builder.
 func (m *LongTaskMutation) Where(ps ...predicate.LongTask) {
 	m.predicates = append(m.predicates, ps...)
@@ -5526,9 +5587,12 @@ func (m *LongTaskMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LongTaskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.submissions != nil {
 		edges = append(edges, longtask.EdgeSubmissions)
+	}
+	if m.progresses != nil {
+		edges = append(edges, longtask.EdgeProgresses)
 	}
 	return edges
 }
@@ -5543,15 +5607,24 @@ func (m *LongTaskMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case longtask.EdgeProgresses:
+		ids := make([]ent.Value, 0, len(m.progresses))
+		for id := range m.progresses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LongTaskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedsubmissions != nil {
 		edges = append(edges, longtask.EdgeSubmissions)
+	}
+	if m.removedprogresses != nil {
+		edges = append(edges, longtask.EdgeProgresses)
 	}
 	return edges
 }
@@ -5566,15 +5639,24 @@ func (m *LongTaskMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case longtask.EdgeProgresses:
+		ids := make([]ent.Value, 0, len(m.removedprogresses))
+		for id := range m.removedprogresses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LongTaskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedsubmissions {
 		edges = append(edges, longtask.EdgeSubmissions)
+	}
+	if m.clearedprogresses {
+		edges = append(edges, longtask.EdgeProgresses)
 	}
 	return edges
 }
@@ -5585,6 +5667,8 @@ func (m *LongTaskMutation) EdgeCleared(name string) bool {
 	switch name {
 	case longtask.EdgeSubmissions:
 		return m.clearedsubmissions
+	case longtask.EdgeProgresses:
+		return m.clearedprogresses
 	}
 	return false
 }
@@ -5604,8 +5688,1650 @@ func (m *LongTaskMutation) ResetEdge(name string) error {
 	case longtask.EdgeSubmissions:
 		m.ResetSubmissions()
 		return nil
+	case longtask.EdgeProgresses:
+		m.ResetProgresses()
+		return nil
 	}
 	return fmt.Errorf("unknown LongTask edge %s", name)
+}
+
+// LongTaskProgressMutation represents an operation that mutates the LongTaskProgress nodes in the graph.
+type LongTaskProgressMutation struct {
+	config
+	op                          Op
+	typ                         string
+	id                          *int
+	name                        *string
+	value                       *float64
+	addvalue                    *float64
+	total                       *float64
+	addtotal                    *float64
+	units                       *string
+	clearedFields               map[string]struct{}
+	long_task                   *int
+	clearedlong_task            bool
+	progress_submissions        map[int]struct{}
+	removedprogress_submissions map[int]struct{}
+	clearedprogress_submissions bool
+	done                        bool
+	oldValue                    func(context.Context) (*LongTaskProgress, error)
+	predicates                  []predicate.LongTaskProgress
+}
+
+var _ ent.Mutation = (*LongTaskProgressMutation)(nil)
+
+// longtaskprogressOption allows management of the mutation configuration using functional options.
+type longtaskprogressOption func(*LongTaskProgressMutation)
+
+// newLongTaskProgressMutation creates new mutation for the LongTaskProgress entity.
+func newLongTaskProgressMutation(c config, op Op, opts ...longtaskprogressOption) *LongTaskProgressMutation {
+	m := &LongTaskProgressMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLongTaskProgress,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLongTaskProgressID sets the ID field of the mutation.
+func withLongTaskProgressID(id int) longtaskprogressOption {
+	return func(m *LongTaskProgressMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *LongTaskProgress
+		)
+		m.oldValue = func(ctx context.Context) (*LongTaskProgress, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().LongTaskProgress.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLongTaskProgress sets the old LongTaskProgress of the mutation.
+func withLongTaskProgress(node *LongTaskProgress) longtaskprogressOption {
+	return func(m *LongTaskProgressMutation) {
+		m.oldValue = func(context.Context) (*LongTaskProgress, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LongTaskProgressMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LongTaskProgressMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of LongTaskProgress entities.
+func (m *LongTaskProgressMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LongTaskProgressMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LongTaskProgressMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().LongTaskProgress.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *LongTaskProgressMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *LongTaskProgressMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the LongTaskProgress entity.
+// If the LongTaskProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *LongTaskProgressMutation) ResetName() {
+	m.name = nil
+}
+
+// SetLongTaskID sets the "long_task_id" field.
+func (m *LongTaskProgressMutation) SetLongTaskID(i int) {
+	m.long_task = &i
+}
+
+// LongTaskID returns the value of the "long_task_id" field in the mutation.
+func (m *LongTaskProgressMutation) LongTaskID() (r int, exists bool) {
+	v := m.long_task
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLongTaskID returns the old "long_task_id" field's value of the LongTaskProgress entity.
+// If the LongTaskProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressMutation) OldLongTaskID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLongTaskID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLongTaskID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLongTaskID: %w", err)
+	}
+	return oldValue.LongTaskID, nil
+}
+
+// ResetLongTaskID resets all changes to the "long_task_id" field.
+func (m *LongTaskProgressMutation) ResetLongTaskID() {
+	m.long_task = nil
+}
+
+// SetValue sets the "value" field.
+func (m *LongTaskProgressMutation) SetValue(f float64) {
+	m.value = &f
+	m.addvalue = nil
+}
+
+// Value returns the value of the "value" field in the mutation.
+func (m *LongTaskProgressMutation) Value() (r float64, exists bool) {
+	v := m.value
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldValue returns the old "value" field's value of the LongTaskProgress entity.
+// If the LongTaskProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressMutation) OldValue(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldValue is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldValue requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldValue: %w", err)
+	}
+	return oldValue.Value, nil
+}
+
+// AddValue adds f to the "value" field.
+func (m *LongTaskProgressMutation) AddValue(f float64) {
+	if m.addvalue != nil {
+		*m.addvalue += f
+	} else {
+		m.addvalue = &f
+	}
+}
+
+// AddedValue returns the value that was added to the "value" field in this mutation.
+func (m *LongTaskProgressMutation) AddedValue() (r float64, exists bool) {
+	v := m.addvalue
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearValue clears the value of the "value" field.
+func (m *LongTaskProgressMutation) ClearValue() {
+	m.value = nil
+	m.addvalue = nil
+	m.clearedFields[longtaskprogress.FieldValue] = struct{}{}
+}
+
+// ValueCleared returns if the "value" field was cleared in this mutation.
+func (m *LongTaskProgressMutation) ValueCleared() bool {
+	_, ok := m.clearedFields[longtaskprogress.FieldValue]
+	return ok
+}
+
+// ResetValue resets all changes to the "value" field.
+func (m *LongTaskProgressMutation) ResetValue() {
+	m.value = nil
+	m.addvalue = nil
+	delete(m.clearedFields, longtaskprogress.FieldValue)
+}
+
+// SetTotal sets the "total" field.
+func (m *LongTaskProgressMutation) SetTotal(f float64) {
+	m.total = &f
+	m.addtotal = nil
+}
+
+// Total returns the value of the "total" field in the mutation.
+func (m *LongTaskProgressMutation) Total() (r float64, exists bool) {
+	v := m.total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotal returns the old "total" field's value of the LongTaskProgress entity.
+// If the LongTaskProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressMutation) OldTotal(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotal is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotal requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotal: %w", err)
+	}
+	return oldValue.Total, nil
+}
+
+// AddTotal adds f to the "total" field.
+func (m *LongTaskProgressMutation) AddTotal(f float64) {
+	if m.addtotal != nil {
+		*m.addtotal += f
+	} else {
+		m.addtotal = &f
+	}
+}
+
+// AddedTotal returns the value that was added to the "total" field in this mutation.
+func (m *LongTaskProgressMutation) AddedTotal() (r float64, exists bool) {
+	v := m.addtotal
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTotal clears the value of the "total" field.
+func (m *LongTaskProgressMutation) ClearTotal() {
+	m.total = nil
+	m.addtotal = nil
+	m.clearedFields[longtaskprogress.FieldTotal] = struct{}{}
+}
+
+// TotalCleared returns if the "total" field was cleared in this mutation.
+func (m *LongTaskProgressMutation) TotalCleared() bool {
+	_, ok := m.clearedFields[longtaskprogress.FieldTotal]
+	return ok
+}
+
+// ResetTotal resets all changes to the "total" field.
+func (m *LongTaskProgressMutation) ResetTotal() {
+	m.total = nil
+	m.addtotal = nil
+	delete(m.clearedFields, longtaskprogress.FieldTotal)
+}
+
+// SetUnits sets the "units" field.
+func (m *LongTaskProgressMutation) SetUnits(s string) {
+	m.units = &s
+}
+
+// Units returns the value of the "units" field in the mutation.
+func (m *LongTaskProgressMutation) Units() (r string, exists bool) {
+	v := m.units
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUnits returns the old "units" field's value of the LongTaskProgress entity.
+// If the LongTaskProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressMutation) OldUnits(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUnits is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUnits requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUnits: %w", err)
+	}
+	return oldValue.Units, nil
+}
+
+// ClearUnits clears the value of the "units" field.
+func (m *LongTaskProgressMutation) ClearUnits() {
+	m.units = nil
+	m.clearedFields[longtaskprogress.FieldUnits] = struct{}{}
+}
+
+// UnitsCleared returns if the "units" field was cleared in this mutation.
+func (m *LongTaskProgressMutation) UnitsCleared() bool {
+	_, ok := m.clearedFields[longtaskprogress.FieldUnits]
+	return ok
+}
+
+// ResetUnits resets all changes to the "units" field.
+func (m *LongTaskProgressMutation) ResetUnits() {
+	m.units = nil
+	delete(m.clearedFields, longtaskprogress.FieldUnits)
+}
+
+// ClearLongTask clears the "long_task" edge to the LongTask entity.
+func (m *LongTaskProgressMutation) ClearLongTask() {
+	m.clearedlong_task = true
+	m.clearedFields[longtaskprogress.FieldLongTaskID] = struct{}{}
+}
+
+// LongTaskCleared reports if the "long_task" edge to the LongTask entity was cleared.
+func (m *LongTaskProgressMutation) LongTaskCleared() bool {
+	return m.clearedlong_task
+}
+
+// LongTaskIDs returns the "long_task" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// LongTaskID instead. It exists only for internal usage by the builders.
+func (m *LongTaskProgressMutation) LongTaskIDs() (ids []int) {
+	if id := m.long_task; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetLongTask resets all changes to the "long_task" edge.
+func (m *LongTaskProgressMutation) ResetLongTask() {
+	m.long_task = nil
+	m.clearedlong_task = false
+}
+
+// AddProgressSubmissionIDs adds the "progress_submissions" edge to the LongTaskProgressSubmission entity by ids.
+func (m *LongTaskProgressMutation) AddProgressSubmissionIDs(ids ...int) {
+	if m.progress_submissions == nil {
+		m.progress_submissions = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.progress_submissions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProgressSubmissions clears the "progress_submissions" edge to the LongTaskProgressSubmission entity.
+func (m *LongTaskProgressMutation) ClearProgressSubmissions() {
+	m.clearedprogress_submissions = true
+}
+
+// ProgressSubmissionsCleared reports if the "progress_submissions" edge to the LongTaskProgressSubmission entity was cleared.
+func (m *LongTaskProgressMutation) ProgressSubmissionsCleared() bool {
+	return m.clearedprogress_submissions
+}
+
+// RemoveProgressSubmissionIDs removes the "progress_submissions" edge to the LongTaskProgressSubmission entity by IDs.
+func (m *LongTaskProgressMutation) RemoveProgressSubmissionIDs(ids ...int) {
+	if m.removedprogress_submissions == nil {
+		m.removedprogress_submissions = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.progress_submissions, ids[i])
+		m.removedprogress_submissions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProgressSubmissions returns the removed IDs of the "progress_submissions" edge to the LongTaskProgressSubmission entity.
+func (m *LongTaskProgressMutation) RemovedProgressSubmissionsIDs() (ids []int) {
+	for id := range m.removedprogress_submissions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProgressSubmissionsIDs returns the "progress_submissions" edge IDs in the mutation.
+func (m *LongTaskProgressMutation) ProgressSubmissionsIDs() (ids []int) {
+	for id := range m.progress_submissions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProgressSubmissions resets all changes to the "progress_submissions" edge.
+func (m *LongTaskProgressMutation) ResetProgressSubmissions() {
+	m.progress_submissions = nil
+	m.clearedprogress_submissions = false
+	m.removedprogress_submissions = nil
+}
+
+// Where appends a list predicates to the LongTaskProgressMutation builder.
+func (m *LongTaskProgressMutation) Where(ps ...predicate.LongTaskProgress) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the LongTaskProgressMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *LongTaskProgressMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.LongTaskProgress, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *LongTaskProgressMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *LongTaskProgressMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (LongTaskProgress).
+func (m *LongTaskProgressMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LongTaskProgressMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.name != nil {
+		fields = append(fields, longtaskprogress.FieldName)
+	}
+	if m.long_task != nil {
+		fields = append(fields, longtaskprogress.FieldLongTaskID)
+	}
+	if m.value != nil {
+		fields = append(fields, longtaskprogress.FieldValue)
+	}
+	if m.total != nil {
+		fields = append(fields, longtaskprogress.FieldTotal)
+	}
+	if m.units != nil {
+		fields = append(fields, longtaskprogress.FieldUnits)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LongTaskProgressMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case longtaskprogress.FieldName:
+		return m.Name()
+	case longtaskprogress.FieldLongTaskID:
+		return m.LongTaskID()
+	case longtaskprogress.FieldValue:
+		return m.Value()
+	case longtaskprogress.FieldTotal:
+		return m.Total()
+	case longtaskprogress.FieldUnits:
+		return m.Units()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LongTaskProgressMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case longtaskprogress.FieldName:
+		return m.OldName(ctx)
+	case longtaskprogress.FieldLongTaskID:
+		return m.OldLongTaskID(ctx)
+	case longtaskprogress.FieldValue:
+		return m.OldValue(ctx)
+	case longtaskprogress.FieldTotal:
+		return m.OldTotal(ctx)
+	case longtaskprogress.FieldUnits:
+		return m.OldUnits(ctx)
+	}
+	return nil, fmt.Errorf("unknown LongTaskProgress field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LongTaskProgressMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case longtaskprogress.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case longtaskprogress.FieldLongTaskID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLongTaskID(v)
+		return nil
+	case longtaskprogress.FieldValue:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetValue(v)
+		return nil
+	case longtaskprogress.FieldTotal:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotal(v)
+		return nil
+	case longtaskprogress.FieldUnits:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUnits(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgress field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LongTaskProgressMutation) AddedFields() []string {
+	var fields []string
+	if m.addvalue != nil {
+		fields = append(fields, longtaskprogress.FieldValue)
+	}
+	if m.addtotal != nil {
+		fields = append(fields, longtaskprogress.FieldTotal)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LongTaskProgressMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case longtaskprogress.FieldValue:
+		return m.AddedValue()
+	case longtaskprogress.FieldTotal:
+		return m.AddedTotal()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LongTaskProgressMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case longtaskprogress.FieldValue:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddValue(v)
+		return nil
+	case longtaskprogress.FieldTotal:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotal(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgress numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LongTaskProgressMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(longtaskprogress.FieldValue) {
+		fields = append(fields, longtaskprogress.FieldValue)
+	}
+	if m.FieldCleared(longtaskprogress.FieldTotal) {
+		fields = append(fields, longtaskprogress.FieldTotal)
+	}
+	if m.FieldCleared(longtaskprogress.FieldUnits) {
+		fields = append(fields, longtaskprogress.FieldUnits)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LongTaskProgressMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LongTaskProgressMutation) ClearField(name string) error {
+	switch name {
+	case longtaskprogress.FieldValue:
+		m.ClearValue()
+		return nil
+	case longtaskprogress.FieldTotal:
+		m.ClearTotal()
+		return nil
+	case longtaskprogress.FieldUnits:
+		m.ClearUnits()
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgress nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LongTaskProgressMutation) ResetField(name string) error {
+	switch name {
+	case longtaskprogress.FieldName:
+		m.ResetName()
+		return nil
+	case longtaskprogress.FieldLongTaskID:
+		m.ResetLongTaskID()
+		return nil
+	case longtaskprogress.FieldValue:
+		m.ResetValue()
+		return nil
+	case longtaskprogress.FieldTotal:
+		m.ResetTotal()
+		return nil
+	case longtaskprogress.FieldUnits:
+		m.ResetUnits()
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgress field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LongTaskProgressMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.long_task != nil {
+		edges = append(edges, longtaskprogress.EdgeLongTask)
+	}
+	if m.progress_submissions != nil {
+		edges = append(edges, longtaskprogress.EdgeProgressSubmissions)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LongTaskProgressMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case longtaskprogress.EdgeLongTask:
+		if id := m.long_task; id != nil {
+			return []ent.Value{*id}
+		}
+	case longtaskprogress.EdgeProgressSubmissions:
+		ids := make([]ent.Value, 0, len(m.progress_submissions))
+		for id := range m.progress_submissions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LongTaskProgressMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedprogress_submissions != nil {
+		edges = append(edges, longtaskprogress.EdgeProgressSubmissions)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LongTaskProgressMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case longtaskprogress.EdgeProgressSubmissions:
+		ids := make([]ent.Value, 0, len(m.removedprogress_submissions))
+		for id := range m.removedprogress_submissions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LongTaskProgressMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedlong_task {
+		edges = append(edges, longtaskprogress.EdgeLongTask)
+	}
+	if m.clearedprogress_submissions {
+		edges = append(edges, longtaskprogress.EdgeProgressSubmissions)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LongTaskProgressMutation) EdgeCleared(name string) bool {
+	switch name {
+	case longtaskprogress.EdgeLongTask:
+		return m.clearedlong_task
+	case longtaskprogress.EdgeProgressSubmissions:
+		return m.clearedprogress_submissions
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LongTaskProgressMutation) ClearEdge(name string) error {
+	switch name {
+	case longtaskprogress.EdgeLongTask:
+		m.ClearLongTask()
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgress unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LongTaskProgressMutation) ResetEdge(name string) error {
+	switch name {
+	case longtaskprogress.EdgeLongTask:
+		m.ResetLongTask()
+		return nil
+	case longtaskprogress.EdgeProgressSubmissions:
+		m.ResetProgressSubmissions()
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgress edge %s", name)
+}
+
+// LongTaskProgressSubmissionMutation represents an operation that mutates the LongTaskProgressSubmission nodes in the graph.
+type LongTaskProgressSubmissionMutation struct {
+	config
+	op                        Op
+	typ                       string
+	id                        *int
+	comments                  *string
+	progress_to_add           *int
+	addprogress_to_add        *int
+	progress_to_set           *float64
+	addprogress_to_set        *float64
+	progress_raw              *float64
+	addprogress_raw           *float64
+	execution_date            *time.Time
+	clearedFields             map[string]struct{}
+	long_task_progress        *int
+	clearedlong_task_progress bool
+	done                      bool
+	oldValue                  func(context.Context) (*LongTaskProgressSubmission, error)
+	predicates                []predicate.LongTaskProgressSubmission
+}
+
+var _ ent.Mutation = (*LongTaskProgressSubmissionMutation)(nil)
+
+// longtaskprogresssubmissionOption allows management of the mutation configuration using functional options.
+type longtaskprogresssubmissionOption func(*LongTaskProgressSubmissionMutation)
+
+// newLongTaskProgressSubmissionMutation creates new mutation for the LongTaskProgressSubmission entity.
+func newLongTaskProgressSubmissionMutation(c config, op Op, opts ...longtaskprogresssubmissionOption) *LongTaskProgressSubmissionMutation {
+	m := &LongTaskProgressSubmissionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLongTaskProgressSubmission,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLongTaskProgressSubmissionID sets the ID field of the mutation.
+func withLongTaskProgressSubmissionID(id int) longtaskprogresssubmissionOption {
+	return func(m *LongTaskProgressSubmissionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *LongTaskProgressSubmission
+		)
+		m.oldValue = func(ctx context.Context) (*LongTaskProgressSubmission, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().LongTaskProgressSubmission.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLongTaskProgressSubmission sets the old LongTaskProgressSubmission of the mutation.
+func withLongTaskProgressSubmission(node *LongTaskProgressSubmission) longtaskprogresssubmissionOption {
+	return func(m *LongTaskProgressSubmissionMutation) {
+		m.oldValue = func(context.Context) (*LongTaskProgressSubmission, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LongTaskProgressSubmissionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LongTaskProgressSubmissionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of LongTaskProgressSubmission entities.
+func (m *LongTaskProgressSubmissionMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LongTaskProgressSubmissionMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LongTaskProgressSubmissionMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().LongTaskProgressSubmission.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetComments sets the "comments" field.
+func (m *LongTaskProgressSubmissionMutation) SetComments(s string) {
+	m.comments = &s
+}
+
+// Comments returns the value of the "comments" field in the mutation.
+func (m *LongTaskProgressSubmissionMutation) Comments() (r string, exists bool) {
+	v := m.comments
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldComments returns the old "comments" field's value of the LongTaskProgressSubmission entity.
+// If the LongTaskProgressSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressSubmissionMutation) OldComments(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldComments is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldComments requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldComments: %w", err)
+	}
+	return oldValue.Comments, nil
+}
+
+// ResetComments resets all changes to the "comments" field.
+func (m *LongTaskProgressSubmissionMutation) ResetComments() {
+	m.comments = nil
+}
+
+// SetProgressToAdd sets the "progress_to_add" field.
+func (m *LongTaskProgressSubmissionMutation) SetProgressToAdd(i int) {
+	m.progress_to_add = &i
+	m.addprogress_to_add = nil
+}
+
+// ProgressToAdd returns the value of the "progress_to_add" field in the mutation.
+func (m *LongTaskProgressSubmissionMutation) ProgressToAdd() (r int, exists bool) {
+	v := m.progress_to_add
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgressToAdd returns the old "progress_to_add" field's value of the LongTaskProgressSubmission entity.
+// If the LongTaskProgressSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressSubmissionMutation) OldProgressToAdd(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgressToAdd is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgressToAdd requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgressToAdd: %w", err)
+	}
+	return oldValue.ProgressToAdd, nil
+}
+
+// AddProgressToAdd adds i to the "progress_to_add" field.
+func (m *LongTaskProgressSubmissionMutation) AddProgressToAdd(i int) {
+	if m.addprogress_to_add != nil {
+		*m.addprogress_to_add += i
+	} else {
+		m.addprogress_to_add = &i
+	}
+}
+
+// AddedProgressToAdd returns the value that was added to the "progress_to_add" field in this mutation.
+func (m *LongTaskProgressSubmissionMutation) AddedProgressToAdd() (r int, exists bool) {
+	v := m.addprogress_to_add
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearProgressToAdd clears the value of the "progress_to_add" field.
+func (m *LongTaskProgressSubmissionMutation) ClearProgressToAdd() {
+	m.progress_to_add = nil
+	m.addprogress_to_add = nil
+	m.clearedFields[longtaskprogresssubmission.FieldProgressToAdd] = struct{}{}
+}
+
+// ProgressToAddCleared returns if the "progress_to_add" field was cleared in this mutation.
+func (m *LongTaskProgressSubmissionMutation) ProgressToAddCleared() bool {
+	_, ok := m.clearedFields[longtaskprogresssubmission.FieldProgressToAdd]
+	return ok
+}
+
+// ResetProgressToAdd resets all changes to the "progress_to_add" field.
+func (m *LongTaskProgressSubmissionMutation) ResetProgressToAdd() {
+	m.progress_to_add = nil
+	m.addprogress_to_add = nil
+	delete(m.clearedFields, longtaskprogresssubmission.FieldProgressToAdd)
+}
+
+// SetProgressToSet sets the "progress_to_set" field.
+func (m *LongTaskProgressSubmissionMutation) SetProgressToSet(f float64) {
+	m.progress_to_set = &f
+	m.addprogress_to_set = nil
+}
+
+// ProgressToSet returns the value of the "progress_to_set" field in the mutation.
+func (m *LongTaskProgressSubmissionMutation) ProgressToSet() (r float64, exists bool) {
+	v := m.progress_to_set
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgressToSet returns the old "progress_to_set" field's value of the LongTaskProgressSubmission entity.
+// If the LongTaskProgressSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressSubmissionMutation) OldProgressToSet(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgressToSet is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgressToSet requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgressToSet: %w", err)
+	}
+	return oldValue.ProgressToSet, nil
+}
+
+// AddProgressToSet adds f to the "progress_to_set" field.
+func (m *LongTaskProgressSubmissionMutation) AddProgressToSet(f float64) {
+	if m.addprogress_to_set != nil {
+		*m.addprogress_to_set += f
+	} else {
+		m.addprogress_to_set = &f
+	}
+}
+
+// AddedProgressToSet returns the value that was added to the "progress_to_set" field in this mutation.
+func (m *LongTaskProgressSubmissionMutation) AddedProgressToSet() (r float64, exists bool) {
+	v := m.addprogress_to_set
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearProgressToSet clears the value of the "progress_to_set" field.
+func (m *LongTaskProgressSubmissionMutation) ClearProgressToSet() {
+	m.progress_to_set = nil
+	m.addprogress_to_set = nil
+	m.clearedFields[longtaskprogresssubmission.FieldProgressToSet] = struct{}{}
+}
+
+// ProgressToSetCleared returns if the "progress_to_set" field was cleared in this mutation.
+func (m *LongTaskProgressSubmissionMutation) ProgressToSetCleared() bool {
+	_, ok := m.clearedFields[longtaskprogresssubmission.FieldProgressToSet]
+	return ok
+}
+
+// ResetProgressToSet resets all changes to the "progress_to_set" field.
+func (m *LongTaskProgressSubmissionMutation) ResetProgressToSet() {
+	m.progress_to_set = nil
+	m.addprogress_to_set = nil
+	delete(m.clearedFields, longtaskprogresssubmission.FieldProgressToSet)
+}
+
+// SetProgressRaw sets the "progress_raw" field.
+func (m *LongTaskProgressSubmissionMutation) SetProgressRaw(f float64) {
+	m.progress_raw = &f
+	m.addprogress_raw = nil
+}
+
+// ProgressRaw returns the value of the "progress_raw" field in the mutation.
+func (m *LongTaskProgressSubmissionMutation) ProgressRaw() (r float64, exists bool) {
+	v := m.progress_raw
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgressRaw returns the old "progress_raw" field's value of the LongTaskProgressSubmission entity.
+// If the LongTaskProgressSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressSubmissionMutation) OldProgressRaw(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgressRaw is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgressRaw requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgressRaw: %w", err)
+	}
+	return oldValue.ProgressRaw, nil
+}
+
+// AddProgressRaw adds f to the "progress_raw" field.
+func (m *LongTaskProgressSubmissionMutation) AddProgressRaw(f float64) {
+	if m.addprogress_raw != nil {
+		*m.addprogress_raw += f
+	} else {
+		m.addprogress_raw = &f
+	}
+}
+
+// AddedProgressRaw returns the value that was added to the "progress_raw" field in this mutation.
+func (m *LongTaskProgressSubmissionMutation) AddedProgressRaw() (r float64, exists bool) {
+	v := m.addprogress_raw
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearProgressRaw clears the value of the "progress_raw" field.
+func (m *LongTaskProgressSubmissionMutation) ClearProgressRaw() {
+	m.progress_raw = nil
+	m.addprogress_raw = nil
+	m.clearedFields[longtaskprogresssubmission.FieldProgressRaw] = struct{}{}
+}
+
+// ProgressRawCleared returns if the "progress_raw" field was cleared in this mutation.
+func (m *LongTaskProgressSubmissionMutation) ProgressRawCleared() bool {
+	_, ok := m.clearedFields[longtaskprogresssubmission.FieldProgressRaw]
+	return ok
+}
+
+// ResetProgressRaw resets all changes to the "progress_raw" field.
+func (m *LongTaskProgressSubmissionMutation) ResetProgressRaw() {
+	m.progress_raw = nil
+	m.addprogress_raw = nil
+	delete(m.clearedFields, longtaskprogresssubmission.FieldProgressRaw)
+}
+
+// SetExecutionDate sets the "execution_date" field.
+func (m *LongTaskProgressSubmissionMutation) SetExecutionDate(t time.Time) {
+	m.execution_date = &t
+}
+
+// ExecutionDate returns the value of the "execution_date" field in the mutation.
+func (m *LongTaskProgressSubmissionMutation) ExecutionDate() (r time.Time, exists bool) {
+	v := m.execution_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExecutionDate returns the old "execution_date" field's value of the LongTaskProgressSubmission entity.
+// If the LongTaskProgressSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressSubmissionMutation) OldExecutionDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExecutionDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExecutionDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExecutionDate: %w", err)
+	}
+	return oldValue.ExecutionDate, nil
+}
+
+// ResetExecutionDate resets all changes to the "execution_date" field.
+func (m *LongTaskProgressSubmissionMutation) ResetExecutionDate() {
+	m.execution_date = nil
+}
+
+// SetLongTaskProgressID sets the "long_task_progress_id" field.
+func (m *LongTaskProgressSubmissionMutation) SetLongTaskProgressID(i int) {
+	m.long_task_progress = &i
+}
+
+// LongTaskProgressID returns the value of the "long_task_progress_id" field in the mutation.
+func (m *LongTaskProgressSubmissionMutation) LongTaskProgressID() (r int, exists bool) {
+	v := m.long_task_progress
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLongTaskProgressID returns the old "long_task_progress_id" field's value of the LongTaskProgressSubmission entity.
+// If the LongTaskProgressSubmission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LongTaskProgressSubmissionMutation) OldLongTaskProgressID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLongTaskProgressID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLongTaskProgressID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLongTaskProgressID: %w", err)
+	}
+	return oldValue.LongTaskProgressID, nil
+}
+
+// ResetLongTaskProgressID resets all changes to the "long_task_progress_id" field.
+func (m *LongTaskProgressSubmissionMutation) ResetLongTaskProgressID() {
+	m.long_task_progress = nil
+}
+
+// ClearLongTaskProgress clears the "long_task_progress" edge to the LongTaskProgress entity.
+func (m *LongTaskProgressSubmissionMutation) ClearLongTaskProgress() {
+	m.clearedlong_task_progress = true
+	m.clearedFields[longtaskprogresssubmission.FieldLongTaskProgressID] = struct{}{}
+}
+
+// LongTaskProgressCleared reports if the "long_task_progress" edge to the LongTaskProgress entity was cleared.
+func (m *LongTaskProgressSubmissionMutation) LongTaskProgressCleared() bool {
+	return m.clearedlong_task_progress
+}
+
+// LongTaskProgressIDs returns the "long_task_progress" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// LongTaskProgressID instead. It exists only for internal usage by the builders.
+func (m *LongTaskProgressSubmissionMutation) LongTaskProgressIDs() (ids []int) {
+	if id := m.long_task_progress; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetLongTaskProgress resets all changes to the "long_task_progress" edge.
+func (m *LongTaskProgressSubmissionMutation) ResetLongTaskProgress() {
+	m.long_task_progress = nil
+	m.clearedlong_task_progress = false
+}
+
+// Where appends a list predicates to the LongTaskProgressSubmissionMutation builder.
+func (m *LongTaskProgressSubmissionMutation) Where(ps ...predicate.LongTaskProgressSubmission) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the LongTaskProgressSubmissionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *LongTaskProgressSubmissionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.LongTaskProgressSubmission, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *LongTaskProgressSubmissionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *LongTaskProgressSubmissionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (LongTaskProgressSubmission).
+func (m *LongTaskProgressSubmissionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LongTaskProgressSubmissionMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.comments != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldComments)
+	}
+	if m.progress_to_add != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressToAdd)
+	}
+	if m.progress_to_set != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressToSet)
+	}
+	if m.progress_raw != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressRaw)
+	}
+	if m.execution_date != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldExecutionDate)
+	}
+	if m.long_task_progress != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldLongTaskProgressID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LongTaskProgressSubmissionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case longtaskprogresssubmission.FieldComments:
+		return m.Comments()
+	case longtaskprogresssubmission.FieldProgressToAdd:
+		return m.ProgressToAdd()
+	case longtaskprogresssubmission.FieldProgressToSet:
+		return m.ProgressToSet()
+	case longtaskprogresssubmission.FieldProgressRaw:
+		return m.ProgressRaw()
+	case longtaskprogresssubmission.FieldExecutionDate:
+		return m.ExecutionDate()
+	case longtaskprogresssubmission.FieldLongTaskProgressID:
+		return m.LongTaskProgressID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LongTaskProgressSubmissionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case longtaskprogresssubmission.FieldComments:
+		return m.OldComments(ctx)
+	case longtaskprogresssubmission.FieldProgressToAdd:
+		return m.OldProgressToAdd(ctx)
+	case longtaskprogresssubmission.FieldProgressToSet:
+		return m.OldProgressToSet(ctx)
+	case longtaskprogresssubmission.FieldProgressRaw:
+		return m.OldProgressRaw(ctx)
+	case longtaskprogresssubmission.FieldExecutionDate:
+		return m.OldExecutionDate(ctx)
+	case longtaskprogresssubmission.FieldLongTaskProgressID:
+		return m.OldLongTaskProgressID(ctx)
+	}
+	return nil, fmt.Errorf("unknown LongTaskProgressSubmission field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LongTaskProgressSubmissionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case longtaskprogresssubmission.FieldComments:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetComments(v)
+		return nil
+	case longtaskprogresssubmission.FieldProgressToAdd:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgressToAdd(v)
+		return nil
+	case longtaskprogresssubmission.FieldProgressToSet:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgressToSet(v)
+		return nil
+	case longtaskprogresssubmission.FieldProgressRaw:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgressRaw(v)
+		return nil
+	case longtaskprogresssubmission.FieldExecutionDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExecutionDate(v)
+		return nil
+	case longtaskprogresssubmission.FieldLongTaskProgressID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLongTaskProgressID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgressSubmission field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LongTaskProgressSubmissionMutation) AddedFields() []string {
+	var fields []string
+	if m.addprogress_to_add != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressToAdd)
+	}
+	if m.addprogress_to_set != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressToSet)
+	}
+	if m.addprogress_raw != nil {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressRaw)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LongTaskProgressSubmissionMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case longtaskprogresssubmission.FieldProgressToAdd:
+		return m.AddedProgressToAdd()
+	case longtaskprogresssubmission.FieldProgressToSet:
+		return m.AddedProgressToSet()
+	case longtaskprogresssubmission.FieldProgressRaw:
+		return m.AddedProgressRaw()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LongTaskProgressSubmissionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case longtaskprogresssubmission.FieldProgressToAdd:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProgressToAdd(v)
+		return nil
+	case longtaskprogresssubmission.FieldProgressToSet:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProgressToSet(v)
+		return nil
+	case longtaskprogresssubmission.FieldProgressRaw:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProgressRaw(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgressSubmission numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LongTaskProgressSubmissionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(longtaskprogresssubmission.FieldProgressToAdd) {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressToAdd)
+	}
+	if m.FieldCleared(longtaskprogresssubmission.FieldProgressToSet) {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressToSet)
+	}
+	if m.FieldCleared(longtaskprogresssubmission.FieldProgressRaw) {
+		fields = append(fields, longtaskprogresssubmission.FieldProgressRaw)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LongTaskProgressSubmissionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LongTaskProgressSubmissionMutation) ClearField(name string) error {
+	switch name {
+	case longtaskprogresssubmission.FieldProgressToAdd:
+		m.ClearProgressToAdd()
+		return nil
+	case longtaskprogresssubmission.FieldProgressToSet:
+		m.ClearProgressToSet()
+		return nil
+	case longtaskprogresssubmission.FieldProgressRaw:
+		m.ClearProgressRaw()
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgressSubmission nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LongTaskProgressSubmissionMutation) ResetField(name string) error {
+	switch name {
+	case longtaskprogresssubmission.FieldComments:
+		m.ResetComments()
+		return nil
+	case longtaskprogresssubmission.FieldProgressToAdd:
+		m.ResetProgressToAdd()
+		return nil
+	case longtaskprogresssubmission.FieldProgressToSet:
+		m.ResetProgressToSet()
+		return nil
+	case longtaskprogresssubmission.FieldProgressRaw:
+		m.ResetProgressRaw()
+		return nil
+	case longtaskprogresssubmission.FieldExecutionDate:
+		m.ResetExecutionDate()
+		return nil
+	case longtaskprogresssubmission.FieldLongTaskProgressID:
+		m.ResetLongTaskProgressID()
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgressSubmission field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LongTaskProgressSubmissionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.long_task_progress != nil {
+		edges = append(edges, longtaskprogresssubmission.EdgeLongTaskProgress)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LongTaskProgressSubmissionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case longtaskprogresssubmission.EdgeLongTaskProgress:
+		if id := m.long_task_progress; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LongTaskProgressSubmissionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LongTaskProgressSubmissionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LongTaskProgressSubmissionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedlong_task_progress {
+		edges = append(edges, longtaskprogresssubmission.EdgeLongTaskProgress)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LongTaskProgressSubmissionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case longtaskprogresssubmission.EdgeLongTaskProgress:
+		return m.clearedlong_task_progress
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LongTaskProgressSubmissionMutation) ClearEdge(name string) error {
+	switch name {
+	case longtaskprogresssubmission.EdgeLongTaskProgress:
+		m.ClearLongTaskProgress()
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgressSubmission unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LongTaskProgressSubmissionMutation) ResetEdge(name string) error {
+	switch name {
+	case longtaskprogresssubmission.EdgeLongTaskProgress:
+		m.ResetLongTaskProgress()
+		return nil
+	}
+	return fmt.Errorf("unknown LongTaskProgressSubmission edge %s", name)
 }
 
 // LongTaskSubmissionMutation represents an operation that mutates the LongTaskSubmission nodes in the graph.

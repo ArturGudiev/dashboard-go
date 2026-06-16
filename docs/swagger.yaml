@@ -153,11 +153,94 @@ definitions:
     type: object
   ent.LongTaskEdges:
     properties:
+      progresses:
+        description: Progresses holds the value of the progresses edge.
+        items:
+          $ref: '#/definitions/ent.LongTaskProgress'
+        type: array
       submissions:
         description: Submissions holds the value of the submissions edge.
         items:
           $ref: '#/definitions/ent.LongTaskSubmission'
         type: array
+    type: object
+  ent.LongTaskProgress:
+    properties:
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.LongTaskProgressEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the LongTaskProgressQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      long_task_id:
+        description: LongTaskID holds the value of the "long_task_id" field.
+        type: integer
+      name:
+        description: Name holds the value of the "name" field.
+        type: string
+      total:
+        description: Total holds the value of the "total" field.
+        type: number
+      units:
+        description: Units holds the value of the "units" field.
+        type: string
+      value:
+        description: Value holds the value of the "value" field.
+        type: number
+    type: object
+  ent.LongTaskProgressEdges:
+    properties:
+      long_task:
+        allOf:
+        - $ref: '#/definitions/ent.LongTask'
+        description: LongTask holds the value of the long_task edge.
+      progress_submissions:
+        description: ProgressSubmissions holds the value of the progress_submissions
+          edge.
+        items:
+          $ref: '#/definitions/ent.LongTaskProgressSubmission'
+        type: array
+    type: object
+  ent.LongTaskProgressSubmission:
+    properties:
+      comments:
+        description: Comments holds the value of the "comments" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.LongTaskProgressSubmissionEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the LongTaskProgressSubmissionQuery when eager-loading is set.
+      execution_date:
+        description: ExecutionDate holds the value of the "execution_date" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: integer
+      long_task_progress_id:
+        description: LongTaskProgressID holds the value of the "long_task_progress_id"
+          field.
+        type: integer
+      progress_raw:
+        description: ProgressRaw holds the value of the "progress_raw" field.
+        type: number
+      progress_to_add:
+        description: ProgressToAdd holds the value of the "progress_to_add" field.
+        type: integer
+      progress_to_set:
+        description: ProgressToSet holds the value of the "progress_to_set" field.
+        type: number
+    type: object
+  ent.LongTaskProgressSubmissionEdges:
+    properties:
+      long_task_progress:
+        allOf:
+        - $ref: '#/definitions/ent.LongTaskProgress'
+        description: LongTaskProgress holds the value of the long_task_progress edge.
     type: object
   ent.LongTaskSubmission:
     properties:
@@ -338,6 +421,17 @@ definitions:
     properties:
       text:
         type: string
+    type: object
+  handlers.AddLongTaskProgressRequest:
+    properties:
+      name:
+        type: string
+      total:
+        type: number
+      units:
+        type: string
+      value:
+        type: number
     type: object
   handlers.AddLongTaskSubmissionRequest:
     properties:
@@ -757,6 +851,57 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  models.LongTaskFull:
+    properties:
+      description:
+        type: string
+      done:
+        type: boolean
+      doneDateTime:
+        type: string
+      id:
+        type: integer
+      notes:
+        type: string
+      progresses:
+        items:
+          $ref: '#/definitions/models.LongTaskProgress'
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  models.LongTaskProgress:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      total:
+        type: number
+      units:
+        type: string
+      value:
+        type: number
+    type: object
+  models.LongTaskProgressFull:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      submissions:
+        items:
+          $ref: '#/definitions/ent.LongTaskProgressSubmission'
+        type: array
+      total:
+        type: number
+      units:
+        type: string
+      value:
+        type: number
     type: object
   models.LongTaskShort:
     properties:
@@ -2437,6 +2582,39 @@ paths:
       summary: Get log message by ID
       tags:
       - log messages
+  /long-task-progresses/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a long task progress by ID
+      parameters:
+      - description: Long task progress ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LongTaskProgressFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get long task progress by ID
+      tags:
+      - long-task-progresses
   /long-tasks:
     get:
       consumes:
@@ -2528,7 +2706,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.LongTask'
+            $ref: '#/definitions/models.LongTaskFull'
         "400":
           description: Bad Request
           schema:
@@ -2619,6 +2797,80 @@ paths:
       - repetitive-tasks
       - long-tasks
       - directions
+  /long-tasks/{id}/progress:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new progress record for the given long task
+      parameters:
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Progress request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AddLongTaskProgressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.LongTaskProgress'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add long task progress
+      tags:
+      - long-task-progresses
+  /long-tasks/{id}/progresses:
+    get:
+      consumes:
+      - application/json
+      description: Returns progress records for the given long task (newest first)
+      parameters:
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.LongTaskProgress'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List long task progresses
+      tags:
+      - long-tasks
   /long-tasks/{id}/submissions:
     get:
       consumes:

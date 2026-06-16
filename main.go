@@ -192,7 +192,14 @@ func main() {
 	router.PATCH("/long-tasks/:id", h.PatchLongTaskByID)
 	router.POST("/long-tasks/:id/submissions", h.AddLongTaskSubmission)
 	router.GET("/long-tasks/:id/submissions", h.GetLongTaskSubmissions)
+	router.GET("/long-tasks/:id/progresses", h.GetLongTaskProgresses)
+	router.POST("/long-tasks/:id/progress", h.AddLongTaskProgress)
 	router.POST("/long-tasks", h.NewLongTask)
+
+	// Long task progresses
+	router.GET("/long-task-progresses/:id", h.GetLongTaskProgressByID)
+	router.POST("/long-task-progresses/:id/submissions", h.AddLongTaskProgressSubmission)
+	
 
 	// Direction routes
 	router.GET("/directions", h.GetDirections)

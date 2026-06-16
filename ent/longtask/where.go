@@ -468,6 +468,29 @@ func HasSubmissionsWith(preds ...predicate.LongTaskSubmission) predicate.LongTas
 	})
 }
 
+// HasProgresses applies the HasEdge predicate on the "progresses" edge.
+func HasProgresses() predicate.LongTask {
+	return predicate.LongTask(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProgressesTable, ProgressesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProgressesWith applies the HasEdge predicate on the "progresses" edge with a given conditions (other predicates).
+func HasProgressesWith(preds ...predicate.LongTaskProgress) predicate.LongTask {
+	return predicate.LongTask(func(s *sql.Selector) {
+		step := newProgressesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.LongTask) predicate.LongTask {
 	return predicate.LongTask(sql.AndPredicates(predicates...))

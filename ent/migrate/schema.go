@@ -195,6 +195,53 @@ var (
 		Columns:    LongTasksColumns,
 		PrimaryKey: []*schema.Column{LongTasksColumns[0]},
 	}
+	// LongTaskProgressesColumns holds the columns for the "long_task_progresses" table.
+	LongTaskProgressesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "value", Type: field.TypeFloat64, Nullable: true},
+		{Name: "total", Type: field.TypeFloat64, Nullable: true},
+		{Name: "units", Type: field.TypeString, Nullable: true},
+		{Name: "long_task_id", Type: field.TypeInt},
+	}
+	// LongTaskProgressesTable holds the schema information for the "long_task_progresses" table.
+	LongTaskProgressesTable = &schema.Table{
+		Name:       "long_task_progresses",
+		Columns:    LongTaskProgressesColumns,
+		PrimaryKey: []*schema.Column{LongTaskProgressesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "long_task_progresses_long_tasks_progresses",
+				Columns:    []*schema.Column{LongTaskProgressesColumns[5]},
+				RefColumns: []*schema.Column{LongTasksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// LongTaskProgressSubmissionsColumns holds the columns for the "long_task_progress_submissions" table.
+	LongTaskProgressSubmissionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "comments", Type: field.TypeString},
+		{Name: "progress_to_add", Type: field.TypeInt, Nullable: true},
+		{Name: "progress_to_set", Type: field.TypeFloat64, Nullable: true},
+		{Name: "progress_raw", Type: field.TypeFloat64, Nullable: true},
+		{Name: "execution_date", Type: field.TypeTime},
+		{Name: "long_task_progress_id", Type: field.TypeInt},
+	}
+	// LongTaskProgressSubmissionsTable holds the schema information for the "long_task_progress_submissions" table.
+	LongTaskProgressSubmissionsTable = &schema.Table{
+		Name:       "long_task_progress_submissions",
+		Columns:    LongTaskProgressSubmissionsColumns,
+		PrimaryKey: []*schema.Column{LongTaskProgressSubmissionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "long_task_progress_submissions_long_task_progresses_progress_submissions",
+				Columns:    []*schema.Column{LongTaskProgressSubmissionsColumns[6]},
+				RefColumns: []*schema.Column{LongTaskProgressesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// LongTaskSubmissionsColumns holds the columns for the "long_task_submissions" table.
 	LongTaskSubmissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -359,6 +406,8 @@ var (
 		KnowledgeNodesTable,
 		LogMessagesTable,
 		LongTasksTable,
+		LongTaskProgressesTable,
+		LongTaskProgressSubmissionsTable,
 		LongTaskSubmissionsTable,
 		ProblemsTable,
 		QuestionsTable,
@@ -383,6 +432,8 @@ func init() {
 		Table: "container_variables",
 	}
 	DirectionSubmissionsTable.ForeignKeys[0].RefTable = DirectionsTable
+	LongTaskProgressesTable.ForeignKeys[0].RefTable = LongTasksTable
+	LongTaskProgressSubmissionsTable.ForeignKeys[0].RefTable = LongTaskProgressesTable
 	LongTaskSubmissionsTable.ForeignKeys[0].RefTable = LongTasksTable
 	RepetitiveTaskExecutionsTable.ForeignKeys[0].RefTable = RepetitiveTasksTable
 	VariablesStacksTable.Annotation = &entsql.Annotation{

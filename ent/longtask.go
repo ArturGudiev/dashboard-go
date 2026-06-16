@@ -44,9 +44,11 @@ type LongTask struct {
 type LongTaskEdges struct {
 	// Submissions holds the value of the submissions edge.
 	Submissions []*LongTaskSubmission `json:"submissions,omitempty"`
+	// Progresses holds the value of the progresses edge.
+	Progresses []*LongTaskProgress `json:"progresses,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // SubmissionsOrErr returns the Submissions value or an error if the edge
@@ -56,6 +58,15 @@ func (e LongTaskEdges) SubmissionsOrErr() ([]*LongTaskSubmission, error) {
 		return e.Submissions, nil
 	}
 	return nil, &NotLoadedError{edge: "submissions"}
+}
+
+// ProgressesOrErr returns the Progresses value or an error if the edge
+// was not loaded in eager-loading.
+func (e LongTaskEdges) ProgressesOrErr() ([]*LongTaskProgress, error) {
+	if e.loadedTypes[1] {
+		return e.Progresses, nil
+	}
+	return nil, &NotLoadedError{edge: "progresses"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -165,6 +176,11 @@ func (_m *LongTask) Value(name string) (ent.Value, error) {
 // QuerySubmissions queries the "submissions" edge of the LongTask entity.
 func (_m *LongTask) QuerySubmissions() *LongTaskSubmissionQuery {
 	return NewLongTaskClient(_m.config).QuerySubmissions(_m)
+}
+
+// QueryProgresses queries the "progresses" edge of the LongTask entity.
+func (_m *LongTask) QueryProgresses() *LongTaskProgressQuery {
+	return NewLongTaskClient(_m.config).QueryProgresses(_m)
 }
 
 // Update returns a builder for updating this LongTask.

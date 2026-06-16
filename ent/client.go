@@ -20,6 +20,8 @@ import (
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtaskprogress"
+	"arturgudiev/dashboard/ent/longtaskprogresssubmission"
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
@@ -59,6 +61,10 @@ type Client struct {
 	LogMessage *LogMessageClient
 	// LongTask is the client for interacting with the LongTask builders.
 	LongTask *LongTaskClient
+	// LongTaskProgress is the client for interacting with the LongTaskProgress builders.
+	LongTaskProgress *LongTaskProgressClient
+	// LongTaskProgressSubmission is the client for interacting with the LongTaskProgressSubmission builders.
+	LongTaskProgressSubmission *LongTaskProgressSubmissionClient
 	// LongTaskSubmission is the client for interacting with the LongTaskSubmission builders.
 	LongTaskSubmission *LongTaskSubmissionClient
 	// Problem is the client for interacting with the Problem builders.
@@ -97,6 +103,8 @@ func (c *Client) init() {
 	c.KnowledgeNode = NewKnowledgeNodeClient(c.config)
 	c.LogMessage = NewLogMessageClient(c.config)
 	c.LongTask = NewLongTaskClient(c.config)
+	c.LongTaskProgress = NewLongTaskProgressClient(c.config)
+	c.LongTaskProgressSubmission = NewLongTaskProgressSubmissionClient(c.config)
 	c.LongTaskSubmission = NewLongTaskSubmissionClient(c.config)
 	c.Problem = NewProblemClient(c.config)
 	c.Question = NewQuestionClient(c.config)
@@ -196,26 +204,28 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                     ctx,
-		config:                  cfg,
-		Alias:                   NewAliasClient(cfg),
-		ContainerChild:          NewContainerChildClient(cfg),
-		ContainerVariables:      NewContainerVariablesClient(cfg),
-		Direction:               NewDirectionClient(cfg),
-		DirectionSubmission:     NewDirectionSubmissionClient(cfg),
-		Epic:                    NewEpicClient(cfg),
-		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
-		LogMessage:              NewLogMessageClient(cfg),
-		LongTask:                NewLongTaskClient(cfg),
-		LongTaskSubmission:      NewLongTaskSubmissionClient(cfg),
-		Problem:                 NewProblemClient(cfg),
-		Question:                NewQuestionClient(cfg),
-		RepetitiveTask:          NewRepetitiveTaskClient(cfg),
-		RepetitiveTaskExecution: NewRepetitiveTaskExecutionClient(cfg),
-		Story:                   NewStoryClient(cfg),
-		Task:                    NewTaskClient(cfg),
-		Test:                    NewTestClient(cfg),
-		VariablesStack:          NewVariablesStackClient(cfg),
+		ctx:                        ctx,
+		config:                     cfg,
+		Alias:                      NewAliasClient(cfg),
+		ContainerChild:             NewContainerChildClient(cfg),
+		ContainerVariables:         NewContainerVariablesClient(cfg),
+		Direction:                  NewDirectionClient(cfg),
+		DirectionSubmission:        NewDirectionSubmissionClient(cfg),
+		Epic:                       NewEpicClient(cfg),
+		KnowledgeNode:              NewKnowledgeNodeClient(cfg),
+		LogMessage:                 NewLogMessageClient(cfg),
+		LongTask:                   NewLongTaskClient(cfg),
+		LongTaskProgress:           NewLongTaskProgressClient(cfg),
+		LongTaskProgressSubmission: NewLongTaskProgressSubmissionClient(cfg),
+		LongTaskSubmission:         NewLongTaskSubmissionClient(cfg),
+		Problem:                    NewProblemClient(cfg),
+		Question:                   NewQuestionClient(cfg),
+		RepetitiveTask:             NewRepetitiveTaskClient(cfg),
+		RepetitiveTaskExecution:    NewRepetitiveTaskExecutionClient(cfg),
+		Story:                      NewStoryClient(cfg),
+		Task:                       NewTaskClient(cfg),
+		Test:                       NewTestClient(cfg),
+		VariablesStack:             NewVariablesStackClient(cfg),
 	}, nil
 }
 
@@ -233,26 +243,28 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                     ctx,
-		config:                  cfg,
-		Alias:                   NewAliasClient(cfg),
-		ContainerChild:          NewContainerChildClient(cfg),
-		ContainerVariables:      NewContainerVariablesClient(cfg),
-		Direction:               NewDirectionClient(cfg),
-		DirectionSubmission:     NewDirectionSubmissionClient(cfg),
-		Epic:                    NewEpicClient(cfg),
-		KnowledgeNode:           NewKnowledgeNodeClient(cfg),
-		LogMessage:              NewLogMessageClient(cfg),
-		LongTask:                NewLongTaskClient(cfg),
-		LongTaskSubmission:      NewLongTaskSubmissionClient(cfg),
-		Problem:                 NewProblemClient(cfg),
-		Question:                NewQuestionClient(cfg),
-		RepetitiveTask:          NewRepetitiveTaskClient(cfg),
-		RepetitiveTaskExecution: NewRepetitiveTaskExecutionClient(cfg),
-		Story:                   NewStoryClient(cfg),
-		Task:                    NewTaskClient(cfg),
-		Test:                    NewTestClient(cfg),
-		VariablesStack:          NewVariablesStackClient(cfg),
+		ctx:                        ctx,
+		config:                     cfg,
+		Alias:                      NewAliasClient(cfg),
+		ContainerChild:             NewContainerChildClient(cfg),
+		ContainerVariables:         NewContainerVariablesClient(cfg),
+		Direction:                  NewDirectionClient(cfg),
+		DirectionSubmission:        NewDirectionSubmissionClient(cfg),
+		Epic:                       NewEpicClient(cfg),
+		KnowledgeNode:              NewKnowledgeNodeClient(cfg),
+		LogMessage:                 NewLogMessageClient(cfg),
+		LongTask:                   NewLongTaskClient(cfg),
+		LongTaskProgress:           NewLongTaskProgressClient(cfg),
+		LongTaskProgressSubmission: NewLongTaskProgressSubmissionClient(cfg),
+		LongTaskSubmission:         NewLongTaskSubmissionClient(cfg),
+		Problem:                    NewProblemClient(cfg),
+		Question:                   NewQuestionClient(cfg),
+		RepetitiveTask:             NewRepetitiveTaskClient(cfg),
+		RepetitiveTaskExecution:    NewRepetitiveTaskExecutionClient(cfg),
+		Story:                      NewStoryClient(cfg),
+		Task:                       NewTaskClient(cfg),
+		Test:                       NewTestClient(cfg),
+		VariablesStack:             NewVariablesStackClient(cfg),
 	}, nil
 }
 
@@ -284,8 +296,9 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Alias, c.ContainerChild, c.ContainerVariables, c.Direction,
 		c.DirectionSubmission, c.Epic, c.KnowledgeNode, c.LogMessage, c.LongTask,
-		c.LongTaskSubmission, c.Problem, c.Question, c.RepetitiveTask,
-		c.RepetitiveTaskExecution, c.Story, c.Task, c.Test, c.VariablesStack,
+		c.LongTaskProgress, c.LongTaskProgressSubmission, c.LongTaskSubmission,
+		c.Problem, c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story,
+		c.Task, c.Test, c.VariablesStack,
 	} {
 		n.Use(hooks...)
 	}
@@ -297,8 +310,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Alias, c.ContainerChild, c.ContainerVariables, c.Direction,
 		c.DirectionSubmission, c.Epic, c.KnowledgeNode, c.LogMessage, c.LongTask,
-		c.LongTaskSubmission, c.Problem, c.Question, c.RepetitiveTask,
-		c.RepetitiveTaskExecution, c.Story, c.Task, c.Test, c.VariablesStack,
+		c.LongTaskProgress, c.LongTaskProgressSubmission, c.LongTaskSubmission,
+		c.Problem, c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story,
+		c.Task, c.Test, c.VariablesStack,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -325,6 +339,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.LogMessage.mutate(ctx, m)
 	case *LongTaskMutation:
 		return c.LongTask.mutate(ctx, m)
+	case *LongTaskProgressMutation:
+		return c.LongTaskProgress.mutate(ctx, m)
+	case *LongTaskProgressSubmissionMutation:
+		return c.LongTaskProgressSubmission.mutate(ctx, m)
 	case *LongTaskSubmissionMutation:
 		return c.LongTaskSubmission.mutate(ctx, m)
 	case *ProblemMutation:
@@ -1584,6 +1602,22 @@ func (c *LongTaskClient) QuerySubmissions(_m *LongTask) *LongTaskSubmissionQuery
 	return query
 }
 
+// QueryProgresses queries the progresses edge of a LongTask.
+func (c *LongTaskClient) QueryProgresses(_m *LongTask) *LongTaskProgressQuery {
+	query := (&LongTaskProgressClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(longtask.Table, longtask.FieldID, id),
+			sqlgraph.To(longtaskprogress.Table, longtaskprogress.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, longtask.ProgressesTable, longtask.ProgressesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *LongTaskClient) Hooks() []Hook {
 	return c.hooks.LongTask
@@ -1606,6 +1640,320 @@ func (c *LongTaskClient) mutate(ctx context.Context, m *LongTaskMutation) (Value
 		return (&LongTaskDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown LongTask mutation op: %q", m.Op())
+	}
+}
+
+// LongTaskProgressClient is a client for the LongTaskProgress schema.
+type LongTaskProgressClient struct {
+	config
+}
+
+// NewLongTaskProgressClient returns a client for the LongTaskProgress from the given config.
+func NewLongTaskProgressClient(c config) *LongTaskProgressClient {
+	return &LongTaskProgressClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `longtaskprogress.Hooks(f(g(h())))`.
+func (c *LongTaskProgressClient) Use(hooks ...Hook) {
+	c.hooks.LongTaskProgress = append(c.hooks.LongTaskProgress, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `longtaskprogress.Intercept(f(g(h())))`.
+func (c *LongTaskProgressClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LongTaskProgress = append(c.inters.LongTaskProgress, interceptors...)
+}
+
+// Create returns a builder for creating a LongTaskProgress entity.
+func (c *LongTaskProgressClient) Create() *LongTaskProgressCreate {
+	mutation := newLongTaskProgressMutation(c.config, OpCreate)
+	return &LongTaskProgressCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LongTaskProgress entities.
+func (c *LongTaskProgressClient) CreateBulk(builders ...*LongTaskProgressCreate) *LongTaskProgressCreateBulk {
+	return &LongTaskProgressCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LongTaskProgressClient) MapCreateBulk(slice any, setFunc func(*LongTaskProgressCreate, int)) *LongTaskProgressCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LongTaskProgressCreateBulk{err: fmt.Errorf("calling to LongTaskProgressClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LongTaskProgressCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LongTaskProgressCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LongTaskProgress.
+func (c *LongTaskProgressClient) Update() *LongTaskProgressUpdate {
+	mutation := newLongTaskProgressMutation(c.config, OpUpdate)
+	return &LongTaskProgressUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LongTaskProgressClient) UpdateOne(_m *LongTaskProgress) *LongTaskProgressUpdateOne {
+	mutation := newLongTaskProgressMutation(c.config, OpUpdateOne, withLongTaskProgress(_m))
+	return &LongTaskProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LongTaskProgressClient) UpdateOneID(id int) *LongTaskProgressUpdateOne {
+	mutation := newLongTaskProgressMutation(c.config, OpUpdateOne, withLongTaskProgressID(id))
+	return &LongTaskProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LongTaskProgress.
+func (c *LongTaskProgressClient) Delete() *LongTaskProgressDelete {
+	mutation := newLongTaskProgressMutation(c.config, OpDelete)
+	return &LongTaskProgressDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LongTaskProgressClient) DeleteOne(_m *LongTaskProgress) *LongTaskProgressDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LongTaskProgressClient) DeleteOneID(id int) *LongTaskProgressDeleteOne {
+	builder := c.Delete().Where(longtaskprogress.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LongTaskProgressDeleteOne{builder}
+}
+
+// Query returns a query builder for LongTaskProgress.
+func (c *LongTaskProgressClient) Query() *LongTaskProgressQuery {
+	return &LongTaskProgressQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLongTaskProgress},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LongTaskProgress entity by its id.
+func (c *LongTaskProgressClient) Get(ctx context.Context, id int) (*LongTaskProgress, error) {
+	return c.Query().Where(longtaskprogress.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LongTaskProgressClient) GetX(ctx context.Context, id int) *LongTaskProgress {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLongTask queries the long_task edge of a LongTaskProgress.
+func (c *LongTaskProgressClient) QueryLongTask(_m *LongTaskProgress) *LongTaskQuery {
+	query := (&LongTaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(longtaskprogress.Table, longtaskprogress.FieldID, id),
+			sqlgraph.To(longtask.Table, longtask.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, longtaskprogress.LongTaskTable, longtaskprogress.LongTaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProgressSubmissions queries the progress_submissions edge of a LongTaskProgress.
+func (c *LongTaskProgressClient) QueryProgressSubmissions(_m *LongTaskProgress) *LongTaskProgressSubmissionQuery {
+	query := (&LongTaskProgressSubmissionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(longtaskprogress.Table, longtaskprogress.FieldID, id),
+			sqlgraph.To(longtaskprogresssubmission.Table, longtaskprogresssubmission.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, longtaskprogress.ProgressSubmissionsTable, longtaskprogress.ProgressSubmissionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LongTaskProgressClient) Hooks() []Hook {
+	return c.hooks.LongTaskProgress
+}
+
+// Interceptors returns the client interceptors.
+func (c *LongTaskProgressClient) Interceptors() []Interceptor {
+	return c.inters.LongTaskProgress
+}
+
+func (c *LongTaskProgressClient) mutate(ctx context.Context, m *LongTaskProgressMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LongTaskProgressCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LongTaskProgressUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LongTaskProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LongTaskProgressDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LongTaskProgress mutation op: %q", m.Op())
+	}
+}
+
+// LongTaskProgressSubmissionClient is a client for the LongTaskProgressSubmission schema.
+type LongTaskProgressSubmissionClient struct {
+	config
+}
+
+// NewLongTaskProgressSubmissionClient returns a client for the LongTaskProgressSubmission from the given config.
+func NewLongTaskProgressSubmissionClient(c config) *LongTaskProgressSubmissionClient {
+	return &LongTaskProgressSubmissionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `longtaskprogresssubmission.Hooks(f(g(h())))`.
+func (c *LongTaskProgressSubmissionClient) Use(hooks ...Hook) {
+	c.hooks.LongTaskProgressSubmission = append(c.hooks.LongTaskProgressSubmission, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `longtaskprogresssubmission.Intercept(f(g(h())))`.
+func (c *LongTaskProgressSubmissionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LongTaskProgressSubmission = append(c.inters.LongTaskProgressSubmission, interceptors...)
+}
+
+// Create returns a builder for creating a LongTaskProgressSubmission entity.
+func (c *LongTaskProgressSubmissionClient) Create() *LongTaskProgressSubmissionCreate {
+	mutation := newLongTaskProgressSubmissionMutation(c.config, OpCreate)
+	return &LongTaskProgressSubmissionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LongTaskProgressSubmission entities.
+func (c *LongTaskProgressSubmissionClient) CreateBulk(builders ...*LongTaskProgressSubmissionCreate) *LongTaskProgressSubmissionCreateBulk {
+	return &LongTaskProgressSubmissionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LongTaskProgressSubmissionClient) MapCreateBulk(slice any, setFunc func(*LongTaskProgressSubmissionCreate, int)) *LongTaskProgressSubmissionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LongTaskProgressSubmissionCreateBulk{err: fmt.Errorf("calling to LongTaskProgressSubmissionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LongTaskProgressSubmissionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LongTaskProgressSubmissionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LongTaskProgressSubmission.
+func (c *LongTaskProgressSubmissionClient) Update() *LongTaskProgressSubmissionUpdate {
+	mutation := newLongTaskProgressSubmissionMutation(c.config, OpUpdate)
+	return &LongTaskProgressSubmissionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LongTaskProgressSubmissionClient) UpdateOne(_m *LongTaskProgressSubmission) *LongTaskProgressSubmissionUpdateOne {
+	mutation := newLongTaskProgressSubmissionMutation(c.config, OpUpdateOne, withLongTaskProgressSubmission(_m))
+	return &LongTaskProgressSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LongTaskProgressSubmissionClient) UpdateOneID(id int) *LongTaskProgressSubmissionUpdateOne {
+	mutation := newLongTaskProgressSubmissionMutation(c.config, OpUpdateOne, withLongTaskProgressSubmissionID(id))
+	return &LongTaskProgressSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LongTaskProgressSubmission.
+func (c *LongTaskProgressSubmissionClient) Delete() *LongTaskProgressSubmissionDelete {
+	mutation := newLongTaskProgressSubmissionMutation(c.config, OpDelete)
+	return &LongTaskProgressSubmissionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LongTaskProgressSubmissionClient) DeleteOne(_m *LongTaskProgressSubmission) *LongTaskProgressSubmissionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LongTaskProgressSubmissionClient) DeleteOneID(id int) *LongTaskProgressSubmissionDeleteOne {
+	builder := c.Delete().Where(longtaskprogresssubmission.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LongTaskProgressSubmissionDeleteOne{builder}
+}
+
+// Query returns a query builder for LongTaskProgressSubmission.
+func (c *LongTaskProgressSubmissionClient) Query() *LongTaskProgressSubmissionQuery {
+	return &LongTaskProgressSubmissionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLongTaskProgressSubmission},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LongTaskProgressSubmission entity by its id.
+func (c *LongTaskProgressSubmissionClient) Get(ctx context.Context, id int) (*LongTaskProgressSubmission, error) {
+	return c.Query().Where(longtaskprogresssubmission.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LongTaskProgressSubmissionClient) GetX(ctx context.Context, id int) *LongTaskProgressSubmission {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLongTaskProgress queries the long_task_progress edge of a LongTaskProgressSubmission.
+func (c *LongTaskProgressSubmissionClient) QueryLongTaskProgress(_m *LongTaskProgressSubmission) *LongTaskProgressQuery {
+	query := (&LongTaskProgressClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(longtaskprogresssubmission.Table, longtaskprogresssubmission.FieldID, id),
+			sqlgraph.To(longtaskprogress.Table, longtaskprogress.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, longtaskprogresssubmission.LongTaskProgressTable, longtaskprogresssubmission.LongTaskProgressColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LongTaskProgressSubmissionClient) Hooks() []Hook {
+	return c.hooks.LongTaskProgressSubmission
+}
+
+// Interceptors returns the client interceptors.
+func (c *LongTaskProgressSubmissionClient) Interceptors() []Interceptor {
+	return c.inters.LongTaskProgressSubmission
+}
+
+func (c *LongTaskProgressSubmissionClient) mutate(ctx context.Context, m *LongTaskProgressSubmissionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LongTaskProgressSubmissionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LongTaskProgressSubmissionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LongTaskProgressSubmissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LongTaskProgressSubmissionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LongTaskProgressSubmission mutation op: %q", m.Op())
 	}
 }
 
@@ -2874,13 +3222,15 @@ func (c *VariablesStackClient) mutate(ctx context.Context, m *VariablesStackMuta
 type (
 	hooks struct {
 		Alias, ContainerChild, ContainerVariables, Direction, DirectionSubmission, Epic,
-		KnowledgeNode, LogMessage, LongTask, LongTaskSubmission, Problem, Question,
+		KnowledgeNode, LogMessage, LongTask, LongTaskProgress,
+		LongTaskProgressSubmission, LongTaskSubmission, Problem, Question,
 		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
 		VariablesStack []ent.Hook
 	}
 	inters struct {
 		Alias, ContainerChild, ContainerVariables, Direction, DirectionSubmission, Epic,
-		KnowledgeNode, LogMessage, LongTask, LongTaskSubmission, Problem, Question,
+		KnowledgeNode, LogMessage, LongTask, LongTaskProgress,
+		LongTaskProgressSubmission, LongTaskSubmission, Problem, Question,
 		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
 		VariablesStack []ent.Interceptor
 	}

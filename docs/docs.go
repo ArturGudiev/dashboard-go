@@ -1766,6 +1766,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/long-task-progresses/{id}": {
+            "get": {
+                "description": "Returns a long task progress by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-task-progresses"
+                ],
+                "summary": "Get long task progress by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Long task progress ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LongTaskProgressFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/long-tasks": {
             "get": {
                 "description": "Returns all long tasks; use open=true to return only open (not done) tasks",
@@ -1903,7 +1953,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.LongTask"
+                            "$ref": "#/definitions/models.LongTaskFull"
                         }
                     },
                     "400": {
@@ -2012,6 +2062,118 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/long-tasks/{id}/progress": {
+            "post": {
+                "description": "Adds a new progress record for the given long task",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-task-progresses"
+                ],
+                "summary": "Add long task progress",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Progress request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AddLongTaskProgressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.LongTaskProgress"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/long-tasks/{id}/progresses": {
+            "get": {
+                "description": "Returns progress records for the given long task (newest first)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-tasks"
+                ],
+                "summary": "List long task progresses",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.LongTaskProgress"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -4040,12 +4202,130 @@ const docTemplate = `{
         "ent.LongTaskEdges": {
             "type": "object",
             "properties": {
+                "progresses": {
+                    "description": "Progresses holds the value of the progresses edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.LongTaskProgress"
+                    }
+                },
                 "submissions": {
                     "description": "Submissions holds the value of the submissions edge.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/ent.LongTaskSubmission"
                     }
+                }
+            }
+        },
+        "ent.LongTaskProgress": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the LongTaskProgressQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.LongTaskProgressEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "long_task_id": {
+                    "description": "LongTaskID holds the value of the \"long_task_id\" field.",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Name holds the value of the \"name\" field.",
+                    "type": "string"
+                },
+                "total": {
+                    "description": "Total holds the value of the \"total\" field.",
+                    "type": "number"
+                },
+                "units": {
+                    "description": "Units holds the value of the \"units\" field.",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Value holds the value of the \"value\" field.",
+                    "type": "number"
+                }
+            }
+        },
+        "ent.LongTaskProgressEdges": {
+            "type": "object",
+            "properties": {
+                "long_task": {
+                    "description": "LongTask holds the value of the long_task edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.LongTask"
+                        }
+                    ]
+                },
+                "progress_submissions": {
+                    "description": "ProgressSubmissions holds the value of the progress_submissions edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.LongTaskProgressSubmission"
+                    }
+                }
+            }
+        },
+        "ent.LongTaskProgressSubmission": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "description": "Comments holds the value of the \"comments\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the LongTaskProgressSubmissionQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.LongTaskProgressSubmissionEdges"
+                        }
+                    ]
+                },
+                "execution_date": {
+                    "description": "ExecutionDate holds the value of the \"execution_date\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "long_task_progress_id": {
+                    "description": "LongTaskProgressID holds the value of the \"long_task_progress_id\" field.",
+                    "type": "integer"
+                },
+                "progress_raw": {
+                    "description": "ProgressRaw holds the value of the \"progress_raw\" field.",
+                    "type": "number"
+                },
+                "progress_to_add": {
+                    "description": "ProgressToAdd holds the value of the \"progress_to_add\" field.",
+                    "type": "integer"
+                },
+                "progress_to_set": {
+                    "description": "ProgressToSet holds the value of the \"progress_to_set\" field.",
+                    "type": "number"
+                }
+            }
+        },
+        "ent.LongTaskProgressSubmissionEdges": {
+            "type": "object",
+            "properties": {
+                "long_task_progress": {
+                    "description": "LongTaskProgress holds the value of the long_task_progress edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.LongTaskProgress"
+                        }
+                    ]
                 }
             }
         },
@@ -4305,6 +4585,23 @@ const docTemplate = `{
             "properties": {
                 "text": {
                     "type": "string"
+                }
+            }
+        },
+        "handlers.AddLongTaskProgressRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "number"
+                },
+                "units": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
                 }
             }
         },
@@ -4941,6 +5238,84 @@ const docTemplate = `{
                         "bug",
                         "urgent"
                     ]
+                }
+            }
+        },
+        "models.LongTaskFull": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "done": {
+                    "type": "boolean"
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "progresses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.LongTaskProgress"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.LongTaskProgress": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "number"
+                },
+                "units": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.LongTaskProgressFull": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "submissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.LongTaskProgressSubmission"
+                    }
+                },
+                "total": {
+                    "type": "number"
+                },
+                "units": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
                 }
             }
         },

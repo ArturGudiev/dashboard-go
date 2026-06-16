@@ -30,6 +30,8 @@ const (
 	FieldProgressUnits = "progress_units"
 	// EdgeSubmissions holds the string denoting the submissions edge name in mutations.
 	EdgeSubmissions = "submissions"
+	// EdgeProgresses holds the string denoting the progresses edge name in mutations.
+	EdgeProgresses = "progresses"
 	// Table holds the table name of the longtask in the database.
 	Table = "long_tasks"
 	// SubmissionsTable is the table that holds the submissions relation/edge.
@@ -39,6 +41,13 @@ const (
 	SubmissionsInverseTable = "long_task_submissions"
 	// SubmissionsColumn is the table column denoting the submissions relation/edge.
 	SubmissionsColumn = "long_task_id"
+	// ProgressesTable is the table that holds the progresses relation/edge.
+	ProgressesTable = "long_task_progresses"
+	// ProgressesInverseTable is the table name for the LongTaskProgress entity.
+	// It exists in this package in order to avoid circular dependency with the "longtaskprogress" package.
+	ProgressesInverseTable = "long_task_progresses"
+	// ProgressesColumn is the table column denoting the progresses relation/edge.
+	ProgressesColumn = "long_task_id"
 )
 
 // Columns holds all SQL columns for longtask fields.
@@ -135,10 +144,31 @@ func BySubmissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newSubmissionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByProgressesCount orders the results by progresses count.
+func ByProgressesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProgressesStep(), opts...)
+	}
+}
+
+// ByProgresses orders the results by progresses terms.
+func ByProgresses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProgressesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSubmissionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SubmissionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, SubmissionsTable, SubmissionsColumn),
+	)
+}
+func newProgressesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProgressesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProgressesTable, ProgressesColumn),
 	)
 }

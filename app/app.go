@@ -16,6 +16,7 @@ type App struct {
 	RepetitiveTaskExecutionService    *services.RepetitiveTaskExecutionService
 	LongTasksService                  *services.LongTasksService
 	LongTaskSubmissionsService       *services.LongTaskSubmissionsService
+	LongTaskProgressesService       *services.LongTaskProgressesService
 	DirectionsService                *services.DirectionsService
 	DirectionSubmissionsRepository   *repositories.DirectionSubmissionsRepository
 	ProblemService           *services.ProblemService
@@ -42,6 +43,8 @@ type App struct {
 	LongTasksRepository                *repositories.LongTasksRepository
 	LongTaskSubmissionsRepository     *repositories.LongTaskSubmissionsRepository
 	DirectionsRepository              *repositories.DirectionsRepository
+	LongTasksProgressesSubmissionsRepository *repositories.LongTasksProgressesSubmissionsRepository
+	LongTasksProgressesRepository *repositories.LongTasksProgressesRepository
 	ctx                      context.Context // Default context for CLI operations
 }
 

@@ -12,15 +12,18 @@ import (
 type LongTasksService struct {
 	longTasksRepository      *repositories.LongTasksRepository
 	childContainerRepository *ChildContainerRepository
+	longTasksProgressesRepository *repositories.LongTasksProgressesRepository
 }
 
 func NewLongTasksService(
 	longTasksRepository *repositories.LongTasksRepository,
 	childContainerRepository *ChildContainerRepository,
+	longTasksProgressesRepository *repositories.LongTasksProgressesRepository,
 ) *LongTasksService {
 	return &LongTasksService{
 		longTasksRepository:      longTasksRepository,
 		childContainerRepository: childContainerRepository,
+		longTasksProgressesRepository: longTasksProgressesRepository,
 	}
 }
 
@@ -39,8 +42,42 @@ func (s *LongTasksService) GetLongTasks(ctx context.Context, open *bool) ([]*ent
 	return longTasks, nil
 }
 
-func (s *LongTasksService) GetLongTaskById(ctx context.Context, id int) (*ent.LongTask, error) {
-	return s.longTasksRepository.GetLongTaskById(ctx, id)
+func (s *LongTasksService) GetLongTaskById(ctx context.Context, id int) (*models.LongTaskFull, error) {
+	longTask, err := s.longTasksRepository.GetLongTaskById(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	
+	progressesIDs := make([]int, len(longTask.Edges.Progresses))
+	for i, progress := range longTask.Edges.Progresses {
+		progressesIDs[i] = progress.ID
+	}
+	progresses, err := s.longTasksProgressesRepository.GetLongTaskProgressesByIDs(ctx, progressesIDs)
+	if err != nil {
+		return nil, err
+	}
+	progressesModels := make([]models.LongTaskProgress, len(progresses))
+	for i, progress := range progresses {
+		progressesModels[i] = models.LongTaskProgress{
+			ID:          progress.ID,
+			Name:        progress.Name,
+			Value:       progress.Value,
+			Total:       progress.Total,
+			Units:       progress.Units,
+		}
+	}
+	longTaskFull := &models.LongTaskFull{
+		ID:          longTask.ID,
+		Description: longTask.Description,
+		Tags:        longTask.Tags,
+		Done:        longTask.Done,
+		DoneDateTime: longTask.DoneDateTime,
+		Progresses:  progressesModels,
+		Notes:       longTask.Notes,
+	}
+	return longTaskFull, nil
 }
 
 func (s *LongTasksService) UpdateLongTask(ctx context.Context, partial models.LongTaskPartial) (*ent.LongTask, error) {

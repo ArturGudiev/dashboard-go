@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtaskprogress"
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/predicate"
 	"context"
@@ -187,6 +188,21 @@ func (_u *LongTaskUpdate) AddSubmissions(v ...*LongTaskSubmission) *LongTaskUpda
 	return _u.AddSubmissionIDs(ids...)
 }
 
+// AddProgressIDs adds the "progresses" edge to the LongTaskProgress entity by IDs.
+func (_u *LongTaskUpdate) AddProgressIDs(ids ...int) *LongTaskUpdate {
+	_u.mutation.AddProgressIDs(ids...)
+	return _u
+}
+
+// AddProgresses adds the "progresses" edges to the LongTaskProgress entity.
+func (_u *LongTaskUpdate) AddProgresses(v ...*LongTaskProgress) *LongTaskUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddProgressIDs(ids...)
+}
+
 // Mutation returns the LongTaskMutation object of the builder.
 func (_u *LongTaskUpdate) Mutation() *LongTaskMutation {
 	return _u.mutation
@@ -211,6 +227,27 @@ func (_u *LongTaskUpdate) RemoveSubmissions(v ...*LongTaskSubmission) *LongTaskU
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSubmissionIDs(ids...)
+}
+
+// ClearProgresses clears all "progresses" edges to the LongTaskProgress entity.
+func (_u *LongTaskUpdate) ClearProgresses() *LongTaskUpdate {
+	_u.mutation.ClearProgresses()
+	return _u
+}
+
+// RemoveProgressIDs removes the "progresses" edge to LongTaskProgress entities by IDs.
+func (_u *LongTaskUpdate) RemoveProgressIDs(ids ...int) *LongTaskUpdate {
+	_u.mutation.RemoveProgressIDs(ids...)
+	return _u
+}
+
+// RemoveProgresses removes "progresses" edges to LongTaskProgress entities.
+func (_u *LongTaskUpdate) RemoveProgresses(v ...*LongTaskProgress) *LongTaskUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProgressIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -344,6 +381,51 @@ func (_u *LongTaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(longtasksubmission.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProgressesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   longtask.ProgressesTable,
+			Columns: []string{longtask.ProgressesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(longtaskprogress.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProgressesIDs(); len(nodes) > 0 && !_u.mutation.ProgressesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   longtask.ProgressesTable,
+			Columns: []string{longtask.ProgressesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(longtaskprogress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProgressesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   longtask.ProgressesTable,
+			Columns: []string{longtask.ProgressesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(longtaskprogress.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -528,6 +610,21 @@ func (_u *LongTaskUpdateOne) AddSubmissions(v ...*LongTaskSubmission) *LongTaskU
 	return _u.AddSubmissionIDs(ids...)
 }
 
+// AddProgressIDs adds the "progresses" edge to the LongTaskProgress entity by IDs.
+func (_u *LongTaskUpdateOne) AddProgressIDs(ids ...int) *LongTaskUpdateOne {
+	_u.mutation.AddProgressIDs(ids...)
+	return _u
+}
+
+// AddProgresses adds the "progresses" edges to the LongTaskProgress entity.
+func (_u *LongTaskUpdateOne) AddProgresses(v ...*LongTaskProgress) *LongTaskUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddProgressIDs(ids...)
+}
+
 // Mutation returns the LongTaskMutation object of the builder.
 func (_u *LongTaskUpdateOne) Mutation() *LongTaskMutation {
 	return _u.mutation
@@ -552,6 +649,27 @@ func (_u *LongTaskUpdateOne) RemoveSubmissions(v ...*LongTaskSubmission) *LongTa
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSubmissionIDs(ids...)
+}
+
+// ClearProgresses clears all "progresses" edges to the LongTaskProgress entity.
+func (_u *LongTaskUpdateOne) ClearProgresses() *LongTaskUpdateOne {
+	_u.mutation.ClearProgresses()
+	return _u
+}
+
+// RemoveProgressIDs removes the "progresses" edge to LongTaskProgress entities by IDs.
+func (_u *LongTaskUpdateOne) RemoveProgressIDs(ids ...int) *LongTaskUpdateOne {
+	_u.mutation.RemoveProgressIDs(ids...)
+	return _u
+}
+
+// RemoveProgresses removes "progresses" edges to LongTaskProgress entities.
+func (_u *LongTaskUpdateOne) RemoveProgresses(v ...*LongTaskProgress) *LongTaskUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProgressIDs(ids...)
 }
 
 // Where appends a list predicates to the LongTaskUpdate builder.
@@ -715,6 +833,51 @@ func (_u *LongTaskUpdateOne) sqlSave(ctx context.Context) (_node *LongTask, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(longtasksubmission.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProgressesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   longtask.ProgressesTable,
+			Columns: []string{longtask.ProgressesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(longtaskprogress.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProgressesIDs(); len(nodes) > 0 && !_u.mutation.ProgressesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   longtask.ProgressesTable,
+			Columns: []string{longtask.ProgressesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(longtaskprogress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProgressesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   longtask.ProgressesTable,
+			Columns: []string{longtask.ProgressesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(longtaskprogress.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -12,6 +12,8 @@ import (
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtaskprogress"
+	"arturgudiev/dashboard/ent/longtaskprogresssubmission"
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
@@ -202,6 +204,34 @@ func init() {
 	longtaskDescID := longtaskFields[0].Descriptor()
 	// longtask.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	longtask.IDValidator = longtaskDescID.Validators[0].(func(int) error)
+	longtaskprogressFields := schema.LongTaskProgress{}.Fields()
+	_ = longtaskprogressFields
+	// longtaskprogressDescName is the schema descriptor for name field.
+	longtaskprogressDescName := longtaskprogressFields[1].Descriptor()
+	// longtaskprogress.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	longtaskprogress.NameValidator = longtaskprogressDescName.Validators[0].(func(string) error)
+	// longtaskprogressDescLongTaskID is the schema descriptor for long_task_id field.
+	longtaskprogressDescLongTaskID := longtaskprogressFields[2].Descriptor()
+	// longtaskprogress.LongTaskIDValidator is a validator for the "long_task_id" field. It is called by the builders before save.
+	longtaskprogress.LongTaskIDValidator = longtaskprogressDescLongTaskID.Validators[0].(func(int) error)
+	// longtaskprogressDescID is the schema descriptor for id field.
+	longtaskprogressDescID := longtaskprogressFields[0].Descriptor()
+	// longtaskprogress.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	longtaskprogress.IDValidator = longtaskprogressDescID.Validators[0].(func(int) error)
+	longtaskprogresssubmissionFields := schema.LongTaskProgressSubmission{}.Fields()
+	_ = longtaskprogresssubmissionFields
+	// longtaskprogresssubmissionDescComments is the schema descriptor for comments field.
+	longtaskprogresssubmissionDescComments := longtaskprogresssubmissionFields[1].Descriptor()
+	// longtaskprogresssubmission.CommentsValidator is a validator for the "comments" field. It is called by the builders before save.
+	longtaskprogresssubmission.CommentsValidator = longtaskprogresssubmissionDescComments.Validators[0].(func(string) error)
+	// longtaskprogresssubmissionDescLongTaskProgressID is the schema descriptor for long_task_progress_id field.
+	longtaskprogresssubmissionDescLongTaskProgressID := longtaskprogresssubmissionFields[6].Descriptor()
+	// longtaskprogresssubmission.LongTaskProgressIDValidator is a validator for the "long_task_progress_id" field. It is called by the builders before save.
+	longtaskprogresssubmission.LongTaskProgressIDValidator = longtaskprogresssubmissionDescLongTaskProgressID.Validators[0].(func(int) error)
+	// longtaskprogresssubmissionDescID is the schema descriptor for id field.
+	longtaskprogresssubmissionDescID := longtaskprogresssubmissionFields[0].Descriptor()
+	// longtaskprogresssubmission.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	longtaskprogresssubmission.IDValidator = longtaskprogresssubmissionDescID.Validators[0].(func(int) error)
 	longtasksubmissionFields := schema.LongTaskSubmission{}.Fields()
 	_ = longtasksubmissionFields
 	// longtasksubmissionDescLongTaskID is the schema descriptor for long_task_id field.

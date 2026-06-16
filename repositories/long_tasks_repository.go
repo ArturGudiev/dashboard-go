@@ -23,7 +23,7 @@ func (r *LongTasksRepository) GetLongTask(ctx context.Context, id int) (*ent.Lon
 }
 
 func (r *LongTasksRepository) GetLongTaskById(ctx context.Context, id int) (*ent.LongTask, error) {
-	return r.client.LongTask.Query().Where(longtask.IDEQ(id)).First(ctx)
+	return r.client.LongTask.Query().Where(longtask.IDEQ(id)).WithProgresses().First(ctx)
 }
 
 // GetLongTasks returns all long tasks, newest first (by id).

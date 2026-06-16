@@ -12,6 +12,8 @@ import (
 	"arturgudiev/dashboard/ent/knowledgenode"
 	"arturgudiev/dashboard/ent/logmessage"
 	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtaskprogress"
+	"arturgudiev/dashboard/ent/longtaskprogresssubmission"
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
@@ -90,24 +92,26 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			alias.Table:                   alias.ValidColumn,
-			containerchild.Table:          containerchild.ValidColumn,
-			containervariables.Table:      containervariables.ValidColumn,
-			direction.Table:               direction.ValidColumn,
-			directionsubmission.Table:     directionsubmission.ValidColumn,
-			epic.Table:                    epic.ValidColumn,
-			knowledgenode.Table:           knowledgenode.ValidColumn,
-			logmessage.Table:              logmessage.ValidColumn,
-			longtask.Table:                longtask.ValidColumn,
-			longtasksubmission.Table:      longtasksubmission.ValidColumn,
-			problem.Table:                 problem.ValidColumn,
-			question.Table:                question.ValidColumn,
-			repetitivetask.Table:          repetitivetask.ValidColumn,
-			repetitivetaskexecution.Table: repetitivetaskexecution.ValidColumn,
-			story.Table:                   story.ValidColumn,
-			task.Table:                    task.ValidColumn,
-			test.Table:                    test.ValidColumn,
-			variablesstack.Table:          variablesstack.ValidColumn,
+			alias.Table:                      alias.ValidColumn,
+			containerchild.Table:             containerchild.ValidColumn,
+			containervariables.Table:         containervariables.ValidColumn,
+			direction.Table:                  direction.ValidColumn,
+			directionsubmission.Table:        directionsubmission.ValidColumn,
+			epic.Table:                       epic.ValidColumn,
+			knowledgenode.Table:              knowledgenode.ValidColumn,
+			logmessage.Table:                 logmessage.ValidColumn,
+			longtask.Table:                   longtask.ValidColumn,
+			longtaskprogress.Table:           longtaskprogress.ValidColumn,
+			longtaskprogresssubmission.Table: longtaskprogresssubmission.ValidColumn,
+			longtasksubmission.Table:         longtasksubmission.ValidColumn,
+			problem.Table:                    problem.ValidColumn,
+			question.Table:                   question.ValidColumn,
+			repetitivetask.Table:             repetitivetask.ValidColumn,
+			repetitivetaskexecution.Table:    repetitivetaskexecution.ValidColumn,
+			story.Table:                      story.ValidColumn,
+			task.Table:                       task.ValidColumn,
+			test.Table:                       test.ValidColumn,
+			variablesstack.Table:             variablesstack.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

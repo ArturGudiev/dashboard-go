@@ -116,6 +116,30 @@ func (f LongTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LongTaskMutation", m)
 }
 
+// The LongTaskProgressFunc type is an adapter to allow the use of ordinary
+// function as LongTaskProgress mutator.
+type LongTaskProgressFunc func(context.Context, *ent.LongTaskProgressMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LongTaskProgressFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LongTaskProgressMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LongTaskProgressMutation", m)
+}
+
+// The LongTaskProgressSubmissionFunc type is an adapter to allow the use of ordinary
+// function as LongTaskProgressSubmission mutator.
+type LongTaskProgressSubmissionFunc func(context.Context, *ent.LongTaskProgressSubmissionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LongTaskProgressSubmissionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LongTaskProgressSubmissionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LongTaskProgressSubmissionMutation", m)
+}
+
 // The LongTaskSubmissionFunc type is an adapter to allow the use of ordinary
 // function as LongTaskSubmission mutator.
 type LongTaskSubmissionFunc func(context.Context, *ent.LongTaskSubmissionMutation) (ent.Value, error)

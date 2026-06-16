@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtaskprogress"
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/predicate"
 	"context"
@@ -25,6 +26,7 @@ type LongTaskQuery struct {
 	inters          []Interceptor
 	predicates      []predicate.LongTask
 	withSubmissions *LongTaskSubmissionQuery
+	withProgresses  *LongTaskProgressQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +78,28 @@ func (_q *LongTaskQuery) QuerySubmissions() *LongTaskSubmissionQuery {
 			sqlgraph.From(longtask.Table, longtask.FieldID, selector),
 			sqlgraph.To(longtasksubmission.Table, longtasksubmission.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, longtask.SubmissionsTable, longtask.SubmissionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProgresses chains the current query on the "progresses" edge.
+func (_q *LongTaskQuery) QueryProgresses() *LongTaskProgressQuery {
+	query := (&LongTaskProgressClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(longtask.Table, longtask.FieldID, selector),
+			sqlgraph.To(longtaskprogress.Table, longtaskprogress.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, longtask.ProgressesTable, longtask.ProgressesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -276,6 +300,7 @@ func (_q *LongTaskQuery) Clone() *LongTaskQuery {
 		inters:          append([]Interceptor{}, _q.inters...),
 		predicates:      append([]predicate.LongTask{}, _q.predicates...),
 		withSubmissions: _q.withSubmissions.Clone(),
+		withProgresses:  _q.withProgresses.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -290,6 +315,17 @@ func (_q *LongTaskQuery) WithSubmissions(opts ...func(*LongTaskSubmissionQuery))
 		opt(query)
 	}
 	_q.withSubmissions = query
+	return _q
+}
+
+// WithProgresses tells the query-builder to eager-load the nodes that are connected to
+// the "progresses" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *LongTaskQuery) WithProgresses(opts ...func(*LongTaskProgressQuery)) *LongTaskQuery {
+	query := (&LongTaskProgressClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProgresses = query
 	return _q
 }
 
@@ -371,8 +407,9 @@ func (_q *LongTaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Lon
 	var (
 		nodes       = []*LongTask{}
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			_q.withSubmissions != nil,
+			_q.withProgresses != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -400,6 +437,13 @@ func (_q *LongTaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Lon
 			return nil, err
 		}
 	}
+	if query := _q.withProgresses; query != nil {
+		if err := _q.loadProgresses(ctx, query, nodes,
+			func(n *LongTask) { n.Edges.Progresses = []*LongTaskProgress{} },
+			func(n *LongTask, e *LongTaskProgress) { n.Edges.Progresses = append(n.Edges.Progresses, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -418,6 +462,36 @@ func (_q *LongTaskQuery) loadSubmissions(ctx context.Context, query *LongTaskSub
 	}
 	query.Where(predicate.LongTaskSubmission(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(longtask.SubmissionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.LongTaskID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "long_task_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *LongTaskQuery) loadProgresses(ctx context.Context, query *LongTaskProgressQuery, nodes []*LongTask, init func(*LongTask), assign func(*LongTask, *LongTaskProgress)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*LongTask)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(longtaskprogress.FieldLongTaskID)
+	}
+	query.Where(predicate.LongTaskProgress(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(longtask.ProgressesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

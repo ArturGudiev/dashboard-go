@@ -40,7 +40,7 @@ func (h *Handler) GetLongTasks(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      int  true  "Long task ID"
-// @Success      200  {object}  ent.LongTask
+// @Success      200  {object}  models.LongTaskFull
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Router       /long-tasks/{id} [get]
@@ -141,6 +141,33 @@ func (h *Handler) GetLongTaskSubmissions(c *gin.Context) {
 		return
 	}
 	c.JSON(200, submissions)
+}
+
+// GetLongTaskProgresses handles GET /long-tasks/:id/progresses
+// @Summary      List long task progresses
+// @Description  Returns progress records for the given long task (newest first)
+// @Tags         long-tasks
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Long task ID"
+// @Success      200  {array}   ent.LongTaskProgress
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /long-tasks/{id}/progresses [get]
+func (h *Handler) GetLongTaskProgresses(c *gin.Context) {
+	idParam := c.Param("id")
+	longTaskID, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid long task ID"})
+		return
+	}
+
+	progresses, err := h.App.LongTaskProgressesService.GetLongTaskProgresses(c.Request.Context(), longTaskID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, progresses)
 }
 
 // NewLongTask handles POST /long-tasks

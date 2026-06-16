@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/longtask"
+	"arturgudiev/dashboard/ent/longtaskprogress"
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"context"
 	"errors"
@@ -136,6 +137,21 @@ func (_c *LongTaskCreate) AddSubmissions(v ...*LongTaskSubmission) *LongTaskCrea
 		ids[i] = v[i].ID
 	}
 	return _c.AddSubmissionIDs(ids...)
+}
+
+// AddProgressIDs adds the "progresses" edge to the LongTaskProgress entity by IDs.
+func (_c *LongTaskCreate) AddProgressIDs(ids ...int) *LongTaskCreate {
+	_c.mutation.AddProgressIDs(ids...)
+	return _c
+}
+
+// AddProgresses adds the "progresses" edges to the LongTaskProgress entity.
+func (_c *LongTaskCreate) AddProgresses(v ...*LongTaskProgress) *LongTaskCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddProgressIDs(ids...)
 }
 
 // Mutation returns the LongTaskMutation object of the builder.
@@ -291,6 +307,22 @@ func (_c *LongTaskCreate) createSpec() (*LongTask, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(longtasksubmission.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ProgressesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   longtask.ProgressesTable,
+			Columns: []string{longtask.ProgressesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(longtaskprogress.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

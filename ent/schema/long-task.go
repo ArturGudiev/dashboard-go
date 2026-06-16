@@ -48,5 +48,6 @@ func (LongTask) Fields() []ent.Field {
 func (LongTask) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("submissions", LongTaskSubmission.Type),
+		edge.To("progresses", LongTaskProgress.Type),
 	}
 }
