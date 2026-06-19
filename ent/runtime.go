@@ -24,6 +24,7 @@ import (
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
 	"arturgudiev/dashboard/ent/variablesstack"
+	"time"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -196,6 +197,10 @@ func init() {
 	longtaskDescNotes := longtaskFields[4].Descriptor()
 	// longtask.DefaultNotes holds the default value on creation for the notes field.
 	longtask.DefaultNotes = longtaskDescNotes.Default.(string)
+	// longtaskDescProgressTotal is the schema descriptor for progress_total field.
+	longtaskDescProgressTotal := longtaskFields[6].Descriptor()
+	// longtask.DefaultProgressTotal holds the default value on creation for the progress_total field.
+	longtask.DefaultProgressTotal = longtaskDescProgressTotal.Default.(float64)
 	// longtaskDescProgressUnits is the schema descriptor for progress_units field.
 	longtaskDescProgressUnits := longtaskFields[8].Descriptor()
 	// longtask.DefaultProgressUnits holds the default value on creation for the progress_units field.
@@ -224,6 +229,10 @@ func init() {
 	longtaskprogresssubmissionDescComments := longtaskprogresssubmissionFields[1].Descriptor()
 	// longtaskprogresssubmission.CommentsValidator is a validator for the "comments" field. It is called by the builders before save.
 	longtaskprogresssubmission.CommentsValidator = longtaskprogresssubmissionDescComments.Validators[0].(func(string) error)
+	// longtaskprogresssubmissionDescExecutionDate is the schema descriptor for execution_date field.
+	longtaskprogresssubmissionDescExecutionDate := longtaskprogresssubmissionFields[5].Descriptor()
+	// longtaskprogresssubmission.DefaultExecutionDate holds the default value on creation for the execution_date field.
+	longtaskprogresssubmission.DefaultExecutionDate = longtaskprogresssubmissionDescExecutionDate.Default.(time.Time)
 	// longtaskprogresssubmissionDescLongTaskProgressID is the schema descriptor for long_task_progress_id field.
 	longtaskprogresssubmissionDescLongTaskProgressID := longtaskprogresssubmissionFields[6].Descriptor()
 	// longtaskprogresssubmission.LongTaskProgressIDValidator is a validator for the "long_task_progress_id" field. It is called by the builders before save.

@@ -17,23 +17,25 @@ func (LongTask) Fields() []ent.Field {
 		// id is automatically the primary key in Ent
 		field.Int("id").
 			Positive().
-			Immutable(),
+			Immutable().
+			StructTag(`json:"id" binding:"required"`),
 		field.String("description").
-			NotEmpty(),
+			NotEmpty().
+			StructTag(`json:"description" binding:"required"`),
 		field.Strings("tags").
 			Default([]string{}),
 		field.Bool("done").
 			Default(false).
-			StructTag(`json:"done"`),
+			StructTag(`json:"done" binding:"required"`),
 		field.String("notes").
-			Default(""),
+			Default("").
+			StructTag(`json:"notes" binding:"required"`),
 		field.Time("done_date_time").
 			Optional().
 			Nillable(),
 		field.Float("progress_total").
-			Optional().
-			Nillable().
-			StructTag(`json:"progress_total"`),
+			Default(0).
+			StructTag(`json:"progress_total" binding:"required"`),
 		field.Float("progress_done").
 			Optional().
 			Nillable().

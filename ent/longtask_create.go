@@ -201,6 +201,10 @@ func (_c *LongTaskCreate) defaults() {
 		v := longtask.DefaultNotes
 		_c.mutation.SetNotes(v)
 	}
+	if _, ok := _c.mutation.ProgressTotal(); !ok {
+		v := longtask.DefaultProgressTotal
+		_c.mutation.SetProgressTotal(v)
+	}
 	if _, ok := _c.mutation.ProgressUnits(); !ok {
 		v := longtask.DefaultProgressUnits
 		_c.mutation.SetProgressUnits(v)
@@ -225,6 +229,9 @@ func (_c *LongTaskCreate) check() error {
 	}
 	if _, ok := _c.mutation.Notes(); !ok {
 		return &ValidationError{Name: "notes", err: errors.New(`ent: missing required field "LongTask.notes"`)}
+	}
+	if _, ok := _c.mutation.ProgressTotal(); !ok {
+		return &ValidationError{Name: "progress_total", err: errors.New(`ent: missing required field "LongTask.progress_total"`)}
 	}
 	if _, ok := _c.mutation.ProgressUnits(); !ok {
 		return &ValidationError{Name: "progress_units", err: errors.New(`ent: missing required field "LongTask.progress_units"`)}
@@ -288,7 +295,7 @@ func (_c *LongTaskCreate) createSpec() (*LongTask, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.ProgressTotal(); ok {
 		_spec.SetField(longtask.FieldProgressTotal, field.TypeFloat64, value)
-		_node.ProgressTotal = &value
+		_node.ProgressTotal = value
 	}
 	if value, ok := _c.mutation.ProgressDone(); ok {
 		_spec.SetField(longtask.FieldProgressDone, field.TypeFloat64, value)

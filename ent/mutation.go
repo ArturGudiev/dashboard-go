@@ -5021,7 +5021,7 @@ func (m *LongTaskMutation) ProgressTotal() (r float64, exists bool) {
 // OldProgressTotal returns the old "progress_total" field's value of the LongTask entity.
 // If the LongTask object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LongTaskMutation) OldProgressTotal(ctx context.Context) (v *float64, err error) {
+func (m *LongTaskMutation) OldProgressTotal(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProgressTotal is only allowed on UpdateOne operations")
 	}
@@ -5053,24 +5053,10 @@ func (m *LongTaskMutation) AddedProgressTotal() (r float64, exists bool) {
 	return *v, true
 }
 
-// ClearProgressTotal clears the value of the "progress_total" field.
-func (m *LongTaskMutation) ClearProgressTotal() {
-	m.progress_total = nil
-	m.addprogress_total = nil
-	m.clearedFields[longtask.FieldProgressTotal] = struct{}{}
-}
-
-// ProgressTotalCleared returns if the "progress_total" field was cleared in this mutation.
-func (m *LongTaskMutation) ProgressTotalCleared() bool {
-	_, ok := m.clearedFields[longtask.FieldProgressTotal]
-	return ok
-}
-
 // ResetProgressTotal resets all changes to the "progress_total" field.
 func (m *LongTaskMutation) ResetProgressTotal() {
 	m.progress_total = nil
 	m.addprogress_total = nil
-	delete(m.clearedFields, longtask.FieldProgressTotal)
 }
 
 // SetProgressDone sets the "progress_done" field.
@@ -5520,9 +5506,6 @@ func (m *LongTaskMutation) ClearedFields() []string {
 	if m.FieldCleared(longtask.FieldDoneDateTime) {
 		fields = append(fields, longtask.FieldDoneDateTime)
 	}
-	if m.FieldCleared(longtask.FieldProgressTotal) {
-		fields = append(fields, longtask.FieldProgressTotal)
-	}
 	if m.FieldCleared(longtask.FieldProgressDone) {
 		fields = append(fields, longtask.FieldProgressDone)
 	}
@@ -5542,9 +5525,6 @@ func (m *LongTaskMutation) ClearField(name string) error {
 	switch name {
 	case longtask.FieldDoneDateTime:
 		m.ClearDoneDateTime()
-		return nil
-	case longtask.FieldProgressTotal:
-		m.ClearProgressTotal()
 		return nil
 	case longtask.FieldProgressDone:
 		m.ClearProgressDone()
@@ -6520,12 +6500,11 @@ type LongTaskProgressSubmissionMutation struct {
 	typ                       string
 	id                        *int
 	comments                  *string
-	progress_to_add           *int
-	addprogress_to_add        *int
+	progress_to_add           *float64
+	addprogress_to_add        *float64
 	progress_to_set           *float64
 	addprogress_to_set        *float64
-	progress_raw              *float64
-	addprogress_raw           *float64
+	progress_raw              *string
 	execution_date            *time.Time
 	clearedFields             map[string]struct{}
 	long_task_progress        *int
@@ -6676,13 +6655,13 @@ func (m *LongTaskProgressSubmissionMutation) ResetComments() {
 }
 
 // SetProgressToAdd sets the "progress_to_add" field.
-func (m *LongTaskProgressSubmissionMutation) SetProgressToAdd(i int) {
-	m.progress_to_add = &i
+func (m *LongTaskProgressSubmissionMutation) SetProgressToAdd(f float64) {
+	m.progress_to_add = &f
 	m.addprogress_to_add = nil
 }
 
 // ProgressToAdd returns the value of the "progress_to_add" field in the mutation.
-func (m *LongTaskProgressSubmissionMutation) ProgressToAdd() (r int, exists bool) {
+func (m *LongTaskProgressSubmissionMutation) ProgressToAdd() (r float64, exists bool) {
 	v := m.progress_to_add
 	if v == nil {
 		return
@@ -6693,7 +6672,7 @@ func (m *LongTaskProgressSubmissionMutation) ProgressToAdd() (r int, exists bool
 // OldProgressToAdd returns the old "progress_to_add" field's value of the LongTaskProgressSubmission entity.
 // If the LongTaskProgressSubmission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LongTaskProgressSubmissionMutation) OldProgressToAdd(ctx context.Context) (v *int, err error) {
+func (m *LongTaskProgressSubmissionMutation) OldProgressToAdd(ctx context.Context) (v *float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProgressToAdd is only allowed on UpdateOne operations")
 	}
@@ -6707,17 +6686,17 @@ func (m *LongTaskProgressSubmissionMutation) OldProgressToAdd(ctx context.Contex
 	return oldValue.ProgressToAdd, nil
 }
 
-// AddProgressToAdd adds i to the "progress_to_add" field.
-func (m *LongTaskProgressSubmissionMutation) AddProgressToAdd(i int) {
+// AddProgressToAdd adds f to the "progress_to_add" field.
+func (m *LongTaskProgressSubmissionMutation) AddProgressToAdd(f float64) {
 	if m.addprogress_to_add != nil {
-		*m.addprogress_to_add += i
+		*m.addprogress_to_add += f
 	} else {
-		m.addprogress_to_add = &i
+		m.addprogress_to_add = &f
 	}
 }
 
 // AddedProgressToAdd returns the value that was added to the "progress_to_add" field in this mutation.
-func (m *LongTaskProgressSubmissionMutation) AddedProgressToAdd() (r int, exists bool) {
+func (m *LongTaskProgressSubmissionMutation) AddedProgressToAdd() (r float64, exists bool) {
 	v := m.addprogress_to_add
 	if v == nil {
 		return
@@ -6816,13 +6795,12 @@ func (m *LongTaskProgressSubmissionMutation) ResetProgressToSet() {
 }
 
 // SetProgressRaw sets the "progress_raw" field.
-func (m *LongTaskProgressSubmissionMutation) SetProgressRaw(f float64) {
-	m.progress_raw = &f
-	m.addprogress_raw = nil
+func (m *LongTaskProgressSubmissionMutation) SetProgressRaw(s string) {
+	m.progress_raw = &s
 }
 
 // ProgressRaw returns the value of the "progress_raw" field in the mutation.
-func (m *LongTaskProgressSubmissionMutation) ProgressRaw() (r float64, exists bool) {
+func (m *LongTaskProgressSubmissionMutation) ProgressRaw() (r string, exists bool) {
 	v := m.progress_raw
 	if v == nil {
 		return
@@ -6833,7 +6811,7 @@ func (m *LongTaskProgressSubmissionMutation) ProgressRaw() (r float64, exists bo
 // OldProgressRaw returns the old "progress_raw" field's value of the LongTaskProgressSubmission entity.
 // If the LongTaskProgressSubmission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LongTaskProgressSubmissionMutation) OldProgressRaw(ctx context.Context) (v *float64, err error) {
+func (m *LongTaskProgressSubmissionMutation) OldProgressRaw(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProgressRaw is only allowed on UpdateOne operations")
 	}
@@ -6847,28 +6825,9 @@ func (m *LongTaskProgressSubmissionMutation) OldProgressRaw(ctx context.Context)
 	return oldValue.ProgressRaw, nil
 }
 
-// AddProgressRaw adds f to the "progress_raw" field.
-func (m *LongTaskProgressSubmissionMutation) AddProgressRaw(f float64) {
-	if m.addprogress_raw != nil {
-		*m.addprogress_raw += f
-	} else {
-		m.addprogress_raw = &f
-	}
-}
-
-// AddedProgressRaw returns the value that was added to the "progress_raw" field in this mutation.
-func (m *LongTaskProgressSubmissionMutation) AddedProgressRaw() (r float64, exists bool) {
-	v := m.addprogress_raw
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ClearProgressRaw clears the value of the "progress_raw" field.
 func (m *LongTaskProgressSubmissionMutation) ClearProgressRaw() {
 	m.progress_raw = nil
-	m.addprogress_raw = nil
 	m.clearedFields[longtaskprogresssubmission.FieldProgressRaw] = struct{}{}
 }
 
@@ -6881,7 +6840,6 @@ func (m *LongTaskProgressSubmissionMutation) ProgressRawCleared() bool {
 // ResetProgressRaw resets all changes to the "progress_raw" field.
 func (m *LongTaskProgressSubmissionMutation) ResetProgressRaw() {
 	m.progress_raw = nil
-	m.addprogress_raw = nil
 	delete(m.clearedFields, longtaskprogresssubmission.FieldProgressRaw)
 }
 
@@ -7095,7 +7053,7 @@ func (m *LongTaskProgressSubmissionMutation) SetField(name string, value ent.Val
 		m.SetComments(v)
 		return nil
 	case longtaskprogresssubmission.FieldProgressToAdd:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -7109,7 +7067,7 @@ func (m *LongTaskProgressSubmissionMutation) SetField(name string, value ent.Val
 		m.SetProgressToSet(v)
 		return nil
 	case longtaskprogresssubmission.FieldProgressRaw:
-		v, ok := value.(float64)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -7143,9 +7101,6 @@ func (m *LongTaskProgressSubmissionMutation) AddedFields() []string {
 	if m.addprogress_to_set != nil {
 		fields = append(fields, longtaskprogresssubmission.FieldProgressToSet)
 	}
-	if m.addprogress_raw != nil {
-		fields = append(fields, longtaskprogresssubmission.FieldProgressRaw)
-	}
 	return fields
 }
 
@@ -7158,8 +7113,6 @@ func (m *LongTaskProgressSubmissionMutation) AddedField(name string) (ent.Value,
 		return m.AddedProgressToAdd()
 	case longtaskprogresssubmission.FieldProgressToSet:
 		return m.AddedProgressToSet()
-	case longtaskprogresssubmission.FieldProgressRaw:
-		return m.AddedProgressRaw()
 	}
 	return nil, false
 }
@@ -7170,7 +7123,7 @@ func (m *LongTaskProgressSubmissionMutation) AddedField(name string) (ent.Value,
 func (m *LongTaskProgressSubmissionMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case longtaskprogresssubmission.FieldProgressToAdd:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -7182,13 +7135,6 @@ func (m *LongTaskProgressSubmissionMutation) AddField(name string, value ent.Val
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddProgressToSet(v)
-		return nil
-	case longtaskprogresssubmission.FieldProgressRaw:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddProgressRaw(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LongTaskProgressSubmission numeric field %s", name)

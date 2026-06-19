@@ -28,13 +28,13 @@ func (_c *LongTaskProgressSubmissionCreate) SetComments(v string) *LongTaskProgr
 }
 
 // SetProgressToAdd sets the "progress_to_add" field.
-func (_c *LongTaskProgressSubmissionCreate) SetProgressToAdd(v int) *LongTaskProgressSubmissionCreate {
+func (_c *LongTaskProgressSubmissionCreate) SetProgressToAdd(v float64) *LongTaskProgressSubmissionCreate {
 	_c.mutation.SetProgressToAdd(v)
 	return _c
 }
 
 // SetNillableProgressToAdd sets the "progress_to_add" field if the given value is not nil.
-func (_c *LongTaskProgressSubmissionCreate) SetNillableProgressToAdd(v *int) *LongTaskProgressSubmissionCreate {
+func (_c *LongTaskProgressSubmissionCreate) SetNillableProgressToAdd(v *float64) *LongTaskProgressSubmissionCreate {
 	if v != nil {
 		_c.SetProgressToAdd(*v)
 	}
@@ -56,13 +56,13 @@ func (_c *LongTaskProgressSubmissionCreate) SetNillableProgressToSet(v *float64)
 }
 
 // SetProgressRaw sets the "progress_raw" field.
-func (_c *LongTaskProgressSubmissionCreate) SetProgressRaw(v float64) *LongTaskProgressSubmissionCreate {
+func (_c *LongTaskProgressSubmissionCreate) SetProgressRaw(v string) *LongTaskProgressSubmissionCreate {
 	_c.mutation.SetProgressRaw(v)
 	return _c
 }
 
 // SetNillableProgressRaw sets the "progress_raw" field if the given value is not nil.
-func (_c *LongTaskProgressSubmissionCreate) SetNillableProgressRaw(v *float64) *LongTaskProgressSubmissionCreate {
+func (_c *LongTaskProgressSubmissionCreate) SetNillableProgressRaw(v *string) *LongTaskProgressSubmissionCreate {
 	if v != nil {
 		_c.SetProgressRaw(*v)
 	}
@@ -72,6 +72,14 @@ func (_c *LongTaskProgressSubmissionCreate) SetNillableProgressRaw(v *float64) *
 // SetExecutionDate sets the "execution_date" field.
 func (_c *LongTaskProgressSubmissionCreate) SetExecutionDate(v time.Time) *LongTaskProgressSubmissionCreate {
 	_c.mutation.SetExecutionDate(v)
+	return _c
+}
+
+// SetNillableExecutionDate sets the "execution_date" field if the given value is not nil.
+func (_c *LongTaskProgressSubmissionCreate) SetNillableExecutionDate(v *time.Time) *LongTaskProgressSubmissionCreate {
+	if v != nil {
+		_c.SetExecutionDate(*v)
+	}
 	return _c
 }
 
@@ -99,6 +107,7 @@ func (_c *LongTaskProgressSubmissionCreate) Mutation() *LongTaskProgressSubmissi
 
 // Save creates the LongTaskProgressSubmission in the database.
 func (_c *LongTaskProgressSubmissionCreate) Save(ctx context.Context) (*LongTaskProgressSubmission, error) {
+	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -121,6 +130,14 @@ func (_c *LongTaskProgressSubmissionCreate) Exec(ctx context.Context) error {
 func (_c *LongTaskProgressSubmissionCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_c *LongTaskProgressSubmissionCreate) defaults() {
+	if _, ok := _c.mutation.ExecutionDate(); !ok {
+		v := longtaskprogresssubmission.DefaultExecutionDate
+		_c.mutation.SetExecutionDate(v)
 	}
 }
 
@@ -190,7 +207,7 @@ func (_c *LongTaskProgressSubmissionCreate) createSpec() (*LongTaskProgressSubmi
 		_node.Comments = value
 	}
 	if value, ok := _c.mutation.ProgressToAdd(); ok {
-		_spec.SetField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeInt, value)
+		_spec.SetField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeFloat64, value)
 		_node.ProgressToAdd = &value
 	}
 	if value, ok := _c.mutation.ProgressToSet(); ok {
@@ -198,7 +215,7 @@ func (_c *LongTaskProgressSubmissionCreate) createSpec() (*LongTaskProgressSubmi
 		_node.ProgressToSet = &value
 	}
 	if value, ok := _c.mutation.ProgressRaw(); ok {
-		_spec.SetField(longtaskprogresssubmission.FieldProgressRaw, field.TypeFloat64, value)
+		_spec.SetField(longtaskprogresssubmission.FieldProgressRaw, field.TypeString, value)
 		_node.ProgressRaw = &value
 	}
 	if value, ok := _c.mutation.ExecutionDate(); ok {
@@ -243,6 +260,7 @@ func (_c *LongTaskProgressSubmissionCreateBulk) Save(ctx context.Context) ([]*Lo
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*LongTaskProgressSubmissionMutation)
 				if !ok {

@@ -27,7 +27,7 @@ func (s *LongTaskProgressesService) GetLongTaskProgresses(
 	ctx context.Context,
 	longTaskID int,
 ) ([]*ent.LongTaskProgress, error) {
-	return s.longTasksProgressesRepository.GetLongTaskProgressesByIDs(ctx, []int{longTaskID})
+	return s.longTasksProgressesRepository.GetLongTaskProgressesByLongTaskID(ctx, longTaskID)
 }
 
 func (s *LongTaskProgressesService) AddLongTaskProgressSubmission(
@@ -36,7 +36,7 @@ func (s *LongTaskProgressesService) AddLongTaskProgressSubmission(
 	comments *string,
 	progressToAdd *float64,
 	progressToSet *float64,
-	progressRaw *float64,
+	progressRaw *string,
 	executionDate *time.Time,
 ) (*ent.LongTaskProgressSubmission, error) {
 	execDate := time.Now()
@@ -44,21 +44,44 @@ func (s *LongTaskProgressesService) AddLongTaskProgressSubmission(
 		execDate = *executionDate
 	}
 
-	var progressToAddInt *int
-	if progressToAdd != nil {
-		v := int(*progressToAdd)
-		progressToAddInt = &v
-	}
-
-	return s.longTasksProgressSubmissionsRepository.AddLongTaskProgressSubmission(
+	submission, err := s.longTasksProgressSubmissionsRepository.AddLongTaskProgressSubmission(
 		ctx,
 		longTaskProgressID,
 		comments,
-		progressToAddInt,
+		progressToAdd,
 		progressToSet,
 		progressRaw,
 		execDate,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	if progressToAdd == nil && progressToSet == nil {
+		return submission, nil
+	}
+
+	progress, err := s.longTasksProgressesRepository.GetLongTaskProgressById(ctx, longTaskProgressID)
+	if err != nil {
+		return nil, err
+	}
+
+	if progress.Total == nil || progress.Value == nil {
+		return submission, nil
+	}
+
+	newValue := *progress.Value
+	if progressToSet != nil {
+		newValue = *progressToSet
+	} else if progressToAdd != nil {
+		newValue += *progressToAdd
+	}
+
+	if _, err := s.longTasksProgressesRepository.UpdateLongTaskProgressValue(ctx, longTaskProgressID, newValue); err != nil {
+		return nil, err
+	}
+
+	return submission, nil
 }
 
 func (s *LongTaskProgressesService) AddLongTaskProgress(
@@ -70,6 +93,13 @@ func (s *LongTaskProgressesService) AddLongTaskProgress(
 	units *string,
 ) (*ent.LongTaskProgress, error) {
 	return s.longTasksProgressesRepository.AddLongTaskProgress(ctx, name, longTaskID, value, total, units)
+}
+
+func (s *LongTaskProgressesService) GetLongTaskProgressSubmissions(
+	ctx context.Context,
+	longTaskProgressID int,
+) ([]*models.LongTaskProgressSubmission, error) {
+	return s.longTasksProgressSubmissionsRepository.GetLongTaskProgressSubmissionsByLongTaskProgressID(ctx, longTaskProgressID)
 }
 
 func (s *LongTaskProgressesService) GetLongTaskProgressByID(ctx context.Context, id int) (*models.LongTaskProgressFull, error) {

@@ -3,6 +3,8 @@
 package longtaskprogresssubmission
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -61,6 +63,8 @@ func ValidColumn(column string) bool {
 var (
 	// CommentsValidator is a validator for the "comments" field. It is called by the builders before save.
 	CommentsValidator func(string) error
+	// DefaultExecutionDate holds the default value on creation for the "execution_date" field.
+	DefaultExecutionDate time.Time
 	// LongTaskProgressIDValidator is a validator for the "long_task_progress_id" field. It is called by the builders before save.
 	LongTaskProgressIDValidator func(int) error
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.

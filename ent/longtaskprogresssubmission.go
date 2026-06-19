@@ -21,11 +21,11 @@ type LongTaskProgressSubmission struct {
 	// Comments holds the value of the "comments" field.
 	Comments string `json:"comments,omitempty"`
 	// ProgressToAdd holds the value of the "progress_to_add" field.
-	ProgressToAdd *int `json:"progress_to_add,omitempty"`
+	ProgressToAdd *float64 `json:"progress_to_add,omitempty"`
 	// ProgressToSet holds the value of the "progress_to_set" field.
 	ProgressToSet *float64 `json:"progress_to_set,omitempty"`
 	// ProgressRaw holds the value of the "progress_raw" field.
-	ProgressRaw *float64 `json:"progress_raw,omitempty"`
+	ProgressRaw *string `json:"progress_raw,omitempty"`
 	// ExecutionDate holds the value of the "execution_date" field.
 	ExecutionDate time.Time `json:"execution_date,omitempty"`
 	// LongTaskProgressID holds the value of the "long_task_progress_id" field.
@@ -61,11 +61,11 @@ func (*LongTaskProgressSubmission) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case longtaskprogresssubmission.FieldProgressToSet, longtaskprogresssubmission.FieldProgressRaw:
+		case longtaskprogresssubmission.FieldProgressToAdd, longtaskprogresssubmission.FieldProgressToSet:
 			values[i] = new(sql.NullFloat64)
-		case longtaskprogresssubmission.FieldID, longtaskprogresssubmission.FieldProgressToAdd, longtaskprogresssubmission.FieldLongTaskProgressID:
+		case longtaskprogresssubmission.FieldID, longtaskprogresssubmission.FieldLongTaskProgressID:
 			values[i] = new(sql.NullInt64)
-		case longtaskprogresssubmission.FieldComments:
+		case longtaskprogresssubmission.FieldComments, longtaskprogresssubmission.FieldProgressRaw:
 			values[i] = new(sql.NullString)
 		case longtaskprogresssubmission.FieldExecutionDate:
 			values[i] = new(sql.NullTime)
@@ -97,11 +97,11 @@ func (_m *LongTaskProgressSubmission) assignValues(columns []string, values []an
 				_m.Comments = value.String
 			}
 		case longtaskprogresssubmission.FieldProgressToAdd:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field progress_to_add", values[i])
 			} else if value.Valid {
-				_m.ProgressToAdd = new(int)
-				*_m.ProgressToAdd = int(value.Int64)
+				_m.ProgressToAdd = new(float64)
+				*_m.ProgressToAdd = value.Float64
 			}
 		case longtaskprogresssubmission.FieldProgressToSet:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -111,11 +111,11 @@ func (_m *LongTaskProgressSubmission) assignValues(columns []string, values []an
 				*_m.ProgressToSet = value.Float64
 			}
 		case longtaskprogresssubmission.FieldProgressRaw:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field progress_raw", values[i])
 			} else if value.Valid {
-				_m.ProgressRaw = new(float64)
-				*_m.ProgressRaw = value.Float64
+				_m.ProgressRaw = new(string)
+				*_m.ProgressRaw = value.String
 			}
 		case longtaskprogresssubmission.FieldExecutionDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -185,7 +185,7 @@ func (_m *LongTaskProgressSubmission) String() string {
 	builder.WriteString(", ")
 	if v := _m.ProgressRaw; v != nil {
 		builder.WriteString("progress_raw=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("execution_date=")

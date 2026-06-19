@@ -33,6 +33,14 @@ func (r *LongTasksRepository) GetLongTasks(ctx context.Context) ([]*ent.LongTask
 		All(ctx)
 }
 
+// GetLongTasks returns all long tasks, newest first (by id).
+func (r *LongTasksRepository) GetLongTasksWithProgresses(ctx context.Context) ([]*ent.LongTask, error) {
+	return r.client.LongTask.Query().
+		WithProgresses().
+		Order(longtask.ByID(sql.OrderDesc())).
+		All(ctx)
+}
+
 func (r *LongTasksRepository) AddLongTask(
 	ctx context.Context,
 	description string,

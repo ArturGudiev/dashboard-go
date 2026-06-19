@@ -126,12 +126,6 @@ func (_u *LongTaskUpdate) AddProgressTotal(v float64) *LongTaskUpdate {
 	return _u
 }
 
-// ClearProgressTotal clears the value of the "progress_total" field.
-func (_u *LongTaskUpdate) ClearProgressTotal() *LongTaskUpdate {
-	_u.mutation.ClearProgressTotal()
-	return _u
-}
-
 // SetProgressDone sets the "progress_done" field.
 func (_u *LongTaskUpdate) SetProgressDone(v float64) *LongTaskUpdate {
 	_u.mutation.ResetProgressDone()
@@ -327,9 +321,6 @@ func (_u *LongTaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedProgressTotal(); ok {
 		_spec.AddField(longtask.FieldProgressTotal, field.TypeFloat64, value)
-	}
-	if _u.mutation.ProgressTotalCleared() {
-		_spec.ClearField(longtask.FieldProgressTotal, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.ProgressDone(); ok {
 		_spec.SetField(longtask.FieldProgressDone, field.TypeFloat64, value)
@@ -545,12 +536,6 @@ func (_u *LongTaskUpdateOne) SetNillableProgressTotal(v *float64) *LongTaskUpdat
 // AddProgressTotal adds value to the "progress_total" field.
 func (_u *LongTaskUpdateOne) AddProgressTotal(v float64) *LongTaskUpdateOne {
 	_u.mutation.AddProgressTotal(v)
-	return _u
-}
-
-// ClearProgressTotal clears the value of the "progress_total" field.
-func (_u *LongTaskUpdateOne) ClearProgressTotal() *LongTaskUpdateOne {
-	_u.mutation.ClearProgressTotal()
 	return _u
 }
 
@@ -779,9 +764,6 @@ func (_u *LongTaskUpdateOne) sqlSave(ctx context.Context) (_node *LongTask, err 
 	}
 	if value, ok := _u.mutation.AddedProgressTotal(); ok {
 		_spec.AddField(longtask.FieldProgressTotal, field.TypeFloat64, value)
-	}
-	if _u.mutation.ProgressTotalCleared() {
-		_spec.ClearField(longtask.FieldProgressTotal, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.ProgressDone(); ok {
 		_spec.SetField(longtask.FieldProgressDone, field.TypeFloat64, value)

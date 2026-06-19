@@ -27,7 +27,7 @@ func (LongTaskProgressSubmission) Fields() []ent.Field {
 		field.Float("progress_to_set").
 			Optional().
 			Nillable(),
-		field.Float("progress_raw").
+		field.String("progress_raw").
 			Optional().
 			Nillable(),
 		field.Time("execution_date").

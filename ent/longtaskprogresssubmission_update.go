@@ -44,14 +44,14 @@ func (_u *LongTaskProgressSubmissionUpdate) SetNillableComments(v *string) *Long
 }
 
 // SetProgressToAdd sets the "progress_to_add" field.
-func (_u *LongTaskProgressSubmissionUpdate) SetProgressToAdd(v int) *LongTaskProgressSubmissionUpdate {
+func (_u *LongTaskProgressSubmissionUpdate) SetProgressToAdd(v float64) *LongTaskProgressSubmissionUpdate {
 	_u.mutation.ResetProgressToAdd()
 	_u.mutation.SetProgressToAdd(v)
 	return _u
 }
 
 // SetNillableProgressToAdd sets the "progress_to_add" field if the given value is not nil.
-func (_u *LongTaskProgressSubmissionUpdate) SetNillableProgressToAdd(v *int) *LongTaskProgressSubmissionUpdate {
+func (_u *LongTaskProgressSubmissionUpdate) SetNillableProgressToAdd(v *float64) *LongTaskProgressSubmissionUpdate {
 	if v != nil {
 		_u.SetProgressToAdd(*v)
 	}
@@ -59,7 +59,7 @@ func (_u *LongTaskProgressSubmissionUpdate) SetNillableProgressToAdd(v *int) *Lo
 }
 
 // AddProgressToAdd adds value to the "progress_to_add" field.
-func (_u *LongTaskProgressSubmissionUpdate) AddProgressToAdd(v int) *LongTaskProgressSubmissionUpdate {
+func (_u *LongTaskProgressSubmissionUpdate) AddProgressToAdd(v float64) *LongTaskProgressSubmissionUpdate {
 	_u.mutation.AddProgressToAdd(v)
 	return _u
 }
@@ -98,23 +98,16 @@ func (_u *LongTaskProgressSubmissionUpdate) ClearProgressToSet() *LongTaskProgre
 }
 
 // SetProgressRaw sets the "progress_raw" field.
-func (_u *LongTaskProgressSubmissionUpdate) SetProgressRaw(v float64) *LongTaskProgressSubmissionUpdate {
-	_u.mutation.ResetProgressRaw()
+func (_u *LongTaskProgressSubmissionUpdate) SetProgressRaw(v string) *LongTaskProgressSubmissionUpdate {
 	_u.mutation.SetProgressRaw(v)
 	return _u
 }
 
 // SetNillableProgressRaw sets the "progress_raw" field if the given value is not nil.
-func (_u *LongTaskProgressSubmissionUpdate) SetNillableProgressRaw(v *float64) *LongTaskProgressSubmissionUpdate {
+func (_u *LongTaskProgressSubmissionUpdate) SetNillableProgressRaw(v *string) *LongTaskProgressSubmissionUpdate {
 	if v != nil {
 		_u.SetProgressRaw(*v)
 	}
-	return _u
-}
-
-// AddProgressRaw adds value to the "progress_raw" field.
-func (_u *LongTaskProgressSubmissionUpdate) AddProgressRaw(v float64) *LongTaskProgressSubmissionUpdate {
-	_u.mutation.AddProgressRaw(v)
 	return _u
 }
 
@@ -229,13 +222,13 @@ func (_u *LongTaskProgressSubmissionUpdate) sqlSave(ctx context.Context) (_node 
 		_spec.SetField(longtaskprogresssubmission.FieldComments, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ProgressToAdd(); ok {
-		_spec.SetField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeInt, value)
+		_spec.SetField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AddedProgressToAdd(); ok {
-		_spec.AddField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeInt, value)
+		_spec.AddField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeFloat64, value)
 	}
 	if _u.mutation.ProgressToAddCleared() {
-		_spec.ClearField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeInt)
+		_spec.ClearField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.ProgressToSet(); ok {
 		_spec.SetField(longtaskprogresssubmission.FieldProgressToSet, field.TypeFloat64, value)
@@ -247,13 +240,10 @@ func (_u *LongTaskProgressSubmissionUpdate) sqlSave(ctx context.Context) (_node 
 		_spec.ClearField(longtaskprogresssubmission.FieldProgressToSet, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.ProgressRaw(); ok {
-		_spec.SetField(longtaskprogresssubmission.FieldProgressRaw, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.AddedProgressRaw(); ok {
-		_spec.AddField(longtaskprogresssubmission.FieldProgressRaw, field.TypeFloat64, value)
+		_spec.SetField(longtaskprogresssubmission.FieldProgressRaw, field.TypeString, value)
 	}
 	if _u.mutation.ProgressRawCleared() {
-		_spec.ClearField(longtaskprogresssubmission.FieldProgressRaw, field.TypeFloat64)
+		_spec.ClearField(longtaskprogresssubmission.FieldProgressRaw, field.TypeString)
 	}
 	if value, ok := _u.mutation.ExecutionDate(); ok {
 		_spec.SetField(longtaskprogresssubmission.FieldExecutionDate, field.TypeTime, value)
@@ -322,14 +312,14 @@ func (_u *LongTaskProgressSubmissionUpdateOne) SetNillableComments(v *string) *L
 }
 
 // SetProgressToAdd sets the "progress_to_add" field.
-func (_u *LongTaskProgressSubmissionUpdateOne) SetProgressToAdd(v int) *LongTaskProgressSubmissionUpdateOne {
+func (_u *LongTaskProgressSubmissionUpdateOne) SetProgressToAdd(v float64) *LongTaskProgressSubmissionUpdateOne {
 	_u.mutation.ResetProgressToAdd()
 	_u.mutation.SetProgressToAdd(v)
 	return _u
 }
 
 // SetNillableProgressToAdd sets the "progress_to_add" field if the given value is not nil.
-func (_u *LongTaskProgressSubmissionUpdateOne) SetNillableProgressToAdd(v *int) *LongTaskProgressSubmissionUpdateOne {
+func (_u *LongTaskProgressSubmissionUpdateOne) SetNillableProgressToAdd(v *float64) *LongTaskProgressSubmissionUpdateOne {
 	if v != nil {
 		_u.SetProgressToAdd(*v)
 	}
@@ -337,7 +327,7 @@ func (_u *LongTaskProgressSubmissionUpdateOne) SetNillableProgressToAdd(v *int) 
 }
 
 // AddProgressToAdd adds value to the "progress_to_add" field.
-func (_u *LongTaskProgressSubmissionUpdateOne) AddProgressToAdd(v int) *LongTaskProgressSubmissionUpdateOne {
+func (_u *LongTaskProgressSubmissionUpdateOne) AddProgressToAdd(v float64) *LongTaskProgressSubmissionUpdateOne {
 	_u.mutation.AddProgressToAdd(v)
 	return _u
 }
@@ -376,23 +366,16 @@ func (_u *LongTaskProgressSubmissionUpdateOne) ClearProgressToSet() *LongTaskPro
 }
 
 // SetProgressRaw sets the "progress_raw" field.
-func (_u *LongTaskProgressSubmissionUpdateOne) SetProgressRaw(v float64) *LongTaskProgressSubmissionUpdateOne {
-	_u.mutation.ResetProgressRaw()
+func (_u *LongTaskProgressSubmissionUpdateOne) SetProgressRaw(v string) *LongTaskProgressSubmissionUpdateOne {
 	_u.mutation.SetProgressRaw(v)
 	return _u
 }
 
 // SetNillableProgressRaw sets the "progress_raw" field if the given value is not nil.
-func (_u *LongTaskProgressSubmissionUpdateOne) SetNillableProgressRaw(v *float64) *LongTaskProgressSubmissionUpdateOne {
+func (_u *LongTaskProgressSubmissionUpdateOne) SetNillableProgressRaw(v *string) *LongTaskProgressSubmissionUpdateOne {
 	if v != nil {
 		_u.SetProgressRaw(*v)
 	}
-	return _u
-}
-
-// AddProgressRaw adds value to the "progress_raw" field.
-func (_u *LongTaskProgressSubmissionUpdateOne) AddProgressRaw(v float64) *LongTaskProgressSubmissionUpdateOne {
-	_u.mutation.AddProgressRaw(v)
 	return _u
 }
 
@@ -537,13 +520,13 @@ func (_u *LongTaskProgressSubmissionUpdateOne) sqlSave(ctx context.Context) (_no
 		_spec.SetField(longtaskprogresssubmission.FieldComments, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ProgressToAdd(); ok {
-		_spec.SetField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeInt, value)
+		_spec.SetField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AddedProgressToAdd(); ok {
-		_spec.AddField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeInt, value)
+		_spec.AddField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeFloat64, value)
 	}
 	if _u.mutation.ProgressToAddCleared() {
-		_spec.ClearField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeInt)
+		_spec.ClearField(longtaskprogresssubmission.FieldProgressToAdd, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.ProgressToSet(); ok {
 		_spec.SetField(longtaskprogresssubmission.FieldProgressToSet, field.TypeFloat64, value)
@@ -555,13 +538,10 @@ func (_u *LongTaskProgressSubmissionUpdateOne) sqlSave(ctx context.Context) (_no
 		_spec.ClearField(longtaskprogresssubmission.FieldProgressToSet, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.ProgressRaw(); ok {
-		_spec.SetField(longtaskprogresssubmission.FieldProgressRaw, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.AddedProgressRaw(); ok {
-		_spec.AddField(longtaskprogresssubmission.FieldProgressRaw, field.TypeFloat64, value)
+		_spec.SetField(longtaskprogresssubmission.FieldProgressRaw, field.TypeString, value)
 	}
 	if _u.mutation.ProgressRawCleared() {
-		_spec.ClearField(longtaskprogresssubmission.FieldProgressRaw, field.TypeFloat64)
+		_spec.ClearField(longtaskprogresssubmission.FieldProgressRaw, field.TypeString)
 	}
 	if value, ok := _u.mutation.ExecutionDate(); ok {
 		_spec.SetField(longtaskprogresssubmission.FieldExecutionDate, field.TypeTime, value)

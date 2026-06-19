@@ -61,7 +61,7 @@ func Comments(v string) predicate.LongTaskProgressSubmission {
 }
 
 // ProgressToAdd applies equality check predicate on the "progress_to_add" field. It's identical to ProgressToAddEQ.
-func ProgressToAdd(v int) predicate.LongTaskProgressSubmission {
+func ProgressToAdd(v float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldEQ(FieldProgressToAdd, v))
 }
 
@@ -71,7 +71,7 @@ func ProgressToSet(v float64) predicate.LongTaskProgressSubmission {
 }
 
 // ProgressRaw applies equality check predicate on the "progress_raw" field. It's identical to ProgressRawEQ.
-func ProgressRaw(v float64) predicate.LongTaskProgressSubmission {
+func ProgressRaw(v string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldEQ(FieldProgressRaw, v))
 }
 
@@ -151,42 +151,42 @@ func CommentsContainsFold(v string) predicate.LongTaskProgressSubmission {
 }
 
 // ProgressToAddEQ applies the EQ predicate on the "progress_to_add" field.
-func ProgressToAddEQ(v int) predicate.LongTaskProgressSubmission {
+func ProgressToAddEQ(v float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldEQ(FieldProgressToAdd, v))
 }
 
 // ProgressToAddNEQ applies the NEQ predicate on the "progress_to_add" field.
-func ProgressToAddNEQ(v int) predicate.LongTaskProgressSubmission {
+func ProgressToAddNEQ(v float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldNEQ(FieldProgressToAdd, v))
 }
 
 // ProgressToAddIn applies the In predicate on the "progress_to_add" field.
-func ProgressToAddIn(vs ...int) predicate.LongTaskProgressSubmission {
+func ProgressToAddIn(vs ...float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldIn(FieldProgressToAdd, vs...))
 }
 
 // ProgressToAddNotIn applies the NotIn predicate on the "progress_to_add" field.
-func ProgressToAddNotIn(vs ...int) predicate.LongTaskProgressSubmission {
+func ProgressToAddNotIn(vs ...float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldNotIn(FieldProgressToAdd, vs...))
 }
 
 // ProgressToAddGT applies the GT predicate on the "progress_to_add" field.
-func ProgressToAddGT(v int) predicate.LongTaskProgressSubmission {
+func ProgressToAddGT(v float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldGT(FieldProgressToAdd, v))
 }
 
 // ProgressToAddGTE applies the GTE predicate on the "progress_to_add" field.
-func ProgressToAddGTE(v int) predicate.LongTaskProgressSubmission {
+func ProgressToAddGTE(v float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldGTE(FieldProgressToAdd, v))
 }
 
 // ProgressToAddLT applies the LT predicate on the "progress_to_add" field.
-func ProgressToAddLT(v int) predicate.LongTaskProgressSubmission {
+func ProgressToAddLT(v float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldLT(FieldProgressToAdd, v))
 }
 
 // ProgressToAddLTE applies the LTE predicate on the "progress_to_add" field.
-func ProgressToAddLTE(v int) predicate.LongTaskProgressSubmission {
+func ProgressToAddLTE(v float64) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldLTE(FieldProgressToAdd, v))
 }
 
@@ -251,43 +251,58 @@ func ProgressToSetNotNil() predicate.LongTaskProgressSubmission {
 }
 
 // ProgressRawEQ applies the EQ predicate on the "progress_raw" field.
-func ProgressRawEQ(v float64) predicate.LongTaskProgressSubmission {
+func ProgressRawEQ(v string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldEQ(FieldProgressRaw, v))
 }
 
 // ProgressRawNEQ applies the NEQ predicate on the "progress_raw" field.
-func ProgressRawNEQ(v float64) predicate.LongTaskProgressSubmission {
+func ProgressRawNEQ(v string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldNEQ(FieldProgressRaw, v))
 }
 
 // ProgressRawIn applies the In predicate on the "progress_raw" field.
-func ProgressRawIn(vs ...float64) predicate.LongTaskProgressSubmission {
+func ProgressRawIn(vs ...string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldIn(FieldProgressRaw, vs...))
 }
 
 // ProgressRawNotIn applies the NotIn predicate on the "progress_raw" field.
-func ProgressRawNotIn(vs ...float64) predicate.LongTaskProgressSubmission {
+func ProgressRawNotIn(vs ...string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldNotIn(FieldProgressRaw, vs...))
 }
 
 // ProgressRawGT applies the GT predicate on the "progress_raw" field.
-func ProgressRawGT(v float64) predicate.LongTaskProgressSubmission {
+func ProgressRawGT(v string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldGT(FieldProgressRaw, v))
 }
 
 // ProgressRawGTE applies the GTE predicate on the "progress_raw" field.
-func ProgressRawGTE(v float64) predicate.LongTaskProgressSubmission {
+func ProgressRawGTE(v string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldGTE(FieldProgressRaw, v))
 }
 
 // ProgressRawLT applies the LT predicate on the "progress_raw" field.
-func ProgressRawLT(v float64) predicate.LongTaskProgressSubmission {
+func ProgressRawLT(v string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldLT(FieldProgressRaw, v))
 }
 
 // ProgressRawLTE applies the LTE predicate on the "progress_raw" field.
-func ProgressRawLTE(v float64) predicate.LongTaskProgressSubmission {
+func ProgressRawLTE(v string) predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldLTE(FieldProgressRaw, v))
+}
+
+// ProgressRawContains applies the Contains predicate on the "progress_raw" field.
+func ProgressRawContains(v string) predicate.LongTaskProgressSubmission {
+	return predicate.LongTaskProgressSubmission(sql.FieldContains(FieldProgressRaw, v))
+}
+
+// ProgressRawHasPrefix applies the HasPrefix predicate on the "progress_raw" field.
+func ProgressRawHasPrefix(v string) predicate.LongTaskProgressSubmission {
+	return predicate.LongTaskProgressSubmission(sql.FieldHasPrefix(FieldProgressRaw, v))
+}
+
+// ProgressRawHasSuffix applies the HasSuffix predicate on the "progress_raw" field.
+func ProgressRawHasSuffix(v string) predicate.LongTaskProgressSubmission {
+	return predicate.LongTaskProgressSubmission(sql.FieldHasSuffix(FieldProgressRaw, v))
 }
 
 // ProgressRawIsNil applies the IsNil predicate on the "progress_raw" field.
@@ -298,6 +313,16 @@ func ProgressRawIsNil() predicate.LongTaskProgressSubmission {
 // ProgressRawNotNil applies the NotNil predicate on the "progress_raw" field.
 func ProgressRawNotNil() predicate.LongTaskProgressSubmission {
 	return predicate.LongTaskProgressSubmission(sql.FieldNotNull(FieldProgressRaw))
+}
+
+// ProgressRawEqualFold applies the EqualFold predicate on the "progress_raw" field.
+func ProgressRawEqualFold(v string) predicate.LongTaskProgressSubmission {
+	return predicate.LongTaskProgressSubmission(sql.FieldEqualFold(FieldProgressRaw, v))
+}
+
+// ProgressRawContainsFold applies the ContainsFold predicate on the "progress_raw" field.
+func ProgressRawContainsFold(v string) predicate.LongTaskProgressSubmission {
+	return predicate.LongTaskProgressSubmission(sql.FieldContainsFold(FieldProgressRaw, v))
 }
 
 // ExecutionDateEQ applies the EQ predicate on the "execution_date" field.

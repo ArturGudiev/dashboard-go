@@ -172,10 +172,10 @@ type NewLongTaskRequest struct {
 }
 
 type NewLongTaskProgressRequest struct {
-	Name string `json:"name" binding:"required"`
+	Name  string   `json:"name" binding:"required"`
 	Value *float64 `json:"value"`
 	Total *float64 `json:"total"`
-	Units *string `json:"units"`
+	Units *string  `json:"units"`
 }
 
 // field.String("name").
@@ -205,27 +205,26 @@ type AddLongTaskSubmissionRequest struct {
 }
 
 type AddLongTaskProgressRequest struct {
-	Name          string   `json:"name"`
-	Value         *float64 `json:"value"`
-	Total         *float64 `json:"total"`
-	Units         *string  `json:"units"`
+	Name  string   `json:"name"`
+	Value *float64 `json:"value"`
+	Total *float64 `json:"total"`
+	Units *string  `json:"units"`
 }
 
 type AddLongTaskProgressSubmissionRequest struct {
-	Comments      *string  `json:"comments"`
-	ProgressToAdd *float64 `json:"progressToAdd"`
-	ProgressToSet *float64 `json:"progressToSet"`
-	ProgressRaw   *float64 `json:"progressRaw"`
+	Comments      *string    `json:"comments"`
+	ProgressToAdd *float64   `json:"progressToAdd"`
+	ProgressToSet *float64   `json:"progressToSet"`
+	ProgressRaw   *string    `json:"progressRaw"`
 	ExecutionDate *time.Time `json:"executionDate"`
 }
-
 
 type DirectionsQuery struct {
 	Open *bool `form:"open"`
 }
 
 type NewDirectionRequest struct {
-	Direction models.DirectionShort         `json:"direction"`
+	Direction models.DirectionShort        `json:"direction"`
 	Parent    *models.ContainerDescription `json:"parent,omitempty"`
 }
 

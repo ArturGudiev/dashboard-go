@@ -82,6 +82,8 @@ var (
 	DefaultDone bool
 	// DefaultNotes holds the default value on creation for the "notes" field.
 	DefaultNotes string
+	// DefaultProgressTotal holds the default value on creation for the "progress_total" field.
+	DefaultProgressTotal float64
 	// DefaultProgressUnits holds the default value on creation for the "progress_units" field.
 	DefaultProgressUnits string
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.

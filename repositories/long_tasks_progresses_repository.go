@@ -21,12 +21,18 @@ func (r *LongTasksProgressesRepository) GetLongTaskProgressById(ctx context.Cont
 }
 
 
-// GetLongTasks returns all long tasks, newest first (by id).
 func (r *LongTasksProgressesRepository) GetLongTaskProgressesByIDs(ctx context.Context, ids []int) ([]*ent.LongTaskProgress, error) {
 	return r.client.LongTaskProgress.Query().
 		Where(longtaskprogress.IDIn(ids...)).
-		Order(longtaskprogress.ByLongTaskID(sql.OrderDesc())).
-		All(ctx)	
+		Order(longtaskprogress.ByID(sql.OrderDesc())).
+		All(ctx)
+}
+
+func (r *LongTasksProgressesRepository) GetLongTaskProgressesByLongTaskID(ctx context.Context, longTaskID int) ([]*ent.LongTaskProgress, error) {
+	return r.client.LongTaskProgress.Query().
+		Where(longtaskprogress.LongTaskIDEQ(longTaskID)).
+		Order(longtaskprogress.ByID(sql.OrderDesc())).
+		All(ctx)
 }
 
 func (r *LongTasksProgressesRepository) AddLongTaskProgress(
@@ -54,15 +60,14 @@ func (r *LongTasksProgressesRepository) AddLongTaskProgress(
 	return newTask.Save(ctx)
 }
 
-// UpdateLongTaskProgressDoneAndDone updates progress_done and done (and done_date_time).
-func (r *LongTasksRepository) UpdateLongTaskProgressValue(
+// UpdateLongTaskProgressValue updates the current value on a long task progress record.
+func (r *LongTasksProgressesRepository) UpdateLongTaskProgressValue(
 	ctx context.Context,
 	id int,
 	value float64,
 ) (*ent.LongTaskProgress, error) {
-	updateBuilder := r.client.LongTaskProgress.UpdateOneID(id).
-		SetValue(value)
-
-	return updateBuilder.Save(ctx)
+	return r.client.LongTaskProgress.UpdateOneID(id).
+		SetValue(value).
+		Save(ctx)
 }
 

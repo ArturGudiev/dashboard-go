@@ -3,11 +3,11 @@ package models
 import "time"
 
 type LongTaskFull struct {
-	ID          int      `json:"id"`
-	Description string   `json:"description"`
-	Tags        []string `json:"tags"`
-	Done        bool     `json:"done"`
-	DoneDateTime *time.Time `json:"doneDateTime"`
-	Progresses  []LongTaskProgress `json:"progresses"`
-	Notes       string   `json:"notes"`
+	ID           int                `json:"id" binding:"required"`
+	Description  string             `json:"description" binding:"required"`
+	Tags         []string           `json:"tags" binding:"required"`
+	Done         bool               `json:"done" binding:"required"`
+	DoneDateTime *time.Time         `json:"doneDateTime"`
+	Progresses   []LongTaskProgress `json:"progresses" binding:"required"`
+	Notes        string             `json:"notes" binding:"required"`
 }

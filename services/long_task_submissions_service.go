@@ -2,6 +2,7 @@ package services
 
 import (
 	"arturgudiev/dashboard/ent"
+	"arturgudiev/dashboard/models"
 	"arturgudiev/dashboard/repositories"
 	"context"
 )
@@ -9,15 +10,18 @@ import (
 type LongTaskSubmissionsService struct {
 	longTasksRepository          *repositories.LongTasksRepository
 	longTaskSubmissionsRepository *repositories.LongTaskSubmissionsRepository
+	longTasksProgressSubmissionsRepository *repositories.LongTasksProgressesSubmissionsRepository
 }
 
 func NewLongTaskSubmissionsService(
 	longTasksRepository *repositories.LongTasksRepository,
 	longTaskSubmissionsRepository *repositories.LongTaskSubmissionsRepository,
+	longTasksProgressSubmissionsRepository *repositories.LongTasksProgressesSubmissionsRepository,
 ) *LongTaskSubmissionsService {
 	return &LongTaskSubmissionsService{
 		longTasksRepository: longTasksRepository,
 		longTaskSubmissionsRepository: longTaskSubmissionsRepository,
+		longTasksProgressSubmissionsRepository: longTasksProgressSubmissionsRepository,
 	}
 }
 
@@ -51,7 +55,7 @@ func (s *LongTaskSubmissionsService) AddLongTaskSubmission(
 		return nil, err
 	}
 
-	if longTask.ProgressTotal == nil || longTask.ProgressDone == nil {
+	if longTask.ProgressTotal == 0 || longTask.ProgressDone == nil {
 		return submission, nil
 	}
 
@@ -62,13 +66,13 @@ func (s *LongTaskSubmissionsService) AddLongTaskSubmission(
 		newProgressDone += *progressToAdd
 	}
 
-	done := *longTask.ProgressTotal > 0 && newProgressDone >= *longTask.ProgressTotal
+	// done := *longTask.ProgressTotal > 0 && newProgressDone >= *longTask.ProgressTotal
 
 	// We update the long task state after recording the submission.
-	_, err = s.longTasksRepository.UpdateLongTaskProgressDoneAndDone(ctx, longTaskID, newProgressDone, done)
-	if err != nil {
-		return nil, err
-	}
+	// _, err = s.longTasksRepository.UpdateLongTaskProgressDoneAndDone(ctx, longTaskID, newProgressDone, done)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return submission, nil
 }
@@ -76,7 +80,11 @@ func (s *LongTaskSubmissionsService) AddLongTaskSubmission(
 func (s *LongTaskSubmissionsService) GetLongTaskSubmissions(
 	ctx context.Context,
 	longTaskID int,
-) ([]*ent.LongTaskSubmission, error) {
-	return s.longTaskSubmissionsRepository.GetLongTaskSubmissions(ctx, longTaskID)
+) ([]*models.LongTaskProgressSubmission, error) {
+	submissions, err := s.longTasksProgressSubmissionsRepository.GetLongTaskProgressSubmissionsByLongTaskID(ctx, longTaskID)
+	if err != nil {
+		return nil, err
+	}
+	return submissions, nil
 }
 

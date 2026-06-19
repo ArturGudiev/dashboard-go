@@ -14,7 +14,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        open  query  boolean  false  "Return only open long tasks"
-// @Success      200   {array}   ent.LongTask
+// @Success      200   {array}   []models.LongTaskFull
 // @Failure      400   {object}  map[string]string
 // @Failure      500   {object}  map[string]string
 // @Router       /long-tasks [get]
@@ -25,7 +25,7 @@ func (h *Handler) GetLongTasks(c *gin.Context) {
 		return
 	}
 
-	longTasks, err := h.App.LongTasksService.GetLongTasks(c.Request.Context(), query.Open)
+	longTasks, err := h.App.LongTasksService.GetLongTasksFull(c.Request.Context(), query.Open)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -52,7 +52,7 @@ func (h *Handler) GetLongTaskById(c *gin.Context) {
 		return
 	}
 
-	longTask, err := h.App.LongTasksService.GetLongTaskById(c.Request.Context(), longTaskID)
+	longTask, err := h.App.LongTasksRepository.GetLongTask(c.Request.Context(), longTaskID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			c.JSON(404, gin.H{"error": "Long task not found"})
@@ -141,33 +141,6 @@ func (h *Handler) GetLongTaskSubmissions(c *gin.Context) {
 		return
 	}
 	c.JSON(200, submissions)
-}
-
-// GetLongTaskProgresses handles GET /long-tasks/:id/progresses
-// @Summary      List long task progresses
-// @Description  Returns progress records for the given long task (newest first)
-// @Tags         long-tasks
-// @Accept       json
-// @Produce      json
-// @Param        id   path      int  true  "Long task ID"
-// @Success      200  {array}   ent.LongTaskProgress
-// @Failure      400  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /long-tasks/{id}/progresses [get]
-func (h *Handler) GetLongTaskProgresses(c *gin.Context) {
-	idParam := c.Param("id")
-	longTaskID, err := strconv.Atoi(idParam)
-	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid long task ID"})
-		return
-	}
-
-	progresses, err := h.App.LongTaskProgressesService.GetLongTaskProgresses(c.Request.Context(), longTaskID)
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(200, progresses)
 }
 
 // NewLongTask handles POST /long-tasks

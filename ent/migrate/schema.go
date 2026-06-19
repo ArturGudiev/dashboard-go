@@ -185,7 +185,7 @@ var (
 		{Name: "done", Type: field.TypeBool, Default: false},
 		{Name: "notes", Type: field.TypeString, Default: ""},
 		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
-		{Name: "progress_total", Type: field.TypeFloat64, Nullable: true},
+		{Name: "progress_total", Type: field.TypeFloat64, Default: 0},
 		{Name: "progress_done", Type: field.TypeFloat64, Nullable: true},
 		{Name: "progress_units", Type: field.TypeString, Default: "percents"},
 	}
@@ -222,9 +222,9 @@ var (
 	LongTaskProgressSubmissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "comments", Type: field.TypeString},
-		{Name: "progress_to_add", Type: field.TypeInt, Nullable: true},
+		{Name: "progress_to_add", Type: field.TypeFloat64, Nullable: true},
 		{Name: "progress_to_set", Type: field.TypeFloat64, Nullable: true},
-		{Name: "progress_raw", Type: field.TypeFloat64, Nullable: true},
+		{Name: "progress_raw", Type: field.TypeString, Nullable: true},
 		{Name: "execution_date", Type: field.TypeTime},
 		{Name: "long_task_progress_id", Type: field.TypeInt},
 	}

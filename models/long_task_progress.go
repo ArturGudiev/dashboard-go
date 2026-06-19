@@ -1,21 +1,18 @@
 package models
 
-import "arturgudiev/dashboard/ent"
-
 type LongTaskProgress struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Value       *float64 `json:"value"`
-	Total       *float64 `json:"total"`
-	Units       *string  `json:"units"`
+	ID    int      `json:"id" binding:"required"`
+	Name  string   `json:"name" binding:"required"`
+	Value *float64 `json:"value"`
+	Total *float64 `json:"total"`
+	Units *string  `json:"units"`
 }
 
 type LongTaskProgressFull struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Value       *float64 `json:"value"`
-	Total       *float64 `json:"total"`
-	Units       *string  `json:"units"`
-	Submissions []*ent.LongTaskProgressSubmission `json:"submissions"`
+	ID          int                           `json:"id" binding:"required"`
+	Name        string                        `json:"name" binding:"required"`
+	Value       *float64                      `json:"value"`
+	Total       *float64                      `json:"total"`
+	Units       *string                       `json:"units"`
+	Submissions []*LongTaskProgressSubmission `json:"submissions" binding:"required"`
 }
-

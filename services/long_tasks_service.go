@@ -10,8 +10,8 @@ import (
 )
 
 type LongTasksService struct {
-	longTasksRepository      *repositories.LongTasksRepository
-	childContainerRepository *ChildContainerRepository
+	longTasksRepository           *repositories.LongTasksRepository
+	childContainerRepository      *ChildContainerRepository
 	longTasksProgressesRepository *repositories.LongTasksProgressesRepository
 }
 
@@ -21,8 +21,8 @@ func NewLongTasksService(
 	longTasksProgressesRepository *repositories.LongTasksProgressesRepository,
 ) *LongTasksService {
 	return &LongTasksService{
-		longTasksRepository:      longTasksRepository,
-		childContainerRepository: childContainerRepository,
+		longTasksRepository:           longTasksRepository,
+		childContainerRepository:      childContainerRepository,
 		longTasksProgressesRepository: longTasksProgressesRepository,
 	}
 }
@@ -42,42 +42,35 @@ func (s *LongTasksService) GetLongTasks(ctx context.Context, open *bool) ([]*ent
 	return longTasks, nil
 }
 
-func (s *LongTasksService) GetLongTaskById(ctx context.Context, id int) (*models.LongTaskFull, error) {
-	longTask, err := s.longTasksRepository.GetLongTaskById(ctx, id)
-
+func (s *LongTasksService) GetLongTasksFull(ctx context.Context, open *bool) ([]*models.LongTaskFull, error) {
+	longTasks, err := s.longTasksRepository.GetLongTasksWithProgresses(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	
-	progressesIDs := make([]int, len(longTask.Edges.Progresses))
-	for i, progress := range longTask.Edges.Progresses {
-		progressesIDs[i] = progress.ID
-	}
-	progresses, err := s.longTasksProgressesRepository.GetLongTaskProgressesByIDs(ctx, progressesIDs)
-	if err != nil {
-		return nil, err
-	}
-	progressesModels := make([]models.LongTaskProgress, len(progresses))
-	for i, progress := range progresses {
-		progressesModels[i] = models.LongTaskProgress{
-			ID:          progress.ID,
-			Name:        progress.Name,
-			Value:       progress.Value,
-			Total:       progress.Total,
-			Units:       progress.Units,
+	longTasksFull := make([]*models.LongTaskFull, len(longTasks))
+	for i, longTask := range longTasks {
+		progresses := make([]models.LongTaskProgress, len(longTask.Edges.Progresses))
+		for j, progress := range longTask.Edges.Progresses {
+			progresses[j] = models.LongTaskProgress{
+				ID:    progress.ID,
+				Name:  progress.Name,
+				Value: progress.Value,
+				Total: progress.Total,
+				Units: progress.Units,
+			}
+		}
+		longTasksFull[i] = &models.LongTaskFull{
+			ID:           longTask.ID,
+			Description:  longTask.Description,
+			Tags:         longTask.Tags,
+			Done:         longTask.Done,
+			DoneDateTime: longTask.DoneDateTime,
+			Progresses:   progresses,
+			Notes:        longTask.Notes,
 		}
 	}
-	longTaskFull := &models.LongTaskFull{
-		ID:          longTask.ID,
-		Description: longTask.Description,
-		Tags:        longTask.Tags,
-		Done:        longTask.Done,
-		DoneDateTime: longTask.DoneDateTime,
-		Progresses:  progressesModels,
-		Notes:       longTask.Notes,
-	}
-	return longTaskFull, nil
+	return longTasksFull, nil
+
 }
 
 func (s *LongTasksService) UpdateLongTask(ctx context.Context, partial models.LongTaskPartial) (*ent.LongTask, error) {

@@ -15,21 +15,21 @@ import (
 
 // LongTask is the model entity for the LongTask schema.
 type LongTask struct {
-	config `json:"-"`
+	config `binding:"-" json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID int `json:"id" binding:"required"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description" binding:"required"`
 	// Tags holds the value of the "tags" field.
 	Tags []string `json:"tags,omitempty"`
 	// Done holds the value of the "done" field.
-	Done bool `json:"done"`
+	Done bool `json:"done" binding:"required"`
 	// Notes holds the value of the "notes" field.
-	Notes string `json:"notes,omitempty"`
+	Notes string `json:"notes" binding:"required"`
 	// DoneDateTime holds the value of the "done_date_time" field.
 	DoneDateTime *time.Time `json:"done_date_time,omitempty"`
 	// ProgressTotal holds the value of the "progress_total" field.
-	ProgressTotal *float64 `json:"progress_total"`
+	ProgressTotal float64 `json:"progress_total" binding:"required"`
 	// ProgressDone holds the value of the "progress_done" field.
 	ProgressDone *float64 `json:"progress_done"`
 	// ProgressUnits holds the value of the "progress_units" field.
@@ -144,8 +144,7 @@ func (_m *LongTask) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field progress_total", values[i])
 			} else if value.Valid {
-				_m.ProgressTotal = new(float64)
-				*_m.ProgressTotal = value.Float64
+				_m.ProgressTotal = value.Float64
 			}
 		case longtask.FieldProgressDone:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -223,10 +222,8 @@ func (_m *LongTask) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := _m.ProgressTotal; v != nil {
-		builder.WriteString("progress_total=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("progress_total=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ProgressTotal))
 	builder.WriteString(", ")
 	if v := _m.ProgressDone; v != nil {
 		builder.WriteString("progress_done=")

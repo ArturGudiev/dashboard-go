@@ -335,7 +335,7 @@ func (_q *LongTaskQuery) WithProgresses(opts ...func(*LongTaskProgressQuery)) *L
 // Example:
 //
 //	var v []struct {
-//		Description string `json:"description,omitempty"`
+//		Description string `json:"description" binding:"required"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -358,7 +358,7 @@ func (_q *LongTaskQuery) GroupBy(field string, fields ...string) *LongTaskGroupB
 // Example:
 //
 //	var v []struct {
-//		Description string `json:"description,omitempty"`
+//		Description string `json:"description" binding:"required"`
 //	}
 //
 //	client.LongTask.Query().
