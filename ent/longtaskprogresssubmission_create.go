@@ -27,6 +27,14 @@ func (_c *LongTaskProgressSubmissionCreate) SetComments(v string) *LongTaskProgr
 	return _c
 }
 
+// SetNillableComments sets the "comments" field if the given value is not nil.
+func (_c *LongTaskProgressSubmissionCreate) SetNillableComments(v *string) *LongTaskProgressSubmissionCreate {
+	if v != nil {
+		_c.SetComments(*v)
+	}
+	return _c
+}
+
 // SetProgressToAdd sets the "progress_to_add" field.
 func (_c *LongTaskProgressSubmissionCreate) SetProgressToAdd(v float64) *LongTaskProgressSubmissionCreate {
 	_c.mutation.SetProgressToAdd(v)
@@ -135,6 +143,10 @@ func (_c *LongTaskProgressSubmissionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *LongTaskProgressSubmissionCreate) defaults() {
+	if _, ok := _c.mutation.Comments(); !ok {
+		v := longtaskprogresssubmission.DefaultComments
+		_c.mutation.SetComments(v)
+	}
 	if _, ok := _c.mutation.ExecutionDate(); !ok {
 		v := longtaskprogresssubmission.DefaultExecutionDate
 		_c.mutation.SetExecutionDate(v)
@@ -145,11 +157,6 @@ func (_c *LongTaskProgressSubmissionCreate) defaults() {
 func (_c *LongTaskProgressSubmissionCreate) check() error {
 	if _, ok := _c.mutation.Comments(); !ok {
 		return &ValidationError{Name: "comments", err: errors.New(`ent: missing required field "LongTaskProgressSubmission.comments"`)}
-	}
-	if v, ok := _c.mutation.Comments(); ok {
-		if err := longtaskprogresssubmission.CommentsValidator(v); err != nil {
-			return &ValidationError{Name: "comments", err: fmt.Errorf(`ent: validator failed for field "LongTaskProgressSubmission.comments": %w`, err)}
-		}
 	}
 	if _, ok := _c.mutation.ExecutionDate(); !ok {
 		return &ValidationError{Name: "execution_date", err: errors.New(`ent: missing required field "LongTaskProgressSubmission.execution_date"`)}

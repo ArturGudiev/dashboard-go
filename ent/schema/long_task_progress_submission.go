@@ -20,7 +20,7 @@ func (LongTaskProgressSubmission) Fields() []ent.Field {
 			Positive().
 			Immutable(),
 		field.String("comments").
-			NotEmpty(),
+			Default(""),
 		field.Float("progress_to_add").
 			Optional().
 			Nillable(),

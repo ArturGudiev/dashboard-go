@@ -221,7 +221,7 @@ var (
 	// LongTaskProgressSubmissionsColumns holds the columns for the "long_task_progress_submissions" table.
 	LongTaskProgressSubmissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "comments", Type: field.TypeString},
+		{Name: "comments", Type: field.TypeString, Default: ""},
 		{Name: "progress_to_add", Type: field.TypeFloat64, Nullable: true},
 		{Name: "progress_to_set", Type: field.TypeFloat64, Nullable: true},
 		{Name: "progress_raw", Type: field.TypeString, Nullable: true},

@@ -227,8 +227,8 @@ func init() {
 	_ = longtaskprogresssubmissionFields
 	// longtaskprogresssubmissionDescComments is the schema descriptor for comments field.
 	longtaskprogresssubmissionDescComments := longtaskprogresssubmissionFields[1].Descriptor()
-	// longtaskprogresssubmission.CommentsValidator is a validator for the "comments" field. It is called by the builders before save.
-	longtaskprogresssubmission.CommentsValidator = longtaskprogresssubmissionDescComments.Validators[0].(func(string) error)
+	// longtaskprogresssubmission.DefaultComments holds the default value on creation for the comments field.
+	longtaskprogresssubmission.DefaultComments = longtaskprogresssubmissionDescComments.Default.(string)
 	// longtaskprogresssubmissionDescExecutionDate is the schema descriptor for execution_date field.
 	longtaskprogresssubmissionDescExecutionDate := longtaskprogresssubmissionFields[5].Descriptor()
 	// longtaskprogresssubmission.DefaultExecutionDate holds the default value on creation for the execution_date field.

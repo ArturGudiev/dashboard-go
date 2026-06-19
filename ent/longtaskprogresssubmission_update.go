@@ -190,11 +190,6 @@ func (_u *LongTaskProgressSubmissionUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *LongTaskProgressSubmissionUpdate) check() error {
-	if v, ok := _u.mutation.Comments(); ok {
-		if err := longtaskprogresssubmission.CommentsValidator(v); err != nil {
-			return &ValidationError{Name: "comments", err: fmt.Errorf(`ent: validator failed for field "LongTaskProgressSubmission.comments": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.LongTaskProgressID(); ok {
 		if err := longtaskprogresssubmission.LongTaskProgressIDValidator(v); err != nil {
 			return &ValidationError{Name: "long_task_progress_id", err: fmt.Errorf(`ent: validator failed for field "LongTaskProgressSubmission.long_task_progress_id": %w`, err)}
@@ -471,11 +466,6 @@ func (_u *LongTaskProgressSubmissionUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *LongTaskProgressSubmissionUpdateOne) check() error {
-	if v, ok := _u.mutation.Comments(); ok {
-		if err := longtaskprogresssubmission.CommentsValidator(v); err != nil {
-			return &ValidationError{Name: "comments", err: fmt.Errorf(`ent: validator failed for field "LongTaskProgressSubmission.comments": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.LongTaskProgressID(); ok {
 		if err := longtaskprogresssubmission.LongTaskProgressIDValidator(v); err != nil {
 			return &ValidationError{Name: "long_task_progress_id", err: fmt.Errorf(`ent: validator failed for field "LongTaskProgressSubmission.long_task_progress_id": %w`, err)}
