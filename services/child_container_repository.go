@@ -73,7 +73,7 @@ func (s *ChildContainerRepository) AddConnection(ctx context.Context, parentType
 			containerchild.ChildID(childID),
 			containerchild.ParentTypeEQ(parentType),
 		).
-		Aggregate(ent.Max(containerchild.FieldChildOrder)).
+		Aggregate(ent.Max(containerchild.FieldParentOrder)).
 		Ints(ctx)
 
 	maxChildOrder := 0

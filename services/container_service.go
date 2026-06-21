@@ -355,6 +355,19 @@ func (s *ContainerService) GetDoneTasksByIDs(ctx context.Context, taskIDs []int)
 		All(ctx)
 }
 
+func (s *ContainerService) GetDirectionsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeDirection)
+	if err != nil {
+		return nil, err
+	}
+
+	directionIDs := make([]int, 0, len(childRelations))
+	for _, relation := range childRelations {
+		directionIDs = append(directionIDs, relation.ChildID)
+	}
+	return directionIDs, nil
+}
+
 func (s *ContainerService) GetOpenDirectionsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
 	openDirections := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeDirection)

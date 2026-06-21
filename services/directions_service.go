@@ -57,7 +57,7 @@ func (s *DirectionsService) getDirectionFull(ctx context.Context, id int) (*mode
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeDirection, id)
 	subquestions, errSubquestions := s.containerService.GetOpenQuestionsIDs(ctx, schema.ContainerTypeDirection, id)
 	substories, errSubstories := s.containerService.GetOpenStoriesIDs(ctx, schema.ContainerTypeDirection, id)
-	subdirections, errSubdirections := s.containerService.GetOpenDirectionsIDs(ctx, schema.ContainerTypeDirection, id)
+	subdirections, errSubdirections := s.containerService.GetDirectionsIDs(ctx, schema.ContainerTypeDirection, id)
 	longTasks, errLongTasks := s.containerService.GetOpenLongTasksIDs(ctx, schema.ContainerTypeDirection, id)
 	parentContainers, errParents := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeDirection, id)
 
