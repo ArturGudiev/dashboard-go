@@ -54,6 +54,15 @@ type RepetitiveTask func(*sql.Selector)
 // RepetitiveTaskExecution is the predicate function for repetitivetaskexecution builders.
 type RepetitiveTaskExecution func(*sql.Selector)
 
+// State is the predicate function for state builders.
+type State func(*sql.Selector)
+
+// StateRequirement is the predicate function for staterequirement builders.
+type StateRequirement func(*sql.Selector)
+
+// StateRequirementCheck is the predicate function for staterequirementcheck builders.
+type StateRequirementCheck func(*sql.Selector)
+
 // Story is the predicate function for story builders.
 type Story func(*sql.Selector)
 

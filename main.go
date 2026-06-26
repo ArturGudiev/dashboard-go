@@ -251,6 +251,25 @@ func main() {
 	router.PATCH("/container-variables/:id", h.PatchContainerVariable)
 	router.DELETE("/container-variables/:id", h.RemoveContainerVariable)
 
+	// State routes
+	router.GET("/states/:id", h.GetStateByID)
+	router.GET("/states", h.GetAllStates)
+	router.POST("/states", h.AddState)
+	router.POST("/states/:id/requirements", h.AddStateRequirement)
+	router.GET("/states/:id/requirements", h.GetStateRequirementsByStateID)
+
+	// State requirements
+	router.GET("/state-requirements", h.GetStateRequirementsByIDs)
+	router.GET("/state-requirements/:id/checks", h.GetStateRequirementsChecksByStateRequirementID)
+	router.POST("/state-requirements/:id/checks", h.AddStateRequirementCheck)
+	// router.GET("/state-requirements/:id", h.GetStateRequirementByID)
+	// router.POST("/state-requirements", h.AddStateRequirement)
+	// router.PUT("/state-requirements/:id", h.UpdateStateRequirement)
+	// router.DELETE("/state-requirements/:id", h.DeleteStateRequirement)
+
+	// router.PUT("/states/:id", h.UpdateState)
+	// router.DELETE("/states/:id", h.DeleteState)
+
 	// Aliase routes
 	router.GET("/aliases/:alias", h.GetAliasByString)
 

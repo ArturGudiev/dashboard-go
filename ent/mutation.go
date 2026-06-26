@@ -21,6 +21,9 @@ import (
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/ent/state"
+	"arturgudiev/dashboard/ent/staterequirement"
+	"arturgudiev/dashboard/ent/staterequirementcheck"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
@@ -60,6 +63,9 @@ const (
 	TypeQuestion                   = "Question"
 	TypeRepetitiveTask             = "RepetitiveTask"
 	TypeRepetitiveTaskExecution    = "RepetitiveTaskExecution"
+	TypeState                      = "State"
+	TypeStateRequirement           = "StateRequirement"
+	TypeStateRequirementCheck      = "StateRequirementCheck"
 	TypeStory                      = "Story"
 	TypeTask                       = "Task"
 	TypeTest                       = "Test"
@@ -10743,6 +10749,1744 @@ func (m *RepetitiveTaskExecutionMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown RepetitiveTaskExecution edge %s", name)
+}
+
+// StateMutation represents an operation that mutates the State nodes in the graph.
+type StateMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *int
+	description         *string
+	tags                *[]string
+	appendtags          []string
+	closed              *bool
+	notes               *string
+	clearedFields       map[string]struct{}
+	requirements        map[int]struct{}
+	removedrequirements map[int]struct{}
+	clearedrequirements bool
+	done                bool
+	oldValue            func(context.Context) (*State, error)
+	predicates          []predicate.State
+}
+
+var _ ent.Mutation = (*StateMutation)(nil)
+
+// stateOption allows management of the mutation configuration using functional options.
+type stateOption func(*StateMutation)
+
+// newStateMutation creates new mutation for the State entity.
+func newStateMutation(c config, op Op, opts ...stateOption) *StateMutation {
+	m := &StateMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeState,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withStateID sets the ID field of the mutation.
+func withStateID(id int) stateOption {
+	return func(m *StateMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *State
+		)
+		m.oldValue = func(ctx context.Context) (*State, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().State.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withState sets the old State of the mutation.
+func withState(node *State) stateOption {
+	return func(m *StateMutation) {
+		m.oldValue = func(context.Context) (*State, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m StateMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m StateMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of State entities.
+func (m *StateMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *StateMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *StateMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().State.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDescription sets the "description" field.
+func (m *StateMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *StateMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the State entity.
+// If the State object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *StateMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetTags sets the "tags" field.
+func (m *StateMutation) SetTags(s []string) {
+	m.tags = &s
+	m.appendtags = nil
+}
+
+// Tags returns the value of the "tags" field in the mutation.
+func (m *StateMutation) Tags() (r []string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old "tags" field's value of the State entity.
+// If the State object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateMutation) OldTags(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTags is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// AppendTags adds s to the "tags" field.
+func (m *StateMutation) AppendTags(s []string) {
+	m.appendtags = append(m.appendtags, s...)
+}
+
+// AppendedTags returns the list of values that were appended to the "tags" field in this mutation.
+func (m *StateMutation) AppendedTags() ([]string, bool) {
+	if len(m.appendtags) == 0 {
+		return nil, false
+	}
+	return m.appendtags, true
+}
+
+// ResetTags resets all changes to the "tags" field.
+func (m *StateMutation) ResetTags() {
+	m.tags = nil
+	m.appendtags = nil
+}
+
+// SetClosed sets the "closed" field.
+func (m *StateMutation) SetClosed(b bool) {
+	m.closed = &b
+}
+
+// Closed returns the value of the "closed" field in the mutation.
+func (m *StateMutation) Closed() (r bool, exists bool) {
+	v := m.closed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClosed returns the old "closed" field's value of the State entity.
+// If the State object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateMutation) OldClosed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClosed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClosed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClosed: %w", err)
+	}
+	return oldValue.Closed, nil
+}
+
+// ResetClosed resets all changes to the "closed" field.
+func (m *StateMutation) ResetClosed() {
+	m.closed = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *StateMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *StateMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the State entity.
+// If the State object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateMutation) OldNotes(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *StateMutation) ResetNotes() {
+	m.notes = nil
+}
+
+// AddRequirementIDs adds the "requirements" edge to the StateRequirement entity by ids.
+func (m *StateMutation) AddRequirementIDs(ids ...int) {
+	if m.requirements == nil {
+		m.requirements = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.requirements[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRequirements clears the "requirements" edge to the StateRequirement entity.
+func (m *StateMutation) ClearRequirements() {
+	m.clearedrequirements = true
+}
+
+// RequirementsCleared reports if the "requirements" edge to the StateRequirement entity was cleared.
+func (m *StateMutation) RequirementsCleared() bool {
+	return m.clearedrequirements
+}
+
+// RemoveRequirementIDs removes the "requirements" edge to the StateRequirement entity by IDs.
+func (m *StateMutation) RemoveRequirementIDs(ids ...int) {
+	if m.removedrequirements == nil {
+		m.removedrequirements = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.requirements, ids[i])
+		m.removedrequirements[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRequirements returns the removed IDs of the "requirements" edge to the StateRequirement entity.
+func (m *StateMutation) RemovedRequirementsIDs() (ids []int) {
+	for id := range m.removedrequirements {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RequirementsIDs returns the "requirements" edge IDs in the mutation.
+func (m *StateMutation) RequirementsIDs() (ids []int) {
+	for id := range m.requirements {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRequirements resets all changes to the "requirements" edge.
+func (m *StateMutation) ResetRequirements() {
+	m.requirements = nil
+	m.clearedrequirements = false
+	m.removedrequirements = nil
+}
+
+// Where appends a list predicates to the StateMutation builder.
+func (m *StateMutation) Where(ps ...predicate.State) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the StateMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *StateMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.State, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *StateMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *StateMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (State).
+func (m *StateMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *StateMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.description != nil {
+		fields = append(fields, state.FieldDescription)
+	}
+	if m.tags != nil {
+		fields = append(fields, state.FieldTags)
+	}
+	if m.closed != nil {
+		fields = append(fields, state.FieldClosed)
+	}
+	if m.notes != nil {
+		fields = append(fields, state.FieldNotes)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *StateMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case state.FieldDescription:
+		return m.Description()
+	case state.FieldTags:
+		return m.Tags()
+	case state.FieldClosed:
+		return m.Closed()
+	case state.FieldNotes:
+		return m.Notes()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *StateMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case state.FieldDescription:
+		return m.OldDescription(ctx)
+	case state.FieldTags:
+		return m.OldTags(ctx)
+	case state.FieldClosed:
+		return m.OldClosed(ctx)
+	case state.FieldNotes:
+		return m.OldNotes(ctx)
+	}
+	return nil, fmt.Errorf("unknown State field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StateMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case state.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case state.FieldTags:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
+		return nil
+	case state.FieldClosed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClosed(v)
+		return nil
+	case state.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	}
+	return fmt.Errorf("unknown State field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *StateMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *StateMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StateMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown State numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *StateMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *StateMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *StateMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown State nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *StateMutation) ResetField(name string) error {
+	switch name {
+	case state.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case state.FieldTags:
+		m.ResetTags()
+		return nil
+	case state.FieldClosed:
+		m.ResetClosed()
+		return nil
+	case state.FieldNotes:
+		m.ResetNotes()
+		return nil
+	}
+	return fmt.Errorf("unknown State field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *StateMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.requirements != nil {
+		edges = append(edges, state.EdgeRequirements)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *StateMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case state.EdgeRequirements:
+		ids := make([]ent.Value, 0, len(m.requirements))
+		for id := range m.requirements {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *StateMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedrequirements != nil {
+		edges = append(edges, state.EdgeRequirements)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *StateMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case state.EdgeRequirements:
+		ids := make([]ent.Value, 0, len(m.removedrequirements))
+		for id := range m.removedrequirements {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *StateMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedrequirements {
+		edges = append(edges, state.EdgeRequirements)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *StateMutation) EdgeCleared(name string) bool {
+	switch name {
+	case state.EdgeRequirements:
+		return m.clearedrequirements
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *StateMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown State unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *StateMutation) ResetEdge(name string) error {
+	switch name {
+	case state.EdgeRequirements:
+		m.ResetRequirements()
+		return nil
+	}
+	return fmt.Errorf("unknown State edge %s", name)
+}
+
+// StateRequirementMutation represents an operation that mutates the StateRequirement nodes in the graph.
+type StateRequirementMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	description     *string
+	once_in_days    *int
+	addonce_in_days *int
+	clearedFields   map[string]struct{}
+	state           *int
+	clearedstate    bool
+	checks          map[int]struct{}
+	removedchecks   map[int]struct{}
+	clearedchecks   bool
+	done            bool
+	oldValue        func(context.Context) (*StateRequirement, error)
+	predicates      []predicate.StateRequirement
+}
+
+var _ ent.Mutation = (*StateRequirementMutation)(nil)
+
+// staterequirementOption allows management of the mutation configuration using functional options.
+type staterequirementOption func(*StateRequirementMutation)
+
+// newStateRequirementMutation creates new mutation for the StateRequirement entity.
+func newStateRequirementMutation(c config, op Op, opts ...staterequirementOption) *StateRequirementMutation {
+	m := &StateRequirementMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeStateRequirement,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withStateRequirementID sets the ID field of the mutation.
+func withStateRequirementID(id int) staterequirementOption {
+	return func(m *StateRequirementMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *StateRequirement
+		)
+		m.oldValue = func(ctx context.Context) (*StateRequirement, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().StateRequirement.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withStateRequirement sets the old StateRequirement of the mutation.
+func withStateRequirement(node *StateRequirement) staterequirementOption {
+	return func(m *StateRequirementMutation) {
+		m.oldValue = func(context.Context) (*StateRequirement, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m StateRequirementMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m StateRequirementMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of StateRequirement entities.
+func (m *StateRequirementMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *StateRequirementMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *StateRequirementMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().StateRequirement.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDescription sets the "description" field.
+func (m *StateRequirementMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *StateRequirementMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the StateRequirement entity.
+// If the StateRequirement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateRequirementMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *StateRequirementMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetStateID sets the "state_id" field.
+func (m *StateRequirementMutation) SetStateID(i int) {
+	m.state = &i
+}
+
+// StateID returns the value of the "state_id" field in the mutation.
+func (m *StateRequirementMutation) StateID() (r int, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateID returns the old "state_id" field's value of the StateRequirement entity.
+// If the StateRequirement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateRequirementMutation) OldStateID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStateID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStateID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateID: %w", err)
+	}
+	return oldValue.StateID, nil
+}
+
+// ResetStateID resets all changes to the "state_id" field.
+func (m *StateRequirementMutation) ResetStateID() {
+	m.state = nil
+}
+
+// SetOnceInDays sets the "once_in_days" field.
+func (m *StateRequirementMutation) SetOnceInDays(i int) {
+	m.once_in_days = &i
+	m.addonce_in_days = nil
+}
+
+// OnceInDays returns the value of the "once_in_days" field in the mutation.
+func (m *StateRequirementMutation) OnceInDays() (r int, exists bool) {
+	v := m.once_in_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOnceInDays returns the old "once_in_days" field's value of the StateRequirement entity.
+// If the StateRequirement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateRequirementMutation) OldOnceInDays(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOnceInDays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOnceInDays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOnceInDays: %w", err)
+	}
+	return oldValue.OnceInDays, nil
+}
+
+// AddOnceInDays adds i to the "once_in_days" field.
+func (m *StateRequirementMutation) AddOnceInDays(i int) {
+	if m.addonce_in_days != nil {
+		*m.addonce_in_days += i
+	} else {
+		m.addonce_in_days = &i
+	}
+}
+
+// AddedOnceInDays returns the value that was added to the "once_in_days" field in this mutation.
+func (m *StateRequirementMutation) AddedOnceInDays() (r int, exists bool) {
+	v := m.addonce_in_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOnceInDays clears the value of the "once_in_days" field.
+func (m *StateRequirementMutation) ClearOnceInDays() {
+	m.once_in_days = nil
+	m.addonce_in_days = nil
+	m.clearedFields[staterequirement.FieldOnceInDays] = struct{}{}
+}
+
+// OnceInDaysCleared returns if the "once_in_days" field was cleared in this mutation.
+func (m *StateRequirementMutation) OnceInDaysCleared() bool {
+	_, ok := m.clearedFields[staterequirement.FieldOnceInDays]
+	return ok
+}
+
+// ResetOnceInDays resets all changes to the "once_in_days" field.
+func (m *StateRequirementMutation) ResetOnceInDays() {
+	m.once_in_days = nil
+	m.addonce_in_days = nil
+	delete(m.clearedFields, staterequirement.FieldOnceInDays)
+}
+
+// ClearState clears the "state" edge to the State entity.
+func (m *StateRequirementMutation) ClearState() {
+	m.clearedstate = true
+	m.clearedFields[staterequirement.FieldStateID] = struct{}{}
+}
+
+// StateCleared reports if the "state" edge to the State entity was cleared.
+func (m *StateRequirementMutation) StateCleared() bool {
+	return m.clearedstate
+}
+
+// StateIDs returns the "state" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StateID instead. It exists only for internal usage by the builders.
+func (m *StateRequirementMutation) StateIDs() (ids []int) {
+	if id := m.state; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetState resets all changes to the "state" edge.
+func (m *StateRequirementMutation) ResetState() {
+	m.state = nil
+	m.clearedstate = false
+}
+
+// AddCheckIDs adds the "checks" edge to the StateRequirementCheck entity by ids.
+func (m *StateRequirementMutation) AddCheckIDs(ids ...int) {
+	if m.checks == nil {
+		m.checks = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.checks[ids[i]] = struct{}{}
+	}
+}
+
+// ClearChecks clears the "checks" edge to the StateRequirementCheck entity.
+func (m *StateRequirementMutation) ClearChecks() {
+	m.clearedchecks = true
+}
+
+// ChecksCleared reports if the "checks" edge to the StateRequirementCheck entity was cleared.
+func (m *StateRequirementMutation) ChecksCleared() bool {
+	return m.clearedchecks
+}
+
+// RemoveCheckIDs removes the "checks" edge to the StateRequirementCheck entity by IDs.
+func (m *StateRequirementMutation) RemoveCheckIDs(ids ...int) {
+	if m.removedchecks == nil {
+		m.removedchecks = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.checks, ids[i])
+		m.removedchecks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedChecks returns the removed IDs of the "checks" edge to the StateRequirementCheck entity.
+func (m *StateRequirementMutation) RemovedChecksIDs() (ids []int) {
+	for id := range m.removedchecks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ChecksIDs returns the "checks" edge IDs in the mutation.
+func (m *StateRequirementMutation) ChecksIDs() (ids []int) {
+	for id := range m.checks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetChecks resets all changes to the "checks" edge.
+func (m *StateRequirementMutation) ResetChecks() {
+	m.checks = nil
+	m.clearedchecks = false
+	m.removedchecks = nil
+}
+
+// Where appends a list predicates to the StateRequirementMutation builder.
+func (m *StateRequirementMutation) Where(ps ...predicate.StateRequirement) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the StateRequirementMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *StateRequirementMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.StateRequirement, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *StateRequirementMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *StateRequirementMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (StateRequirement).
+func (m *StateRequirementMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *StateRequirementMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.description != nil {
+		fields = append(fields, staterequirement.FieldDescription)
+	}
+	if m.state != nil {
+		fields = append(fields, staterequirement.FieldStateID)
+	}
+	if m.once_in_days != nil {
+		fields = append(fields, staterequirement.FieldOnceInDays)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *StateRequirementMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case staterequirement.FieldDescription:
+		return m.Description()
+	case staterequirement.FieldStateID:
+		return m.StateID()
+	case staterequirement.FieldOnceInDays:
+		return m.OnceInDays()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *StateRequirementMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case staterequirement.FieldDescription:
+		return m.OldDescription(ctx)
+	case staterequirement.FieldStateID:
+		return m.OldStateID(ctx)
+	case staterequirement.FieldOnceInDays:
+		return m.OldOnceInDays(ctx)
+	}
+	return nil, fmt.Errorf("unknown StateRequirement field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StateRequirementMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case staterequirement.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case staterequirement.FieldStateID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateID(v)
+		return nil
+	case staterequirement.FieldOnceInDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOnceInDays(v)
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirement field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *StateRequirementMutation) AddedFields() []string {
+	var fields []string
+	if m.addonce_in_days != nil {
+		fields = append(fields, staterequirement.FieldOnceInDays)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *StateRequirementMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case staterequirement.FieldOnceInDays:
+		return m.AddedOnceInDays()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StateRequirementMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case staterequirement.FieldOnceInDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOnceInDays(v)
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirement numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *StateRequirementMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(staterequirement.FieldOnceInDays) {
+		fields = append(fields, staterequirement.FieldOnceInDays)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *StateRequirementMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *StateRequirementMutation) ClearField(name string) error {
+	switch name {
+	case staterequirement.FieldOnceInDays:
+		m.ClearOnceInDays()
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirement nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *StateRequirementMutation) ResetField(name string) error {
+	switch name {
+	case staterequirement.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case staterequirement.FieldStateID:
+		m.ResetStateID()
+		return nil
+	case staterequirement.FieldOnceInDays:
+		m.ResetOnceInDays()
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirement field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *StateRequirementMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.state != nil {
+		edges = append(edges, staterequirement.EdgeState)
+	}
+	if m.checks != nil {
+		edges = append(edges, staterequirement.EdgeChecks)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *StateRequirementMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case staterequirement.EdgeState:
+		if id := m.state; id != nil {
+			return []ent.Value{*id}
+		}
+	case staterequirement.EdgeChecks:
+		ids := make([]ent.Value, 0, len(m.checks))
+		for id := range m.checks {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *StateRequirementMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedchecks != nil {
+		edges = append(edges, staterequirement.EdgeChecks)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *StateRequirementMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case staterequirement.EdgeChecks:
+		ids := make([]ent.Value, 0, len(m.removedchecks))
+		for id := range m.removedchecks {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *StateRequirementMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedstate {
+		edges = append(edges, staterequirement.EdgeState)
+	}
+	if m.clearedchecks {
+		edges = append(edges, staterequirement.EdgeChecks)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *StateRequirementMutation) EdgeCleared(name string) bool {
+	switch name {
+	case staterequirement.EdgeState:
+		return m.clearedstate
+	case staterequirement.EdgeChecks:
+		return m.clearedchecks
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *StateRequirementMutation) ClearEdge(name string) error {
+	switch name {
+	case staterequirement.EdgeState:
+		m.ClearState()
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirement unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *StateRequirementMutation) ResetEdge(name string) error {
+	switch name {
+	case staterequirement.EdgeState:
+		m.ResetState()
+		return nil
+	case staterequirement.EdgeChecks:
+		m.ResetChecks()
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirement edge %s", name)
+}
+
+// StateRequirementCheckMutation represents an operation that mutates the StateRequirementCheck nodes in the graph.
+type StateRequirementCheckMutation struct {
+	config
+	op                       Op
+	typ                      string
+	id                       *int
+	date_time                *time.Time
+	is_fulfilled             *bool
+	clearedFields            map[string]struct{}
+	state_requirement        *int
+	clearedstate_requirement bool
+	done                     bool
+	oldValue                 func(context.Context) (*StateRequirementCheck, error)
+	predicates               []predicate.StateRequirementCheck
+}
+
+var _ ent.Mutation = (*StateRequirementCheckMutation)(nil)
+
+// staterequirementcheckOption allows management of the mutation configuration using functional options.
+type staterequirementcheckOption func(*StateRequirementCheckMutation)
+
+// newStateRequirementCheckMutation creates new mutation for the StateRequirementCheck entity.
+func newStateRequirementCheckMutation(c config, op Op, opts ...staterequirementcheckOption) *StateRequirementCheckMutation {
+	m := &StateRequirementCheckMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeStateRequirementCheck,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withStateRequirementCheckID sets the ID field of the mutation.
+func withStateRequirementCheckID(id int) staterequirementcheckOption {
+	return func(m *StateRequirementCheckMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *StateRequirementCheck
+		)
+		m.oldValue = func(ctx context.Context) (*StateRequirementCheck, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().StateRequirementCheck.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withStateRequirementCheck sets the old StateRequirementCheck of the mutation.
+func withStateRequirementCheck(node *StateRequirementCheck) staterequirementcheckOption {
+	return func(m *StateRequirementCheckMutation) {
+		m.oldValue = func(context.Context) (*StateRequirementCheck, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m StateRequirementCheckMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m StateRequirementCheckMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of StateRequirementCheck entities.
+func (m *StateRequirementCheckMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *StateRequirementCheckMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *StateRequirementCheckMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().StateRequirementCheck.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDateTime sets the "date_time" field.
+func (m *StateRequirementCheckMutation) SetDateTime(t time.Time) {
+	m.date_time = &t
+}
+
+// DateTime returns the value of the "date_time" field in the mutation.
+func (m *StateRequirementCheckMutation) DateTime() (r time.Time, exists bool) {
+	v := m.date_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDateTime returns the old "date_time" field's value of the StateRequirementCheck entity.
+// If the StateRequirementCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateRequirementCheckMutation) OldDateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDateTime: %w", err)
+	}
+	return oldValue.DateTime, nil
+}
+
+// ResetDateTime resets all changes to the "date_time" field.
+func (m *StateRequirementCheckMutation) ResetDateTime() {
+	m.date_time = nil
+}
+
+// SetIsFulfilled sets the "is_fulfilled" field.
+func (m *StateRequirementCheckMutation) SetIsFulfilled(b bool) {
+	m.is_fulfilled = &b
+}
+
+// IsFulfilled returns the value of the "is_fulfilled" field in the mutation.
+func (m *StateRequirementCheckMutation) IsFulfilled() (r bool, exists bool) {
+	v := m.is_fulfilled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsFulfilled returns the old "is_fulfilled" field's value of the StateRequirementCheck entity.
+// If the StateRequirementCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateRequirementCheckMutation) OldIsFulfilled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsFulfilled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsFulfilled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsFulfilled: %w", err)
+	}
+	return oldValue.IsFulfilled, nil
+}
+
+// ResetIsFulfilled resets all changes to the "is_fulfilled" field.
+func (m *StateRequirementCheckMutation) ResetIsFulfilled() {
+	m.is_fulfilled = nil
+}
+
+// SetStateRequirementID sets the "state_requirement_id" field.
+func (m *StateRequirementCheckMutation) SetStateRequirementID(i int) {
+	m.state_requirement = &i
+}
+
+// StateRequirementID returns the value of the "state_requirement_id" field in the mutation.
+func (m *StateRequirementCheckMutation) StateRequirementID() (r int, exists bool) {
+	v := m.state_requirement
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateRequirementID returns the old "state_requirement_id" field's value of the StateRequirementCheck entity.
+// If the StateRequirementCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StateRequirementCheckMutation) OldStateRequirementID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStateRequirementID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStateRequirementID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateRequirementID: %w", err)
+	}
+	return oldValue.StateRequirementID, nil
+}
+
+// ResetStateRequirementID resets all changes to the "state_requirement_id" field.
+func (m *StateRequirementCheckMutation) ResetStateRequirementID() {
+	m.state_requirement = nil
+}
+
+// ClearStateRequirement clears the "state_requirement" edge to the StateRequirement entity.
+func (m *StateRequirementCheckMutation) ClearStateRequirement() {
+	m.clearedstate_requirement = true
+	m.clearedFields[staterequirementcheck.FieldStateRequirementID] = struct{}{}
+}
+
+// StateRequirementCleared reports if the "state_requirement" edge to the StateRequirement entity was cleared.
+func (m *StateRequirementCheckMutation) StateRequirementCleared() bool {
+	return m.clearedstate_requirement
+}
+
+// StateRequirementIDs returns the "state_requirement" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StateRequirementID instead. It exists only for internal usage by the builders.
+func (m *StateRequirementCheckMutation) StateRequirementIDs() (ids []int) {
+	if id := m.state_requirement; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStateRequirement resets all changes to the "state_requirement" edge.
+func (m *StateRequirementCheckMutation) ResetStateRequirement() {
+	m.state_requirement = nil
+	m.clearedstate_requirement = false
+}
+
+// Where appends a list predicates to the StateRequirementCheckMutation builder.
+func (m *StateRequirementCheckMutation) Where(ps ...predicate.StateRequirementCheck) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the StateRequirementCheckMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *StateRequirementCheckMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.StateRequirementCheck, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *StateRequirementCheckMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *StateRequirementCheckMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (StateRequirementCheck).
+func (m *StateRequirementCheckMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *StateRequirementCheckMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.date_time != nil {
+		fields = append(fields, staterequirementcheck.FieldDateTime)
+	}
+	if m.is_fulfilled != nil {
+		fields = append(fields, staterequirementcheck.FieldIsFulfilled)
+	}
+	if m.state_requirement != nil {
+		fields = append(fields, staterequirementcheck.FieldStateRequirementID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *StateRequirementCheckMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case staterequirementcheck.FieldDateTime:
+		return m.DateTime()
+	case staterequirementcheck.FieldIsFulfilled:
+		return m.IsFulfilled()
+	case staterequirementcheck.FieldStateRequirementID:
+		return m.StateRequirementID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *StateRequirementCheckMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case staterequirementcheck.FieldDateTime:
+		return m.OldDateTime(ctx)
+	case staterequirementcheck.FieldIsFulfilled:
+		return m.OldIsFulfilled(ctx)
+	case staterequirementcheck.FieldStateRequirementID:
+		return m.OldStateRequirementID(ctx)
+	}
+	return nil, fmt.Errorf("unknown StateRequirementCheck field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StateRequirementCheckMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case staterequirementcheck.FieldDateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDateTime(v)
+		return nil
+	case staterequirementcheck.FieldIsFulfilled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsFulfilled(v)
+		return nil
+	case staterequirementcheck.FieldStateRequirementID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateRequirementID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirementCheck field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *StateRequirementCheckMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *StateRequirementCheckMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *StateRequirementCheckMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown StateRequirementCheck numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *StateRequirementCheckMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *StateRequirementCheckMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *StateRequirementCheckMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown StateRequirementCheck nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *StateRequirementCheckMutation) ResetField(name string) error {
+	switch name {
+	case staterequirementcheck.FieldDateTime:
+		m.ResetDateTime()
+		return nil
+	case staterequirementcheck.FieldIsFulfilled:
+		m.ResetIsFulfilled()
+		return nil
+	case staterequirementcheck.FieldStateRequirementID:
+		m.ResetStateRequirementID()
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirementCheck field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *StateRequirementCheckMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.state_requirement != nil {
+		edges = append(edges, staterequirementcheck.EdgeStateRequirement)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *StateRequirementCheckMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case staterequirementcheck.EdgeStateRequirement:
+		if id := m.state_requirement; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *StateRequirementCheckMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *StateRequirementCheckMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *StateRequirementCheckMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedstate_requirement {
+		edges = append(edges, staterequirementcheck.EdgeStateRequirement)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *StateRequirementCheckMutation) EdgeCleared(name string) bool {
+	switch name {
+	case staterequirementcheck.EdgeStateRequirement:
+		return m.clearedstate_requirement
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *StateRequirementCheckMutation) ClearEdge(name string) error {
+	switch name {
+	case staterequirementcheck.EdgeStateRequirement:
+		m.ClearStateRequirement()
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirementCheck unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *StateRequirementCheckMutation) ResetEdge(name string) error {
+	switch name {
+	case staterequirementcheck.EdgeStateRequirement:
+		m.ResetStateRequirement()
+		return nil
+	}
+	return fmt.Errorf("unknown StateRequirementCheck edge %s", name)
 }
 
 // StoryMutation represents an operation that mutates the Story nodes in the graph.

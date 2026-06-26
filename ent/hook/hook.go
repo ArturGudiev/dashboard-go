@@ -200,6 +200,42 @@ func (f RepetitiveTaskExecutionFunc) Mutate(ctx context.Context, m ent.Mutation)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RepetitiveTaskExecutionMutation", m)
 }
 
+// The StateFunc type is an adapter to allow the use of ordinary
+// function as State mutator.
+type StateFunc func(context.Context, *ent.StateMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.StateMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StateMutation", m)
+}
+
+// The StateRequirementFunc type is an adapter to allow the use of ordinary
+// function as StateRequirement mutator.
+type StateRequirementFunc func(context.Context, *ent.StateRequirementMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StateRequirementFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.StateRequirementMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StateRequirementMutation", m)
+}
+
+// The StateRequirementCheckFunc type is an adapter to allow the use of ordinary
+// function as StateRequirementCheck mutator.
+type StateRequirementCheckFunc func(context.Context, *ent.StateRequirementCheckMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StateRequirementCheckFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.StateRequirementCheckMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StateRequirementCheckMutation", m)
+}
+
 // The StoryFunc type is an adapter to allow the use of ordinary
 // function as Story mutator.
 type StoryFunc func(context.Context, *ent.StoryMutation) (ent.Value, error)

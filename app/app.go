@@ -18,6 +18,10 @@ type App struct {
 	LongTaskSubmissionsService       *services.LongTaskSubmissionsService
 	LongTaskProgressesService       *services.LongTaskProgressesService
 	DirectionsService                *services.DirectionsService
+	StatesService                    *services.StatesService
+	StatesRepository                 *repositories.StatesRepository
+	StateRequirementsRepository      *repositories.StateRequirementsRepository
+	StateRequirementChecksRepository *repositories.StateRequirementChecksRepository
 	DirectionSubmissionsRepository   *repositories.DirectionSubmissionsRepository
 	ProblemService           *services.ProblemService
 	ContainerService         *services.ContainerService

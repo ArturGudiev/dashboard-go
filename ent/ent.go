@@ -19,6 +19,9 @@ import (
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
+	"arturgudiev/dashboard/ent/state"
+	"arturgudiev/dashboard/ent/staterequirement"
+	"arturgudiev/dashboard/ent/staterequirementcheck"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
@@ -108,6 +111,9 @@ func checkColumn(t, c string) error {
 			question.Table:                   question.ValidColumn,
 			repetitivetask.Table:             repetitivetask.ValidColumn,
 			repetitivetaskexecution.Table:    repetitivetaskexecution.ValidColumn,
+			state.Table:                      state.ValidColumn,
+			staterequirement.Table:           staterequirement.ValidColumn,
+			staterequirementcheck.Table:      staterequirementcheck.ValidColumn,
 			story.Table:                      story.ValidColumn,
 			task.Table:                       task.ValidColumn,
 			test.Table:                       test.ValidColumn,

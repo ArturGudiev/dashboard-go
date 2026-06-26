@@ -368,6 +368,24 @@ func (s *ContainerService) GetDirectionsIDs(ctx context.Context, containerType s
 	return directionIDs, nil
 }
 
+func (s *ContainerService) GetOpenStatesIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
+	openStates := []int{}
+	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeState)
+
+	if err == nil && len(childRelations) > 0 {
+		for _, relation := range childRelations {
+			childState, err := s.client.State.Get(ctx, relation.ChildID)
+			if err != nil {
+				continue
+			}
+			if !childState.Closed {
+				openStates = append(openStates, childState.ID)
+			}
+		}
+	}
+	return openStates, nil
+}
+
 func (s *ContainerService) GetOpenDirectionsIDs(ctx context.Context, containerType schema.ContainerType, ID int) ([]int, error) {
 	openDirections := []int{}
 	childRelations, err := s.childContainerRepository.GetChildContainers(ctx, containerType, ID, schema.ContainerTypeDirection)

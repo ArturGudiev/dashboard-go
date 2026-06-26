@@ -44,6 +44,12 @@ type Tx struct {
 	RepetitiveTask *RepetitiveTaskClient
 	// RepetitiveTaskExecution is the client for interacting with the RepetitiveTaskExecution builders.
 	RepetitiveTaskExecution *RepetitiveTaskExecutionClient
+	// State is the client for interacting with the State builders.
+	State *StateClient
+	// StateRequirement is the client for interacting with the StateRequirement builders.
+	StateRequirement *StateRequirementClient
+	// StateRequirementCheck is the client for interacting with the StateRequirementCheck builders.
+	StateRequirementCheck *StateRequirementCheckClient
 	// Story is the client for interacting with the Story builders.
 	Story *StoryClient
 	// Task is the client for interacting with the Task builders.
@@ -199,6 +205,9 @@ func (tx *Tx) init() {
 	tx.Question = NewQuestionClient(tx.config)
 	tx.RepetitiveTask = NewRepetitiveTaskClient(tx.config)
 	tx.RepetitiveTaskExecution = NewRepetitiveTaskExecutionClient(tx.config)
+	tx.State = NewStateClient(tx.config)
+	tx.StateRequirement = NewStateRequirementClient(tx.config)
+	tx.StateRequirementCheck = NewStateRequirementCheckClient(tx.config)
 	tx.Story = NewStoryClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Test = NewTestClient(tx.config)

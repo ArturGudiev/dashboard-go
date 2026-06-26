@@ -334,6 +334,62 @@ var (
 			},
 		},
 	}
+	// StatesColumns holds the columns for the "states" table.
+	StatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "closed", Type: field.TypeBool, Default: false},
+		{Name: "notes", Type: field.TypeString, Default: ""},
+	}
+	// StatesTable holds the schema information for the "states" table.
+	StatesTable = &schema.Table{
+		Name:       "states",
+		Columns:    StatesColumns,
+		PrimaryKey: []*schema.Column{StatesColumns[0]},
+	}
+	// StateRequirementsColumns holds the columns for the "state_requirements" table.
+	StateRequirementsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "once_in_days", Type: field.TypeInt, Nullable: true},
+		{Name: "state_id", Type: field.TypeInt},
+	}
+	// StateRequirementsTable holds the schema information for the "state_requirements" table.
+	StateRequirementsTable = &schema.Table{
+		Name:       "state_requirements",
+		Columns:    StateRequirementsColumns,
+		PrimaryKey: []*schema.Column{StateRequirementsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "state_requirements_states_requirements",
+				Columns:    []*schema.Column{StateRequirementsColumns[3]},
+				RefColumns: []*schema.Column{StatesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// StateRequirementChecksColumns holds the columns for the "state_requirement_checks" table.
+	StateRequirementChecksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "date_time", Type: field.TypeTime},
+		{Name: "is_fulfilled", Type: field.TypeBool, Default: false},
+		{Name: "state_requirement_id", Type: field.TypeInt},
+	}
+	// StateRequirementChecksTable holds the schema information for the "state_requirement_checks" table.
+	StateRequirementChecksTable = &schema.Table{
+		Name:       "state_requirement_checks",
+		Columns:    StateRequirementChecksColumns,
+		PrimaryKey: []*schema.Column{StateRequirementChecksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "state_requirement_checks_state_requirements_checks",
+				Columns:    []*schema.Column{StateRequirementChecksColumns[3]},
+				RefColumns: []*schema.Column{StateRequirementsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// StoriesColumns holds the columns for the "stories" table.
 	StoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -413,6 +469,9 @@ var (
 		QuestionsTable,
 		RepetitiveTasksTable,
 		RepetitiveTaskExecutionsTable,
+		StatesTable,
+		StateRequirementsTable,
+		StateRequirementChecksTable,
 		StoriesTable,
 		TasksTable,
 		TestsTable,
@@ -436,6 +495,8 @@ func init() {
 	LongTaskProgressSubmissionsTable.ForeignKeys[0].RefTable = LongTaskProgressesTable
 	LongTaskSubmissionsTable.ForeignKeys[0].RefTable = LongTasksTable
 	RepetitiveTaskExecutionsTable.ForeignKeys[0].RefTable = RepetitiveTasksTable
+	StateRequirementsTable.ForeignKeys[0].RefTable = StatesTable
+	StateRequirementChecksTable.ForeignKeys[0].RefTable = StateRequirementsTable
 	VariablesStacksTable.Annotation = &entsql.Annotation{
 		Table: "variables_stacks",
 	}

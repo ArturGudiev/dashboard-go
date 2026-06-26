@@ -20,6 +20,9 @@ import (
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/ent/state"
+	"arturgudiev/dashboard/ent/staterequirement"
+	"arturgudiev/dashboard/ent/staterequirementcheck"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
@@ -319,6 +322,60 @@ func init() {
 	repetitivetaskexecutionDescID := repetitivetaskexecutionFields[0].Descriptor()
 	// repetitivetaskexecution.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	repetitivetaskexecution.IDValidator = repetitivetaskexecutionDescID.Validators[0].(func(int) error)
+	stateFields := schema.State{}.Fields()
+	_ = stateFields
+	// stateDescDescription is the schema descriptor for description field.
+	stateDescDescription := stateFields[1].Descriptor()
+	// state.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	state.DescriptionValidator = stateDescDescription.Validators[0].(func(string) error)
+	// stateDescTags is the schema descriptor for tags field.
+	stateDescTags := stateFields[2].Descriptor()
+	// state.DefaultTags holds the default value on creation for the tags field.
+	state.DefaultTags = stateDescTags.Default.([]string)
+	// stateDescClosed is the schema descriptor for closed field.
+	stateDescClosed := stateFields[3].Descriptor()
+	// state.DefaultClosed holds the default value on creation for the closed field.
+	state.DefaultClosed = stateDescClosed.Default.(bool)
+	// stateDescNotes is the schema descriptor for notes field.
+	stateDescNotes := stateFields[4].Descriptor()
+	// state.DefaultNotes holds the default value on creation for the notes field.
+	state.DefaultNotes = stateDescNotes.Default.(string)
+	// stateDescID is the schema descriptor for id field.
+	stateDescID := stateFields[0].Descriptor()
+	// state.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	state.IDValidator = stateDescID.Validators[0].(func(int) error)
+	staterequirementFields := schema.StateRequirement{}.Fields()
+	_ = staterequirementFields
+	// staterequirementDescDescription is the schema descriptor for description field.
+	staterequirementDescDescription := staterequirementFields[1].Descriptor()
+	// staterequirement.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	staterequirement.DescriptionValidator = staterequirementDescDescription.Validators[0].(func(string) error)
+	// staterequirementDescStateID is the schema descriptor for state_id field.
+	staterequirementDescStateID := staterequirementFields[2].Descriptor()
+	// staterequirement.StateIDValidator is a validator for the "state_id" field. It is called by the builders before save.
+	staterequirement.StateIDValidator = staterequirementDescStateID.Validators[0].(func(int) error)
+	// staterequirementDescID is the schema descriptor for id field.
+	staterequirementDescID := staterequirementFields[0].Descriptor()
+	// staterequirement.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	staterequirement.IDValidator = staterequirementDescID.Validators[0].(func(int) error)
+	staterequirementcheckFields := schema.StateRequirementCheck{}.Fields()
+	_ = staterequirementcheckFields
+	// staterequirementcheckDescDateTime is the schema descriptor for date_time field.
+	staterequirementcheckDescDateTime := staterequirementcheckFields[1].Descriptor()
+	// staterequirementcheck.DefaultDateTime holds the default value on creation for the date_time field.
+	staterequirementcheck.DefaultDateTime = staterequirementcheckDescDateTime.Default.(time.Time)
+	// staterequirementcheckDescIsFulfilled is the schema descriptor for is_fulfilled field.
+	staterequirementcheckDescIsFulfilled := staterequirementcheckFields[2].Descriptor()
+	// staterequirementcheck.DefaultIsFulfilled holds the default value on creation for the is_fulfilled field.
+	staterequirementcheck.DefaultIsFulfilled = staterequirementcheckDescIsFulfilled.Default.(bool)
+	// staterequirementcheckDescStateRequirementID is the schema descriptor for state_requirement_id field.
+	staterequirementcheckDescStateRequirementID := staterequirementcheckFields[3].Descriptor()
+	// staterequirementcheck.StateRequirementIDValidator is a validator for the "state_requirement_id" field. It is called by the builders before save.
+	staterequirementcheck.StateRequirementIDValidator = staterequirementcheckDescStateRequirementID.Validators[0].(func(int) error)
+	// staterequirementcheckDescID is the schema descriptor for id field.
+	staterequirementcheckDescID := staterequirementcheckFields[0].Descriptor()
+	// staterequirementcheck.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	staterequirementcheck.IDValidator = staterequirementcheckDescID.Validators[0].(func(int) error)
 	storyFields := schema.Story{}.Fields()
 	_ = storyFields
 	// storyDescDescription is the schema descriptor for description field.

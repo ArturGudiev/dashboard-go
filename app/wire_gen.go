@@ -57,6 +57,10 @@ func InitializeApp() (*App, error) {
 	aliasesService := services.NewAliasesService(client, containerService, aliasesRepository, childContainerRepository)
 	epicsRepository := repositories.NewEpicsRepository(client)
 	cliService := services.NewCLIService(client, containerService, aliasesService, problemsRepository, epicsRepository, aliasesRepository)
+	statesRepository := repositories.NewStatesRepository(client)
+	stateRequirementsRepository := repositories.NewStateRequirementsRepository(client)
+	stateRequirementChecksRepository := repositories.NewStateRequirementChecksRepository(client)
+	statesService := services.NewStatesService(client, containerService, statesRepository, stateRequirementsRepository, stateRequirementChecksRepository, childContainerRepository)
 	questionsRepository := repositories.NewQuestionsRepository(client)
 	questionService := services.NewQuestionService(client, containerService, questionsRepository, childContainerRepository)
 	storiesRepository := repositories.NewStoriesRepository(client)
@@ -65,7 +69,7 @@ func InitializeApp() (*App, error) {
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
 	logMessagesRepository := repositories.NewLogMessagesRepository(client)
-	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, longTaskProgressesService, directionsService, problemService, containerService, cliService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository, longTasksProgressesSubmissionsRepository, longTasksProgressesRepository)
+	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, longTaskProgressesService, directionsService, problemService, containerService, cliService, statesService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository, longTasksProgressesSubmissionsRepository, longTasksProgressesRepository, statesRepository, stateRequirementsRepository, stateRequirementChecksRepository)
 	return app, nil
 }
 
@@ -138,6 +142,7 @@ func provideApp(
 	problemService *services.ProblemService,
 	containerService *services.ContainerService,
 	cliService *services.CLIService,
+	statesService *services.StatesService,
 	tasksRepository *services.TasksRepository,
 	problemsRepository *services.ProblemsRepository,
 	questionsRepository *repositories.QuestionsRepository,
@@ -162,6 +167,9 @@ func provideApp(
 	directionSubmissionsRepository *repositories.DirectionSubmissionsRepository,
 	longTasksProgressesSubmissionsRepository *repositories.LongTasksProgressesSubmissionsRepository,
 	longTasksProgressesRepository *repositories.LongTasksProgressesRepository,
+	statesRepository *repositories.StatesRepository,
+	stateRequirementsRepository *repositories.StateRequirementsRepository,
+	stateRequirementChecksRepository *repositories.StateRequirementChecksRepository,
 ) *App {
 	return &App{
 		Client:                                   client,
@@ -172,6 +180,10 @@ func provideApp(
 		LongTaskSubmissionsService:               longTaskSubmissionsService,
 		LongTaskProgressesService:                longTaskProgressesService,
 		DirectionsService:                        directionsService,
+		StatesService:                            statesService,
+		StatesRepository:                         statesRepository,
+		StateRequirementsRepository:              stateRequirementsRepository,
+		StateRequirementChecksRepository:         stateRequirementChecksRepository,
 		ProblemService:                           problemService,
 		ContainerService:                         containerService,
 		CLIService:                               cliService,

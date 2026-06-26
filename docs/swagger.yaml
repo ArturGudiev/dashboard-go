@@ -357,6 +357,102 @@ definitions:
         - $ref: '#/definitions/ent.RepetitiveTask'
         description: RepetitiveTask holds the value of the repetitive_task edge.
     type: object
+  ent.State:
+    properties:
+      closed:
+        description: Closed holds the value of the "closed" field.
+        type: boolean
+      description:
+        description: Description holds the value of the "description" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.StateEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the StateQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      notes:
+        description: Notes holds the value of the "notes" field.
+        type: string
+      tags:
+        description: Tags holds the value of the "tags" field.
+        items:
+          type: string
+        type: array
+    type: object
+  ent.StateEdges:
+    properties:
+      requirements:
+        description: Requirements holds the value of the requirements edge.
+        items:
+          $ref: '#/definitions/ent.StateRequirement'
+        type: array
+    type: object
+  ent.StateRequirement:
+    properties:
+      description:
+        description: Description holds the value of the "description" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.StateRequirementEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the StateRequirementQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      once_in_days:
+        description: OnceInDays holds the value of the "once_in_days" field.
+        type: integer
+      state_id:
+        description: StateID holds the value of the "state_id" field.
+        type: integer
+    type: object
+  ent.StateRequirementCheck:
+    properties:
+      date_time:
+        description: DateTime holds the value of the "date_time" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.StateRequirementCheckEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the StateRequirementCheckQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      is_fulfilled:
+        description: IsFulfilled holds the value of the "is_fulfilled" field.
+        type: boolean
+      state_requirement_id:
+        description: StateRequirementID holds the value of the "state_requirement_id"
+          field.
+        type: integer
+    type: object
+  ent.StateRequirementCheckEdges:
+    properties:
+      state_requirement:
+        allOf:
+        - $ref: '#/definitions/ent.StateRequirement'
+        description: StateRequirement holds the value of the state_requirement edge.
+    type: object
+  ent.StateRequirementEdges:
+    properties:
+      checks:
+        description: Checks holds the value of the checks edge.
+        items:
+          $ref: '#/definitions/ent.StateRequirementCheck'
+        type: array
+      state:
+        allOf:
+        - $ref: '#/definitions/ent.State'
+        description: State holds the value of the state edge.
+    type: object
   ent.Task:
     properties:
       description:
@@ -944,10 +1040,12 @@ definitions:
         type: string
       id:
         type: integer
-      progressRaw:
-        type: number
-      progressToAdd:
+      longTaskProgressID:
         type: integer
+      progressRaw:
+        type: string
+      progressToAdd:
+        type: number
       progressToSet:
         type: number
     type: object
@@ -982,6 +1080,13 @@ definitions:
         $ref: '#/definitions/models.EpicShort'
       parent:
         $ref: '#/definitions/models.ContainerDescription'
+    type: object
+  models.NewStateRequest:
+    properties:
+      parent:
+        $ref: '#/definitions/models.ContainerDescription'
+      state:
+        $ref: '#/definitions/models.StateShort'
     type: object
   models.NewStoryRequest:
     properties:
@@ -1207,6 +1312,75 @@ definitions:
       onceInWeeks:
         example: 2
         type: integer
+      tags:
+        example:
+        - bug
+        - urgent
+        items:
+          type: string
+        type: array
+    type: object
+  models.StateFull:
+    properties:
+      closed:
+        type: boolean
+      description:
+        type: string
+      id:
+        type: integer
+      isFulfilled:
+        type: boolean
+      notes:
+        type: string
+      states:
+        items:
+          type: integer
+        type: array
+      stateRequirements:
+        items:
+          type: integer
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  models.StateRequirementCheckShort:
+    properties:
+      isFulfilled:
+        example: true
+        type: boolean
+    type: object
+  models.StateRequirementFull:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      isFulfilled:
+        type: boolean
+      once_in_days:
+        type: integer
+      state_id:
+        type: integer
+    type: object
+  models.StateRequirementShort:
+    properties:
+      description:
+        example: Fix login bug
+        type: string
+      onceInDays:
+        example: 7
+        type: integer
+    type: object
+  models.StateShort:
+    properties:
+      description:
+        example: Fix login bug
+        type: string
+      notes:
+        example: User cannot log in
+        type: string
       tags:
         example:
         - bug
@@ -3753,6 +3927,297 @@ paths:
       summary: Solve problem
       tags:
       - problems
+  /state-requirements:
+    get:
+      consumes:
+      - application/json
+      description: Returns state requirements by their IDs
+      parameters:
+      - collectionFormat: csv
+        description: State requirement IDs (comma separated)
+        in: query
+        items:
+          type: integer
+        name: ids
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.StateRequirementFull'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get state requirements by their IDs
+      tags:
+      - state-requirements
+  /state-requirements/{id}/checks:
+    get:
+      consumes:
+      - application/json
+      description: Returns state requirement checks by state requirement ID
+      parameters:
+      - description: State requirement ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.StateRequirementCheck'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get state requirement checks by state requirement ID
+      tags:
+      - state-requirements
+    post:
+      consumes:
+      - application/json
+      description: Adds a new state requirement check
+      parameters:
+      - description: State requirement ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: State requirement check
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.StateRequirementCheckShort'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.StateRequirementCheck'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a state requirement check
+      tags:
+      - state-requirements
+  /states:
+    get:
+      consumes:
+      - application/json
+      description: Returns all states
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.StateFull'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all states
+      tags:
+      - states
+    post:
+      consumes:
+      - application/json
+      description: Adds a new state
+      parameters:
+      - description: State to add
+        in: body
+        name: state
+        required: true
+        schema:
+          $ref: '#/definitions/models.NewStateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StateFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a state
+      tags:
+      - states
+  /states/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a state by its ID
+      parameters:
+      - description: State ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StateFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get state by ID
+      tags:
+      - states
+  /states/{id}/requirements:
+    get:
+      consumes:
+      - application/json
+      description: Returns state requirements by state ID
+      parameters:
+      - description: State ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.StateRequirementFull'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get state requirements by state ID
+      tags:
+      - states
+    post:
+      consumes:
+      - application/json
+      description: Adds a new state requirement
+      parameters:
+      - description: State ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: State requirement
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.StateRequirementShort'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StateRequirementFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a state requirement
+      tags:
+      - states
   /story/{id}:
     get:
       consumes:

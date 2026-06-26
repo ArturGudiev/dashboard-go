@@ -27,6 +27,9 @@ import (
 	"arturgudiev/dashboard/ent/question"
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
+	"arturgudiev/dashboard/ent/state"
+	"arturgudiev/dashboard/ent/staterequirement"
+	"arturgudiev/dashboard/ent/staterequirementcheck"
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
@@ -75,6 +78,12 @@ type Client struct {
 	RepetitiveTask *RepetitiveTaskClient
 	// RepetitiveTaskExecution is the client for interacting with the RepetitiveTaskExecution builders.
 	RepetitiveTaskExecution *RepetitiveTaskExecutionClient
+	// State is the client for interacting with the State builders.
+	State *StateClient
+	// StateRequirement is the client for interacting with the StateRequirement builders.
+	StateRequirement *StateRequirementClient
+	// StateRequirementCheck is the client for interacting with the StateRequirementCheck builders.
+	StateRequirementCheck *StateRequirementCheckClient
 	// Story is the client for interacting with the Story builders.
 	Story *StoryClient
 	// Task is the client for interacting with the Task builders.
@@ -110,6 +119,9 @@ func (c *Client) init() {
 	c.Question = NewQuestionClient(c.config)
 	c.RepetitiveTask = NewRepetitiveTaskClient(c.config)
 	c.RepetitiveTaskExecution = NewRepetitiveTaskExecutionClient(c.config)
+	c.State = NewStateClient(c.config)
+	c.StateRequirement = NewStateRequirementClient(c.config)
+	c.StateRequirementCheck = NewStateRequirementCheckClient(c.config)
 	c.Story = NewStoryClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Test = NewTestClient(c.config)
@@ -222,6 +234,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Question:                   NewQuestionClient(cfg),
 		RepetitiveTask:             NewRepetitiveTaskClient(cfg),
 		RepetitiveTaskExecution:    NewRepetitiveTaskExecutionClient(cfg),
+		State:                      NewStateClient(cfg),
+		StateRequirement:           NewStateRequirementClient(cfg),
+		StateRequirementCheck:      NewStateRequirementCheckClient(cfg),
 		Story:                      NewStoryClient(cfg),
 		Task:                       NewTaskClient(cfg),
 		Test:                       NewTestClient(cfg),
@@ -261,6 +276,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Question:                   NewQuestionClient(cfg),
 		RepetitiveTask:             NewRepetitiveTaskClient(cfg),
 		RepetitiveTaskExecution:    NewRepetitiveTaskExecutionClient(cfg),
+		State:                      NewStateClient(cfg),
+		StateRequirement:           NewStateRequirementClient(cfg),
+		StateRequirementCheck:      NewStateRequirementCheckClient(cfg),
 		Story:                      NewStoryClient(cfg),
 		Task:                       NewTaskClient(cfg),
 		Test:                       NewTestClient(cfg),
@@ -297,8 +315,9 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Alias, c.ContainerChild, c.ContainerVariables, c.Direction,
 		c.DirectionSubmission, c.Epic, c.KnowledgeNode, c.LogMessage, c.LongTask,
 		c.LongTaskProgress, c.LongTaskProgressSubmission, c.LongTaskSubmission,
-		c.Problem, c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story,
-		c.Task, c.Test, c.VariablesStack,
+		c.Problem, c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.State,
+		c.StateRequirement, c.StateRequirementCheck, c.Story, c.Task, c.Test,
+		c.VariablesStack,
 	} {
 		n.Use(hooks...)
 	}
@@ -311,8 +330,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Alias, c.ContainerChild, c.ContainerVariables, c.Direction,
 		c.DirectionSubmission, c.Epic, c.KnowledgeNode, c.LogMessage, c.LongTask,
 		c.LongTaskProgress, c.LongTaskProgressSubmission, c.LongTaskSubmission,
-		c.Problem, c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.Story,
-		c.Task, c.Test, c.VariablesStack,
+		c.Problem, c.Question, c.RepetitiveTask, c.RepetitiveTaskExecution, c.State,
+		c.StateRequirement, c.StateRequirementCheck, c.Story, c.Task, c.Test,
+		c.VariablesStack,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -353,6 +373,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.RepetitiveTask.mutate(ctx, m)
 	case *RepetitiveTaskExecutionMutation:
 		return c.RepetitiveTaskExecution.mutate(ctx, m)
+	case *StateMutation:
+		return c.State.mutate(ctx, m)
+	case *StateRequirementMutation:
+		return c.StateRequirement.mutate(ctx, m)
+	case *StateRequirementCheckMutation:
+		return c.StateRequirementCheck.mutate(ctx, m)
 	case *StoryMutation:
 		return c.Story.mutate(ctx, m)
 	case *TaskMutation:
@@ -2670,6 +2696,469 @@ func (c *RepetitiveTaskExecutionClient) mutate(ctx context.Context, m *Repetitiv
 	}
 }
 
+// StateClient is a client for the State schema.
+type StateClient struct {
+	config
+}
+
+// NewStateClient returns a client for the State from the given config.
+func NewStateClient(c config) *StateClient {
+	return &StateClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `state.Hooks(f(g(h())))`.
+func (c *StateClient) Use(hooks ...Hook) {
+	c.hooks.State = append(c.hooks.State, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `state.Intercept(f(g(h())))`.
+func (c *StateClient) Intercept(interceptors ...Interceptor) {
+	c.inters.State = append(c.inters.State, interceptors...)
+}
+
+// Create returns a builder for creating a State entity.
+func (c *StateClient) Create() *StateCreate {
+	mutation := newStateMutation(c.config, OpCreate)
+	return &StateCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of State entities.
+func (c *StateClient) CreateBulk(builders ...*StateCreate) *StateCreateBulk {
+	return &StateCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StateClient) MapCreateBulk(slice any, setFunc func(*StateCreate, int)) *StateCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StateCreateBulk{err: fmt.Errorf("calling to StateClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StateCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StateCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for State.
+func (c *StateClient) Update() *StateUpdate {
+	mutation := newStateMutation(c.config, OpUpdate)
+	return &StateUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StateClient) UpdateOne(_m *State) *StateUpdateOne {
+	mutation := newStateMutation(c.config, OpUpdateOne, withState(_m))
+	return &StateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StateClient) UpdateOneID(id int) *StateUpdateOne {
+	mutation := newStateMutation(c.config, OpUpdateOne, withStateID(id))
+	return &StateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for State.
+func (c *StateClient) Delete() *StateDelete {
+	mutation := newStateMutation(c.config, OpDelete)
+	return &StateDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StateClient) DeleteOne(_m *State) *StateDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StateClient) DeleteOneID(id int) *StateDeleteOne {
+	builder := c.Delete().Where(state.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StateDeleteOne{builder}
+}
+
+// Query returns a query builder for State.
+func (c *StateClient) Query() *StateQuery {
+	return &StateQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeState},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a State entity by its id.
+func (c *StateClient) Get(ctx context.Context, id int) (*State, error) {
+	return c.Query().Where(state.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StateClient) GetX(ctx context.Context, id int) *State {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryRequirements queries the requirements edge of a State.
+func (c *StateClient) QueryRequirements(_m *State) *StateRequirementQuery {
+	query := (&StateRequirementClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(state.Table, state.FieldID, id),
+			sqlgraph.To(staterequirement.Table, staterequirement.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, state.RequirementsTable, state.RequirementsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StateClient) Hooks() []Hook {
+	return c.hooks.State
+}
+
+// Interceptors returns the client interceptors.
+func (c *StateClient) Interceptors() []Interceptor {
+	return c.inters.State
+}
+
+func (c *StateClient) mutate(ctx context.Context, m *StateMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StateCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StateUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown State mutation op: %q", m.Op())
+	}
+}
+
+// StateRequirementClient is a client for the StateRequirement schema.
+type StateRequirementClient struct {
+	config
+}
+
+// NewStateRequirementClient returns a client for the StateRequirement from the given config.
+func NewStateRequirementClient(c config) *StateRequirementClient {
+	return &StateRequirementClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `staterequirement.Hooks(f(g(h())))`.
+func (c *StateRequirementClient) Use(hooks ...Hook) {
+	c.hooks.StateRequirement = append(c.hooks.StateRequirement, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `staterequirement.Intercept(f(g(h())))`.
+func (c *StateRequirementClient) Intercept(interceptors ...Interceptor) {
+	c.inters.StateRequirement = append(c.inters.StateRequirement, interceptors...)
+}
+
+// Create returns a builder for creating a StateRequirement entity.
+func (c *StateRequirementClient) Create() *StateRequirementCreate {
+	mutation := newStateRequirementMutation(c.config, OpCreate)
+	return &StateRequirementCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of StateRequirement entities.
+func (c *StateRequirementClient) CreateBulk(builders ...*StateRequirementCreate) *StateRequirementCreateBulk {
+	return &StateRequirementCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StateRequirementClient) MapCreateBulk(slice any, setFunc func(*StateRequirementCreate, int)) *StateRequirementCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StateRequirementCreateBulk{err: fmt.Errorf("calling to StateRequirementClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StateRequirementCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StateRequirementCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for StateRequirement.
+func (c *StateRequirementClient) Update() *StateRequirementUpdate {
+	mutation := newStateRequirementMutation(c.config, OpUpdate)
+	return &StateRequirementUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StateRequirementClient) UpdateOne(_m *StateRequirement) *StateRequirementUpdateOne {
+	mutation := newStateRequirementMutation(c.config, OpUpdateOne, withStateRequirement(_m))
+	return &StateRequirementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StateRequirementClient) UpdateOneID(id int) *StateRequirementUpdateOne {
+	mutation := newStateRequirementMutation(c.config, OpUpdateOne, withStateRequirementID(id))
+	return &StateRequirementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for StateRequirement.
+func (c *StateRequirementClient) Delete() *StateRequirementDelete {
+	mutation := newStateRequirementMutation(c.config, OpDelete)
+	return &StateRequirementDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StateRequirementClient) DeleteOne(_m *StateRequirement) *StateRequirementDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StateRequirementClient) DeleteOneID(id int) *StateRequirementDeleteOne {
+	builder := c.Delete().Where(staterequirement.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StateRequirementDeleteOne{builder}
+}
+
+// Query returns a query builder for StateRequirement.
+func (c *StateRequirementClient) Query() *StateRequirementQuery {
+	return &StateRequirementQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeStateRequirement},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a StateRequirement entity by its id.
+func (c *StateRequirementClient) Get(ctx context.Context, id int) (*StateRequirement, error) {
+	return c.Query().Where(staterequirement.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StateRequirementClient) GetX(ctx context.Context, id int) *StateRequirement {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryState queries the state edge of a StateRequirement.
+func (c *StateRequirementClient) QueryState(_m *StateRequirement) *StateQuery {
+	query := (&StateClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(staterequirement.Table, staterequirement.FieldID, id),
+			sqlgraph.To(state.Table, state.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, staterequirement.StateTable, staterequirement.StateColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChecks queries the checks edge of a StateRequirement.
+func (c *StateRequirementClient) QueryChecks(_m *StateRequirement) *StateRequirementCheckQuery {
+	query := (&StateRequirementCheckClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(staterequirement.Table, staterequirement.FieldID, id),
+			sqlgraph.To(staterequirementcheck.Table, staterequirementcheck.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, staterequirement.ChecksTable, staterequirement.ChecksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StateRequirementClient) Hooks() []Hook {
+	return c.hooks.StateRequirement
+}
+
+// Interceptors returns the client interceptors.
+func (c *StateRequirementClient) Interceptors() []Interceptor {
+	return c.inters.StateRequirement
+}
+
+func (c *StateRequirementClient) mutate(ctx context.Context, m *StateRequirementMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StateRequirementCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StateRequirementUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StateRequirementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StateRequirementDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown StateRequirement mutation op: %q", m.Op())
+	}
+}
+
+// StateRequirementCheckClient is a client for the StateRequirementCheck schema.
+type StateRequirementCheckClient struct {
+	config
+}
+
+// NewStateRequirementCheckClient returns a client for the StateRequirementCheck from the given config.
+func NewStateRequirementCheckClient(c config) *StateRequirementCheckClient {
+	return &StateRequirementCheckClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `staterequirementcheck.Hooks(f(g(h())))`.
+func (c *StateRequirementCheckClient) Use(hooks ...Hook) {
+	c.hooks.StateRequirementCheck = append(c.hooks.StateRequirementCheck, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `staterequirementcheck.Intercept(f(g(h())))`.
+func (c *StateRequirementCheckClient) Intercept(interceptors ...Interceptor) {
+	c.inters.StateRequirementCheck = append(c.inters.StateRequirementCheck, interceptors...)
+}
+
+// Create returns a builder for creating a StateRequirementCheck entity.
+func (c *StateRequirementCheckClient) Create() *StateRequirementCheckCreate {
+	mutation := newStateRequirementCheckMutation(c.config, OpCreate)
+	return &StateRequirementCheckCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of StateRequirementCheck entities.
+func (c *StateRequirementCheckClient) CreateBulk(builders ...*StateRequirementCheckCreate) *StateRequirementCheckCreateBulk {
+	return &StateRequirementCheckCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StateRequirementCheckClient) MapCreateBulk(slice any, setFunc func(*StateRequirementCheckCreate, int)) *StateRequirementCheckCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StateRequirementCheckCreateBulk{err: fmt.Errorf("calling to StateRequirementCheckClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StateRequirementCheckCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StateRequirementCheckCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for StateRequirementCheck.
+func (c *StateRequirementCheckClient) Update() *StateRequirementCheckUpdate {
+	mutation := newStateRequirementCheckMutation(c.config, OpUpdate)
+	return &StateRequirementCheckUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StateRequirementCheckClient) UpdateOne(_m *StateRequirementCheck) *StateRequirementCheckUpdateOne {
+	mutation := newStateRequirementCheckMutation(c.config, OpUpdateOne, withStateRequirementCheck(_m))
+	return &StateRequirementCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StateRequirementCheckClient) UpdateOneID(id int) *StateRequirementCheckUpdateOne {
+	mutation := newStateRequirementCheckMutation(c.config, OpUpdateOne, withStateRequirementCheckID(id))
+	return &StateRequirementCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for StateRequirementCheck.
+func (c *StateRequirementCheckClient) Delete() *StateRequirementCheckDelete {
+	mutation := newStateRequirementCheckMutation(c.config, OpDelete)
+	return &StateRequirementCheckDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StateRequirementCheckClient) DeleteOne(_m *StateRequirementCheck) *StateRequirementCheckDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StateRequirementCheckClient) DeleteOneID(id int) *StateRequirementCheckDeleteOne {
+	builder := c.Delete().Where(staterequirementcheck.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StateRequirementCheckDeleteOne{builder}
+}
+
+// Query returns a query builder for StateRequirementCheck.
+func (c *StateRequirementCheckClient) Query() *StateRequirementCheckQuery {
+	return &StateRequirementCheckQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeStateRequirementCheck},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a StateRequirementCheck entity by its id.
+func (c *StateRequirementCheckClient) Get(ctx context.Context, id int) (*StateRequirementCheck, error) {
+	return c.Query().Where(staterequirementcheck.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StateRequirementCheckClient) GetX(ctx context.Context, id int) *StateRequirementCheck {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryStateRequirement queries the state_requirement edge of a StateRequirementCheck.
+func (c *StateRequirementCheckClient) QueryStateRequirement(_m *StateRequirementCheck) *StateRequirementQuery {
+	query := (&StateRequirementClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(staterequirementcheck.Table, staterequirementcheck.FieldID, id),
+			sqlgraph.To(staterequirement.Table, staterequirement.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, staterequirementcheck.StateRequirementTable, staterequirementcheck.StateRequirementColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StateRequirementCheckClient) Hooks() []Hook {
+	return c.hooks.StateRequirementCheck
+}
+
+// Interceptors returns the client interceptors.
+func (c *StateRequirementCheckClient) Interceptors() []Interceptor {
+	return c.inters.StateRequirementCheck
+}
+
+func (c *StateRequirementCheckClient) mutate(ctx context.Context, m *StateRequirementCheckMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StateRequirementCheckCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StateRequirementCheckUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StateRequirementCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StateRequirementCheckDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown StateRequirementCheck mutation op: %q", m.Op())
+	}
+}
+
 // StoryClient is a client for the Story schema.
 type StoryClient struct {
 	config
@@ -3224,14 +3713,14 @@ type (
 		Alias, ContainerChild, ContainerVariables, Direction, DirectionSubmission, Epic,
 		KnowledgeNode, LogMessage, LongTask, LongTaskProgress,
 		LongTaskProgressSubmission, LongTaskSubmission, Problem, Question,
-		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
-		VariablesStack []ent.Hook
+		RepetitiveTask, RepetitiveTaskExecution, State, StateRequirement,
+		StateRequirementCheck, Story, Task, Test, VariablesStack []ent.Hook
 	}
 	inters struct {
 		Alias, ContainerChild, ContainerVariables, Direction, DirectionSubmission, Epic,
 		KnowledgeNode, LogMessage, LongTask, LongTaskProgress,
 		LongTaskProgressSubmission, LongTaskSubmission, Problem, Question,
-		RepetitiveTask, RepetitiveTaskExecution, Story, Task, Test,
-		VariablesStack []ent.Interceptor
+		RepetitiveTask, RepetitiveTaskExecution, State, StateRequirement,
+		StateRequirementCheck, Story, Task, Test, VariablesStack []ent.Interceptor
 	}
 )
