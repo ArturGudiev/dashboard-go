@@ -6,8 +6,9 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache git
 
-# Copy go mod files first for better layer caching
+# Copy go mod files first for better layer caching (replace ./internal/go-fuzzyfinder must exist)
 COPY go.mod go.sum ./
+COPY internal/go-fuzzyfinder ./internal/go-fuzzyfinder
 RUN go mod download
 
 # Copy source

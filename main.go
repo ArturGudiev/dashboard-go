@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"arturgudiev/dashboard/app"
-	_ "arturgudiev/dashboard/docs" // Swagger docs
+	"arturgudiev/dashboard/docs"
 	"arturgudiev/dashboard/handlers"
 
 	"github.com/gin-contrib/cors"
@@ -96,6 +96,15 @@ func main() {
 			}
 			return
 		}
+	}
+
+	// Swagger UI uses docs.SwaggerInfo.Host for "Try it out" requests.
+	// Default empty host = same origin as the Swagger page (works with any published port).
+	// Override with SWAGGER_HOST, e.g. "158.160.36.7:8083".
+	if host := os.Getenv("SWAGGER_HOST"); host != "" {
+		docs.SwaggerInfo.Host = host
+	} else {
+		docs.SwaggerInfo.Host = ""
 	}
 
 	// Setup Gin router
