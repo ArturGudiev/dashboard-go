@@ -967,6 +967,27 @@ definitions:
           type: string
         type: array
     type: object
+  models.LoginUserRequest:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      password:
+        example: password
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.LoginUserResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserResponse'
+    type: object
   models.LongTaskFull:
     properties:
       description:
@@ -1094,6 +1115,22 @@ definitions:
         $ref: '#/definitions/models.ContainerDescription'
       story:
         $ref: '#/definitions/models.StoryShort'
+    type: object
+  models.NewUserRequest:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      name:
+        example: John Doe
+        type: string
+      password:
+        example: password
+        type: string
+    required:
+    - email
+    - name
+    - password
     type: object
   models.ProblemFull:
     description: Complete problem information with all related entities
@@ -1263,6 +1300,11 @@ definitions:
           type: string
         type: array
     type: object
+  models.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        type: string
+    type: object
   models.RepetitiveTaskResponse:
     properties:
       closed:
@@ -1332,11 +1374,11 @@ definitions:
         type: boolean
       notes:
         type: string
-      states:
+      stateRequirements:
         items:
           type: integer
         type: array
-      stateRequirements:
+      states:
         items:
           type: integer
         type: array
@@ -1574,6 +1616,15 @@ definitions:
           type: string
         type: array
     type: object
+  models.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   schema.AliasType:
     enum:
     - epic
@@ -1638,11 +1689,12 @@ info:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: Task management dashboard API server
+  description: |-
+    Task management dashboard API server.
+    **Authentication:** Use `POST /users/login`, copy `accessToken` from the response, then click **Authorize** and paste it as the `access_token` cookie value. Alternatively, login from Swagger on the same host and cookies are sent automatically.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
   title: Dashboard API
   version: "1.0"
 paths:
@@ -4647,7 +4699,223 @@ paths:
       summary: Update task
       tags:
       - tasks
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new user
+      parameters:
+      - description: User to add
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.NewUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - "":
+        - ""
+      summary: Add a user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AccessTokenCookie: []
+      summary: Get a user by their ID
+      tags:
+      - users
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Logs in a user and returns tokens. Sets auth cookies. Copy accessToken
+        into Authorize for other endpoints.
+      parameters:
+      - description: User to login
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - "":
+        - ""
+      summary: Logs in a user
+      tags:
+      - users
+  /users/logout:
+    post:
+      consumes:
+      - application/json
+      description: Revokes refresh token and clears auth cookies
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - "":
+        - ""
+      summary: Logout user
+      tags:
+      - users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Returns the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AccessTokenCookie: []
+      summary: Get current user
+      tags:
+      - users
+  /users/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchanges a refresh token for a new access and refresh token pair
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/models.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginUserResponse'
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - "":
+        - ""
+      summary: Refresh access token
+      tags:
+      - users
 schemes:
 - http
 - https
+security:
+- AccessTokenCookie: []
+securityDefinitions:
+  AccessTokenCookie:
+    in: cookie
+    name: access_token
+    type: apiKey
 swagger: "2.0"

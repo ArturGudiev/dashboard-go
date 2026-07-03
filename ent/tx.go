@@ -40,6 +40,8 @@ type Tx struct {
 	Problem *ProblemClient
 	// Question is the client for interacting with the Question builders.
 	Question *QuestionClient
+	// RefreshToken is the client for interacting with the RefreshToken builders.
+	RefreshToken *RefreshTokenClient
 	// RepetitiveTask is the client for interacting with the RepetitiveTask builders.
 	RepetitiveTask *RepetitiveTaskClient
 	// RepetitiveTaskExecution is the client for interacting with the RepetitiveTaskExecution builders.
@@ -56,6 +58,8 @@ type Tx struct {
 	Task *TaskClient
 	// Test is the client for interacting with the Test builders.
 	Test *TestClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 	// VariablesStack is the client for interacting with the VariablesStack builders.
 	VariablesStack *VariablesStackClient
 
@@ -203,6 +207,7 @@ func (tx *Tx) init() {
 	tx.LongTaskSubmission = NewLongTaskSubmissionClient(tx.config)
 	tx.Problem = NewProblemClient(tx.config)
 	tx.Question = NewQuestionClient(tx.config)
+	tx.RefreshToken = NewRefreshTokenClient(tx.config)
 	tx.RepetitiveTask = NewRepetitiveTaskClient(tx.config)
 	tx.RepetitiveTaskExecution = NewRepetitiveTaskExecutionClient(tx.config)
 	tx.State = NewStateClient(tx.config)
@@ -211,6 +216,7 @@ func (tx *Tx) init() {
 	tx.Story = NewStoryClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Test = NewTestClient(tx.config)
+	tx.User = NewUserClient(tx.config)
 	tx.VariablesStack = NewVariablesStackClient(tx.config)
 }
 

@@ -17,6 +17,7 @@ import (
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
+	"arturgudiev/dashboard/ent/refreshtoken"
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/state"
@@ -25,6 +26,7 @@ import (
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
+	"arturgudiev/dashboard/ent/user"
 	"arturgudiev/dashboard/ent/variablesstack"
 	"context"
 	"errors"
@@ -109,6 +111,7 @@ func checkColumn(t, c string) error {
 			longtasksubmission.Table:         longtasksubmission.ValidColumn,
 			problem.Table:                    problem.ValidColumn,
 			question.Table:                   question.ValidColumn,
+			refreshtoken.Table:               refreshtoken.ValidColumn,
 			repetitivetask.Table:             repetitivetask.ValidColumn,
 			repetitivetaskexecution.Table:    repetitivetaskexecution.ValidColumn,
 			state.Table:                      state.ValidColumn,
@@ -117,6 +120,7 @@ func checkColumn(t, c string) error {
 			story.Table:                      story.ValidColumn,
 			task.Table:                       task.ValidColumn,
 			test.Table:                       test.ValidColumn,
+			user.Table:                       user.ValidColumn,
 			variablesstack.Table:             variablesstack.ValidColumn,
 		})
 	})

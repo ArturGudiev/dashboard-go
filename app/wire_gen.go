@@ -69,7 +69,9 @@ func InitializeApp() (*App, error) {
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
 	logMessagesRepository := repositories.NewLogMessagesRepository(client)
-	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, longTaskProgressesService, directionsService, problemService, containerService, cliService, statesService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository, longTasksProgressesSubmissionsRepository, longTasksProgressesRepository, statesRepository, stateRequirementsRepository, stateRequirementChecksRepository)
+	usersRepository := repositories.NewUsersRepository(client)
+	refreshTokensRepository := repositories.NewRefreshTokensRepository(client)
+	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, longTaskProgressesService, directionsService, problemService, containerService, cliService, statesService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository, longTasksProgressesSubmissionsRepository, longTasksProgressesRepository, statesRepository, stateRequirementsRepository, stateRequirementChecksRepository, usersRepository, refreshTokensRepository)
 	return app, nil
 }
 
@@ -170,6 +172,8 @@ func provideApp(
 	statesRepository *repositories.StatesRepository,
 	stateRequirementsRepository *repositories.StateRequirementsRepository,
 	stateRequirementChecksRepository *repositories.StateRequirementChecksRepository,
+	usersRepository *repositories.UsersRepository,
+	refreshTokensRepository *repositories.RefreshTokensRepository,
 ) *App {
 	return &App{
 		Client:                                   client,
@@ -211,6 +215,8 @@ func provideApp(
 		DirectionSubmissionsRepository:           directionSubmissionsRepository,
 		LongTasksProgressesSubmissionsRepository: longTasksProgressesSubmissionsRepository,
 		LongTasksProgressesRepository:            longTasksProgressesRepository,
+		UsersRepository:                          usersRepository,
+		RefreshTokensRepository:                  refreshTokensRepository,
 		ctx:                                      context.Background(),
 	}
 }

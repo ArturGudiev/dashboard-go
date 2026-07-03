@@ -17,6 +17,7 @@ import (
 	"arturgudiev/dashboard/ent/longtasksubmission"
 	"arturgudiev/dashboard/ent/problem"
 	"arturgudiev/dashboard/ent/question"
+	"arturgudiev/dashboard/ent/refreshtoken"
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/schema"
@@ -26,6 +27,7 @@ import (
 	"arturgudiev/dashboard/ent/story"
 	"arturgudiev/dashboard/ent/task"
 	"arturgudiev/dashboard/ent/test"
+	"arturgudiev/dashboard/ent/user"
 	"arturgudiev/dashboard/ent/variablesstack"
 	"time"
 )
@@ -290,6 +292,16 @@ func init() {
 	questionDescID := questionFields[0].Descriptor()
 	// question.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	question.IDValidator = questionDescID.Validators[0].(func(int) error)
+	refreshtokenFields := schema.RefreshToken{}.Fields()
+	_ = refreshtokenFields
+	// refreshtokenDescUserID is the schema descriptor for user_id field.
+	refreshtokenDescUserID := refreshtokenFields[1].Descriptor()
+	// refreshtoken.UserIDValidator is a validator for the "user_id" field. It is called by the builders before save.
+	refreshtoken.UserIDValidator = refreshtokenDescUserID.Validators[0].(func(int) error)
+	// refreshtokenDescCreatedAt is the schema descriptor for created_at field.
+	refreshtokenDescCreatedAt := refreshtokenFields[4].Descriptor()
+	// refreshtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	refreshtoken.DefaultCreatedAt = refreshtokenDescCreatedAt.Default.(func() time.Time)
 	repetitivetaskFields := schema.RepetitiveTask{}.Fields()
 	_ = repetitivetaskFields
 	// repetitivetaskDescDescription is the schema descriptor for description field.
@@ -434,6 +446,24 @@ func init() {
 	testDescID := testFields[0].Descriptor()
 	// test.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	test.IDValidator = testDescID.Validators[0].(func(int) error)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescName is the schema descriptor for name field.
+	userDescName := userFields[1].Descriptor()
+	// user.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	user.NameValidator = userDescName.Validators[0].(func(string) error)
+	// userDescEmail is the schema descriptor for email field.
+	userDescEmail := userFields[2].Descriptor()
+	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
+	// userDescPassword is the schema descriptor for password field.
+	userDescPassword := userFields[3].Descriptor()
+	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
+	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
+	// userDescID is the schema descriptor for id field.
+	userDescID := userFields[0].Descriptor()
+	// user.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	user.IDValidator = userDescID.Validators[0].(func(int) error)
 	variablesstackFields := schema.VariablesStack{}.Fields()
 	_ = variablesstackFields
 	// variablesstackDescContainerID is the schema descriptor for container_id field.

@@ -49,6 +49,8 @@ type App struct {
 	DirectionsRepository              *repositories.DirectionsRepository
 	LongTasksProgressesSubmissionsRepository *repositories.LongTasksProgressesSubmissionsRepository
 	LongTasksProgressesRepository *repositories.LongTasksProgressesRepository
+	UsersRepository                *repositories.UsersRepository
+	RefreshTokensRepository        *repositories.RefreshTokensRepository
 	ctx                      context.Context // Default context for CLI operations
 }
 

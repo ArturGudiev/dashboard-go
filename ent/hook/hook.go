@@ -176,6 +176,18 @@ func (f QuestionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.QuestionMutation", m)
 }
 
+// The RefreshTokenFunc type is an adapter to allow the use of ordinary
+// function as RefreshToken mutator.
+type RefreshTokenFunc func(context.Context, *ent.RefreshTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RefreshTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RefreshTokenMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RefreshTokenMutation", m)
+}
+
 // The RepetitiveTaskFunc type is an adapter to allow the use of ordinary
 // function as RepetitiveTask mutator.
 type RepetitiveTaskFunc func(context.Context, *ent.RepetitiveTaskMutation) (ent.Value, error)
@@ -270,6 +282,18 @@ func (f TestFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TestMutation", m)
+}
+
+// The UserFunc type is an adapter to allow the use of ordinary
+// function as User mutator.
+type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 }
 
 // The VariablesStackFunc type is an adapter to allow the use of ordinary

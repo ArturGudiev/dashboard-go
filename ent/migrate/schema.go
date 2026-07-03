@@ -296,6 +296,28 @@ var (
 		Columns:    QuestionsColumns,
 		PrimaryKey: []*schema.Column{QuestionsColumns[0]},
 	}
+	// RefreshTokensColumns holds the columns for the "refresh_tokens" table.
+	RefreshTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// RefreshTokensTable holds the schema information for the "refresh_tokens" table.
+	RefreshTokensTable = &schema.Table{
+		Name:       "refresh_tokens",
+		Columns:    RefreshTokensColumns,
+		PrimaryKey: []*schema.Column{RefreshTokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "refresh_tokens_users_refresh_tokens",
+				Columns:    []*schema.Column{RefreshTokensColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// RepetitiveTasksColumns holds the columns for the "repetitive_tasks" table.
 	RepetitiveTasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -432,6 +454,19 @@ var (
 		Columns:    TestsColumns,
 		PrimaryKey: []*schema.Column{TestsColumns[0]},
 	}
+	// UsersColumns holds the columns for the "users" table.
+	UsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "password", Type: field.TypeString},
+	}
+	// UsersTable holds the schema information for the "users" table.
+	UsersTable = &schema.Table{
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	}
 	// VariablesStacksColumns holds the columns for the "variables_stacks" table.
 	VariablesStacksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -467,6 +502,7 @@ var (
 		LongTaskSubmissionsTable,
 		ProblemsTable,
 		QuestionsTable,
+		RefreshTokensTable,
 		RepetitiveTasksTable,
 		RepetitiveTaskExecutionsTable,
 		StatesTable,
@@ -475,6 +511,7 @@ var (
 		StoriesTable,
 		TasksTable,
 		TestsTable,
+		UsersTable,
 		VariablesStacksTable,
 	}
 )
@@ -494,6 +531,7 @@ func init() {
 	LongTaskProgressesTable.ForeignKeys[0].RefTable = LongTasksTable
 	LongTaskProgressSubmissionsTable.ForeignKeys[0].RefTable = LongTaskProgressesTable
 	LongTaskSubmissionsTable.ForeignKeys[0].RefTable = LongTasksTable
+	RefreshTokensTable.ForeignKeys[0].RefTable = UsersTable
 	RepetitiveTaskExecutionsTable.ForeignKeys[0].RefTable = RepetitiveTasksTable
 	StateRequirementsTable.ForeignKeys[0].RefTable = StatesTable
 	StateRequirementChecksTable.ForeignKeys[0].RefTable = StateRequirementsTable

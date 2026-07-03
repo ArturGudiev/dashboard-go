@@ -48,6 +48,9 @@ type Problem func(*sql.Selector)
 // Question is the predicate function for question builders.
 type Question func(*sql.Selector)
 
+// RefreshToken is the predicate function for refreshtoken builders.
+type RefreshToken func(*sql.Selector)
+
 // RepetitiveTask is the predicate function for repetitivetask builders.
 type RepetitiveTask func(*sql.Selector)
 
@@ -71,6 +74,9 @@ type Task func(*sql.Selector)
 
 // Test is the predicate function for test builders.
 type Test func(*sql.Selector)
+
+// User is the predicate function for user builders.
+type User func(*sql.Selector)
 
 // VariablesStack is the predicate function for variablesstack builders.
 type VariablesStack func(*sql.Selector)

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"arturgudiev/dashboard/app"
+	"arturgudiev/dashboard/auth"
 	"arturgudiev/dashboard/docs"
 	"arturgudiev/dashboard/handlers"
 
@@ -17,8 +18,8 @@ import (
 
 // @title           Dashboard API
 // @version         1.0
-// @description     Task management dashboard API server
-// @termsOfService  http://swagger.io/terms/
+// @description     Task management dashboard API server.
+// @description     **Authentication:** Use `POST /users/login`, copy `accessToken` from the response, then click **Authorize** and paste it as the `access_token` cookie value. Alternatively, login from Swagger on the same host and cookies are sent automatically.
 
 // @contact.name   API Support
 // @contact.url    http://www.swagger.io/support
@@ -31,6 +32,12 @@ import (
 // @BasePath  /
 
 // @schemes   http https
+
+// @securityDefinitions.apikey AccessTokenCookie
+// @in cookie
+// @name access_token
+
+// @security AccessTokenCookie
 
 func main() {
 	// Load .env file (ignore error if file doesn't exist)
@@ -151,6 +158,9 @@ func main() {
 	// Apply CORS middleware
 	router.Use(cors.New(config))
 
+	// Require access token cookie on protected routes
+	router.Use(auth.AuthMiddleware())
+
 	// Explicitly handle OPTIONS requests for better compatibility (like NodeJS server)
 	router.OPTIONS("/*path", func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
@@ -164,7 +174,9 @@ func main() {
 	})
 
 	// Swagger UI route
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, func(c *ginSwagger.Config) {
+		c.PersistAuthorization = true
+	}))
 
 	// Create handler instance
 	h := handlers.NewHandler(application)
@@ -281,6 +293,14 @@ func main() {
 
 	// Aliase routes
 	router.GET("/aliases/:alias", h.GetAliasByString)
+
+	// User routes
+	router.GET("/users/me", h.GetMe)
+	router.GET("/users/:id", h.GetUser)
+	router.POST("/users", h.AddUser)
+	router.POST("/users/login", h.LoginUser)
+	router.POST("/users/refresh", h.RefreshUserToken)
+	router.POST("/users/logout", h.LogoutUser)
 
 	// Start server
 	port := os.Getenv("PORT")

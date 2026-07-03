@@ -45,6 +45,8 @@ func InitializeApp() (*App, error) {
 		repositories.NewStatesRepository,
 		repositories.NewStateRequirementsRepository,
 		repositories.NewStateRequirementChecksRepository,
+		repositories.NewUsersRepository,
+		repositories.NewRefreshTokensRepository,
 		repositories.NewQuestionsRepository,
 		repositories.NewStoriesRepository,
 		repositories.NewEpicsRepository,
@@ -168,6 +170,8 @@ func provideApp(
 	statesRepository *repositories.StatesRepository,
 	stateRequirementsRepository *repositories.StateRequirementsRepository,
 	stateRequirementChecksRepository *repositories.StateRequirementChecksRepository,
+	usersRepository *repositories.UsersRepository,
+	refreshTokensRepository *repositories.RefreshTokensRepository,
 ) *App {
 	return &App{
 		Client:                    client,
@@ -209,6 +213,8 @@ func provideApp(
 		DirectionSubmissionsRepository:    directionSubmissionsRepository,
 		LongTasksProgressesSubmissionsRepository: longTasksProgressesSubmissionsRepository,
 		LongTasksProgressesRepository: longTasksProgressesRepository,
+		UsersRepository:                usersRepository,
+		RefreshTokensRepository:        refreshTokensRepository,
 		ctx:                       context.Background(), // Default context for CLI
 	}
 }
