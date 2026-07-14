@@ -320,6 +320,44 @@ func (h *Handler) NewTask(c *gin.Context) {
 	c.JSON(200, newTask)
 }
 
+// NewHierarchicalTasks handles POST /new-hierarchical-tasks
+// @Summary      Create hierarchical tasks
+// @Description  Creates a tree of tasks under a parent container
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        request  body      handlers.NewHierarchicalTasksRequest  true  "Hierarchical tasks creation request"
+// @Success      200      {array}   models.TaskFull
+// @Failure      400      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Security     AccessTokenCookie
+// @Router       /new-hierarchical-tasks [post]
+func (h *Handler) NewHierarchicalTasks(c *gin.Context) {
+	var req NewHierarchicalTasksRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if len(req.Nodes) == 0 {
+		c.JSON(400, gin.H{"error": "at least one task node is required"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	createdTasks, err := h.App.TaskService.AddHierarchicalTasks(ctx, req.Parent, req.Nodes)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(404, gin.H{"error": "Parent container not found"})
+			return
+		}
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, createdTasks)
+}
+
 // NewTask handles POST /change-tasks-order
 // @Summary      Change tasks order
 // @Description  Changes the order of tasks in a container

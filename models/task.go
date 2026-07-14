@@ -47,3 +47,13 @@ type TaskShort struct {
 	Notes       string   `json:"notes" example:"User cannot log in"`
 }
 
+type HierarchicalTaskNode struct {
+	Description string                 `json:"description"`
+	Children    []HierarchicalTaskNode `json:"children"`
+}
+
+type NewHierarchicalTasksRequest struct {
+	Parent ContainerDescription   `json:"parent"`
+	Nodes  []HierarchicalTaskNode `json:"nodes"`
+}
+

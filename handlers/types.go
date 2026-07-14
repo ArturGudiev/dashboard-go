@@ -49,6 +49,12 @@ type NewTaskRequest struct {
 	Parent *models.ContainerDescription `json:"parent,omitempty"`
 }
 
+// NewHierarchicalTasksRequest represents a request to create a tree of tasks
+type NewHierarchicalTasksRequest struct {
+	Parent models.ContainerDescription   `json:"parent" binding:"required"`
+	Nodes  []models.HierarchicalTaskNode `json:"nodes" binding:"required"`
+}
+
 // NewTaskRequest represents a request to create a new task with optional parent
 type ChangeTasksOrderRequest struct {
 	ContainerType   schema.ContainerType `json:"containerType" binding:"required"`

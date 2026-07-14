@@ -2481,6 +2481,75 @@
                 }
             }
         },
+        "/new-hierarchical-tasks": {
+            "post": {
+                "security": [
+                    {
+                        "AccessTokenCookie": []
+                    }
+                ],
+                "description": "Creates a tree of tasks under a parent container",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Create hierarchical tasks",
+                "parameters": [
+                    {
+                        "description": "Hierarchical tasks creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NewHierarchicalTasksRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TaskFull"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/new-problem": {
             "post": {
                 "description": "Creates a new problem with optional parent relationship",
@@ -5724,6 +5793,24 @@
                 }
             }
         },
+        "handlers.NewHierarchicalTasksRequest": {
+            "type": "object",
+            "required": [
+                "nodes",
+                "parent"
+            ],
+            "properties": {
+                "nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.HierarchicalTaskNode"
+                    }
+                },
+                "parent": {
+                    "$ref": "#/definitions/models.ContainerDescription"
+                }
+            }
+        },
         "handlers.NewLogMessageRequest": {
             "type": "object",
             "properties": {
@@ -6282,6 +6369,20 @@
                         "bug",
                         "urgent"
                     ]
+                }
+            }
+        },
+        "models.HierarchicalTaskNode": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.HierarchicalTaskNode"
+                    }
+                },
+                "description": {
+                    "type": "string"
                 }
             }
         },

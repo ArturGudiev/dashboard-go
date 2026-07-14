@@ -238,6 +238,45 @@ func (s *TaskService) AddTask(ctx context.Context, task models.TaskShort, parent
 	return s.GetTaskFull(ctx, newTask.ID)
 }
 
+func (s *TaskService) AddHierarchicalTasks(ctx context.Context, parent models.ContainerDescription, nodes []models.HierarchicalTaskNode) ([]*models.TaskFull, error) {
+	created := make([]*models.TaskFull, 0, len(nodes))
+	for _, node := range nodes {
+		taskFull, err := s.addHierarchicalTaskNode(ctx, parent, node)
+		if err != nil {
+			return nil, err
+		}
+		created = append(created, taskFull)
+	}
+	return created, nil
+}
+
+func (s *TaskService) addHierarchicalTaskNode(ctx context.Context, parent models.ContainerDescription, node models.HierarchicalTaskNode) (*models.TaskFull, error) {
+	taskFull, err := s.AddTask(ctx, models.TaskShort{
+		Description: node.Description,
+		Tags:        []string{},
+		Notes:       "",
+	}, &parent)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(node.Children) == 0 {
+		return taskFull, nil
+	}
+
+	taskParent := models.ContainerDescription{
+		Type: schema.ContainerTypeTask,
+		ID:   taskFull.ID,
+	}
+	for _, child := range node.Children {
+		if _, err := s.addHierarchicalTaskNode(ctx, taskParent, child); err != nil {
+			return nil, err
+		}
+	}
+
+	return taskFull, nil
+}
+
 func (s *TaskService) GetDoneTasksCount(ctx context.Context, fromTime *time.Time) (int, error) {
 	if fromTime != nil {
 		return s.tasksRepository.getDoneTasksCountInRange(ctx, *fromTime, time.Now())

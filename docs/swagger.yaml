@@ -597,6 +597,18 @@ definitions:
       parent:
         $ref: '#/definitions/models.ContainerDescription'
     type: object
+  handlers.NewHierarchicalTasksRequest:
+    properties:
+      nodes:
+        items:
+          $ref: '#/definitions/models.HierarchicalTaskNode'
+        type: array
+      parent:
+        $ref: '#/definitions/models.ContainerDescription'
+    required:
+    - nodes
+    - parent
+    type: object
   handlers.NewLogMessageRequest:
     properties:
       containerID:
@@ -966,6 +978,15 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  models.HierarchicalTaskNode:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.HierarchicalTaskNode'
+        type: array
+      description:
+        type: string
     type: object
   models.LoginUserRequest:
     properties:
@@ -3339,6 +3360,50 @@ paths:
       summary: Create new epic
       tags:
       - epics
+  /new-hierarchical-tasks:
+    post:
+      consumes:
+      - application/json
+      description: Creates a tree of tasks under a parent container
+      parameters:
+      - description: Hierarchical tasks creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.NewHierarchicalTasksRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TaskFull'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AccessTokenCookie: []
+      summary: Create hierarchical tasks
+      tags:
+      - tasks
   /new-problem:
     post:
       consumes:

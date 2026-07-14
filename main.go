@@ -196,6 +196,7 @@ func main() {
 	router.PUT("/finish-tasks/", h.FinishTasks)
 	router.PUT("/finish-tasks-by-ids/", h.FinishTasksByIDs)
 	router.POST("/new-task", h.NewTask)
+	router.POST("/new-hierarchical-tasks", h.NewHierarchicalTasks)
 	router.PUT("/update-task", h.UpdateTask)
 	router.POST("/change-tasks-order", h.ChangeTasksOrder)
 
@@ -298,6 +299,7 @@ func main() {
 	router.GET("/users/me", h.GetMe)
 	router.GET("/users/:id", h.GetUser)
 	router.POST("/users", h.AddUser)
+	
 	router.POST("/users/login", h.LoginUser)
 	router.POST("/users/refresh", h.RefreshUserToken)
 	router.POST("/users/logout", h.LogoutUser)
