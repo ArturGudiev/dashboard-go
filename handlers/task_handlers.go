@@ -164,11 +164,11 @@ func (h *Handler) GetDoneTasks(c *gin.Context) {
 
 // GetOpenTasksByDueDate handles GET /tasks/by-due-date
 // @Summary      Get open tasks by due date
-// @Description  Returns open (not done) tasks whose due date falls on the specified calendar day
+// @Description  Returns open (not done) tasks whose due date falls on the specified calendar day (UTC)
 // @Tags         tasks
 // @Accept       json
 // @Produce      json
-// @Param        date   query     string  true  "Due date (YYYY-MM-DD)" example(2026-07-15)
+// @Param        date   query     string  true  "Due date (YYYY-MM-DD, UTC)" example(2026-07-15)
 // @Success      200    {array}   models.TaskFull
 // @Failure      400    {object}  map[string]string
 // @Failure      500    {object}  map[string]string
@@ -181,7 +181,7 @@ func (h *Handler) GetOpenTasksByDueDate(c *gin.Context) {
 		return
 	}
 
-	dayStart, err := time.ParseInLocation("2006-01-02", dateRaw, time.Local)
+	dayStart, err := time.ParseInLocation("2006-01-02", dateRaw, time.UTC)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "date must be YYYY-MM-DD"})
 		return
