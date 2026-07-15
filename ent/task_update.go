@@ -103,6 +103,26 @@ func (_u *TaskUpdate) ClearDoneDateTime() *TaskUpdate {
 	return _u
 }
 
+// SetDueDateTime sets the "due_date_time" field.
+func (_u *TaskUpdate) SetDueDateTime(v time.Time) *TaskUpdate {
+	_u.mutation.SetDueDateTime(v)
+	return _u
+}
+
+// SetNillableDueDateTime sets the "due_date_time" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableDueDateTime(v *time.Time) *TaskUpdate {
+	if v != nil {
+		_u.SetDueDateTime(*v)
+	}
+	return _u
+}
+
+// ClearDueDateTime clears the value of the "due_date_time" field.
+func (_u *TaskUpdate) ClearDueDateTime() *TaskUpdate {
+	_u.mutation.ClearDueDateTime()
+	return _u
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (_u *TaskUpdate) Mutation() *TaskMutation {
 	return _u.mutation
@@ -179,6 +199,12 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DoneDateTimeCleared() {
 		_spec.ClearField(task.FieldDoneDateTime, field.TypeTime)
+	}
+	if value, ok := _u.mutation.DueDateTime(); ok {
+		_spec.SetField(task.FieldDueDateTime, field.TypeTime, value)
+	}
+	if _u.mutation.DueDateTimeCleared() {
+		_spec.ClearField(task.FieldDueDateTime, field.TypeTime)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -271,6 +297,26 @@ func (_u *TaskUpdateOne) SetNillableDoneDateTime(v *time.Time) *TaskUpdateOne {
 // ClearDoneDateTime clears the value of the "done_date_time" field.
 func (_u *TaskUpdateOne) ClearDoneDateTime() *TaskUpdateOne {
 	_u.mutation.ClearDoneDateTime()
+	return _u
+}
+
+// SetDueDateTime sets the "due_date_time" field.
+func (_u *TaskUpdateOne) SetDueDateTime(v time.Time) *TaskUpdateOne {
+	_u.mutation.SetDueDateTime(v)
+	return _u
+}
+
+// SetNillableDueDateTime sets the "due_date_time" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableDueDateTime(v *time.Time) *TaskUpdateOne {
+	if v != nil {
+		_u.SetDueDateTime(*v)
+	}
+	return _u
+}
+
+// ClearDueDateTime clears the value of the "due_date_time" field.
+func (_u *TaskUpdateOne) ClearDueDateTime() *TaskUpdateOne {
+	_u.mutation.ClearDueDateTime()
 	return _u
 }
 
@@ -380,6 +426,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 	}
 	if _u.mutation.DoneDateTimeCleared() {
 		_spec.ClearField(task.FieldDoneDateTime, field.TypeTime)
+	}
+	if value, ok := _u.mutation.DueDateTime(); ok {
+		_spec.SetField(task.FieldDueDateTime, field.TypeTime, value)
+	}
+	if _u.mutation.DueDateTimeCleared() {
+		_spec.ClearField(task.FieldDueDateTime, field.TypeTime)
 	}
 	_node = &Task{config: _u.config}
 	_spec.Assign = _node.assignValues

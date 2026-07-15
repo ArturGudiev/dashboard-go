@@ -21,6 +21,8 @@ const (
 	FieldNotes = "notes"
 	// FieldDoneDateTime holds the string denoting the done_date_time field in the database.
 	FieldDoneDateTime = "done_date_time"
+	// FieldDueDateTime holds the string denoting the due_date_time field in the database.
+	FieldDueDateTime = "due_date_time"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
 )
@@ -33,6 +35,7 @@ var Columns = []string{
 	FieldDone,
 	FieldNotes,
 	FieldDoneDateTime,
+	FieldDueDateTime,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -84,4 +87,9 @@ func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 // ByDoneDateTime orders the results by the done_date_time field.
 func ByDoneDateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDoneDateTime, opts...).ToFunc()
+}
+
+// ByDueDateTime orders the results by the due_date_time field.
+func ByDueDateTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDueDateTime, opts...).ToFunc()
 }

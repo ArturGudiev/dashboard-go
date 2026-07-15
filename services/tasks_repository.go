@@ -32,8 +32,16 @@ func (r *TasksRepository) SetTaskDone(ctx context.Context, ID int, solution stri
 	return err
 }
 
-func (r *TasksRepository) AddTask(ctx context.Context, description string, tags []string, notes string, done bool) (*ent.Task, error) {
-	task, err := r.client.Task.Create().SetDescription(description).SetTags(tags).SetNotes(notes).SetDone(done).Save(ctx)
+func (r *TasksRepository) AddTask(ctx context.Context, description string, tags []string, notes string, done bool, dueDateTime *time.Time) (*ent.Task, error) {
+	builder := r.client.Task.Create().
+		SetDescription(description).
+		SetTags(tags).
+		SetNotes(notes).
+		SetDone(done)
+	if dueDateTime != nil {
+		builder = builder.SetDueDateTime(*dueDateTime)
+	}
+	task, err := builder.Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +69,10 @@ func (r *TasksRepository) AddTaskByFields(ctx context.Context, fields models.Tas
 
 	if fields.DoneDateTime != nil {
 		task.SetDoneDateTime(*fields.DoneDateTime)
+	}
+
+	if fields.DueDateTime != nil {
+		task.SetDueDateTime(*fields.DueDateTime)
 	}
 
 	newTask, err := task.Save(ctx)
@@ -94,8 +106,25 @@ func (r *TasksRepository) UpdateTask(ctx context.Context, task models.TaskPartia
 		updateBuilder = updateBuilder.SetDoneDateTime(*task.DoneDateTime)
 	}
 
+	if task.DueDateTime != nil {
+		updateBuilder = updateBuilder.SetDueDateTime(*task.DueDateTime)
+	}
+
 	_, err := updateBuilder.Save(ctx)
 	return err
+}
+
+func (r *TasksRepository) GetOpenTasksByDueDate(ctx context.Context, dayStart time.Time) ([]*ent.Task, error) {
+	dayEnd := dayStart.Add(24 * time.Hour)
+	return r.client.Task.Query().
+		Where(
+			task.DoneEQ(false),
+			task.DueDateTimeNotNil(),
+			task.DueDateTimeGTE(dayStart),
+			task.DueDateTimeLT(dayEnd),
+		).
+		Order(task.ByID()).
+		All(ctx)
 }
 
 func (r *TasksRepository) getDoneTasksCountInRange(ctx context.Context, start time.Time, end time.Time) (int, error) {

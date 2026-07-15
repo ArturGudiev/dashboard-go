@@ -28,6 +28,8 @@ type Task struct {
 	Notes string `json:"notes,omitempty"`
 	// DoneDateTime holds the value of the "done_date_time" field.
 	DoneDateTime *time.Time `json:"done_date_time,omitempty"`
+	// DueDateTime holds the value of the "due_date_time" field.
+	DueDateTime  *time.Time `json:"due_date_time,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -44,7 +46,7 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case task.FieldDescription, task.FieldNotes:
 			values[i] = new(sql.NullString)
-		case task.FieldDoneDateTime:
+		case task.FieldDoneDateTime, task.FieldDueDateTime:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -100,6 +102,13 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 				_m.DoneDateTime = new(time.Time)
 				*_m.DoneDateTime = value.Time
 			}
+		case task.FieldDueDateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field due_date_time", values[i])
+			} else if value.Valid {
+				_m.DueDateTime = new(time.Time)
+				*_m.DueDateTime = value.Time
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -150,6 +159,11 @@ func (_m *Task) String() string {
 	builder.WriteString(", ")
 	if v := _m.DoneDateTime; v != nil {
 		builder.WriteString("done_date_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.DueDateTime; v != nil {
+		builder.WriteString("due_date_time=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteByte(')')

@@ -139,6 +139,7 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 		KnowledgeNodes:   []int{},
 		Variables:        toContainerVariables(variables),
 		DoneDateTime:     task.DoneDateTime,
+		DueDateTime:      task.DueDateTime,
 	}
 
 	return taskFull, nil
@@ -225,7 +226,7 @@ func (s *TaskService) AddAnonymousTask(ctx context.Context) (*ent.Task, error) {
 }
 
 func (s *TaskService) AddTask(ctx context.Context, task models.TaskShort, parent *models.ContainerDescription) (*models.TaskFull, error) {
-	newTask, err := s.tasksRepository.AddTask(ctx, task.Description, task.Tags, task.Notes, false)
+	newTask, err := s.tasksRepository.AddTask(ctx, task.Description, task.Tags, task.Notes, false, task.DueDateTime)
 	if err != nil {
 		return nil, err
 	}
@@ -236,6 +237,18 @@ func (s *TaskService) AddTask(ctx context.Context, task models.TaskShort, parent
 		}
 	}
 	return s.GetTaskFull(ctx, newTask.ID)
+}
+
+func (s *TaskService) GetOpenTasksFullByDueDate(ctx context.Context, dayStart time.Time) ([]*models.TaskFull, error) {
+	tasks, err := s.tasksRepository.GetOpenTasksByDueDate(ctx, dayStart)
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]int, len(tasks))
+	for i, t := range tasks {
+		ids[i] = t.ID
+	}
+	return s.GetTasksFull(ctx, ids)
 }
 
 func (s *TaskService) AddHierarchicalTasks(ctx context.Context, parent models.ContainerDescription, nodes []models.HierarchicalTaskNode) ([]*models.TaskFull, error) {

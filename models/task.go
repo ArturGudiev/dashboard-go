@@ -22,6 +22,7 @@ type TaskFull struct {
 	KnowledgeNodes   []int                  `json:"knowledgeNodes"`
 	Variables        []ContainerVariable    `json:"variables"`
 	DoneDateTime     *time.Time             `json:"doneDateTime"`
+	DueDateTime      *time.Time             `json:"dueDateTime"`
 }
 
 type TaskPartial struct {
@@ -30,6 +31,7 @@ type TaskPartial struct {
 	Tags         *[]string  `json:"tags"`
 	Notes        *string    `json:"notes"`
 	DoneDateTime *time.Time `json:"doneDateTime"`
+	DueDateTime  *time.Time `json:"dueDateTime"`
 	Done         *bool      `json:"done"`
 }
 
@@ -38,13 +40,15 @@ type TaskFieldsPartial struct {
 	Tags         *[]string  `json:"tags"`
 	Notes        *string    `json:"notes"`
 	DoneDateTime *time.Time `json:"doneDateTime"`
+	DueDateTime  *time.Time `json:"dueDateTime"`
 	Done         *bool      `json:"done"`
 }
 
 type TaskShort struct {
-	Description string   `json:"description" example:"Fix login bug"`
-	Tags        []string `json:"tags" example:"bug,urgent"`
-	Notes       string   `json:"notes" example:"User cannot log in"`
+	Description string     `json:"description" example:"Fix login bug"`
+	Tags        []string   `json:"tags" example:"bug,urgent"`
+	Notes       string     `json:"notes" example:"User cannot log in"`
+	DueDateTime *time.Time `json:"dueDateTime,omitempty"`
 }
 
 type HierarchicalTaskNode struct {

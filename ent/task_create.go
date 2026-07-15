@@ -74,6 +74,20 @@ func (_c *TaskCreate) SetNillableDoneDateTime(v *time.Time) *TaskCreate {
 	return _c
 }
 
+// SetDueDateTime sets the "due_date_time" field.
+func (_c *TaskCreate) SetDueDateTime(v time.Time) *TaskCreate {
+	_c.mutation.SetDueDateTime(v)
+	return _c
+}
+
+// SetNillableDueDateTime sets the "due_date_time" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableDueDateTime(v *time.Time) *TaskCreate {
+	if v != nil {
+		_c.SetDueDateTime(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *TaskCreate) SetID(v int) *TaskCreate {
 	_c.mutation.SetID(v)
@@ -204,6 +218,10 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DoneDateTime(); ok {
 		_spec.SetField(task.FieldDoneDateTime, field.TypeTime, value)
 		_node.DoneDateTime = &value
+	}
+	if value, ok := _c.mutation.DueDateTime(); ok {
+		_spec.SetField(task.FieldDueDateTime, field.TypeTime, value)
+		_node.DueDateTime = &value
 	}
 	return _node, _spec
 }

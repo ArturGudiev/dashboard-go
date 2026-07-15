@@ -435,6 +435,7 @@ var (
 		{Name: "done", Type: field.TypeBool, Default: false},
 		{Name: "notes", Type: field.TypeString, Default: ""},
 		{Name: "done_date_time", Type: field.TypeTime, Nullable: true},
+		{Name: "due_date_time", Type: field.TypeTime, Nullable: true},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
 	TasksTable = &schema.Table{

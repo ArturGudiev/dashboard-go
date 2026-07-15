@@ -13664,6 +13664,7 @@ type TaskMutation struct {
 	_done          *bool
 	notes          *string
 	done_date_time *time.Time
+	due_date_time  *time.Time
 	clearedFields  map[string]struct{}
 	done           bool
 	oldValue       func(context.Context) (*Task, error)
@@ -13982,6 +13983,55 @@ func (m *TaskMutation) ResetDoneDateTime() {
 	delete(m.clearedFields, task.FieldDoneDateTime)
 }
 
+// SetDueDateTime sets the "due_date_time" field.
+func (m *TaskMutation) SetDueDateTime(t time.Time) {
+	m.due_date_time = &t
+}
+
+// DueDateTime returns the value of the "due_date_time" field in the mutation.
+func (m *TaskMutation) DueDateTime() (r time.Time, exists bool) {
+	v := m.due_date_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDueDateTime returns the old "due_date_time" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldDueDateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDueDateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDueDateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDueDateTime: %w", err)
+	}
+	return oldValue.DueDateTime, nil
+}
+
+// ClearDueDateTime clears the value of the "due_date_time" field.
+func (m *TaskMutation) ClearDueDateTime() {
+	m.due_date_time = nil
+	m.clearedFields[task.FieldDueDateTime] = struct{}{}
+}
+
+// DueDateTimeCleared returns if the "due_date_time" field was cleared in this mutation.
+func (m *TaskMutation) DueDateTimeCleared() bool {
+	_, ok := m.clearedFields[task.FieldDueDateTime]
+	return ok
+}
+
+// ResetDueDateTime resets all changes to the "due_date_time" field.
+func (m *TaskMutation) ResetDueDateTime() {
+	m.due_date_time = nil
+	delete(m.clearedFields, task.FieldDueDateTime)
+}
+
 // Where appends a list predicates to the TaskMutation builder.
 func (m *TaskMutation) Where(ps ...predicate.Task) {
 	m.predicates = append(m.predicates, ps...)
@@ -14016,7 +14066,7 @@ func (m *TaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.description != nil {
 		fields = append(fields, task.FieldDescription)
 	}
@@ -14031,6 +14081,9 @@ func (m *TaskMutation) Fields() []string {
 	}
 	if m.done_date_time != nil {
 		fields = append(fields, task.FieldDoneDateTime)
+	}
+	if m.due_date_time != nil {
+		fields = append(fields, task.FieldDueDateTime)
 	}
 	return fields
 }
@@ -14050,6 +14103,8 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 		return m.Notes()
 	case task.FieldDoneDateTime:
 		return m.DoneDateTime()
+	case task.FieldDueDateTime:
+		return m.DueDateTime()
 	}
 	return nil, false
 }
@@ -14069,6 +14124,8 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldNotes(ctx)
 	case task.FieldDoneDateTime:
 		return m.OldDoneDateTime(ctx)
+	case task.FieldDueDateTime:
+		return m.OldDueDateTime(ctx)
 	}
 	return nil, fmt.Errorf("unknown Task field %s", name)
 }
@@ -14113,6 +14170,13 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDoneDateTime(v)
 		return nil
+	case task.FieldDueDateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDueDateTime(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Task field %s", name)
 }
@@ -14146,6 +14210,9 @@ func (m *TaskMutation) ClearedFields() []string {
 	if m.FieldCleared(task.FieldDoneDateTime) {
 		fields = append(fields, task.FieldDoneDateTime)
 	}
+	if m.FieldCleared(task.FieldDueDateTime) {
+		fields = append(fields, task.FieldDueDateTime)
+	}
 	return fields
 }
 
@@ -14162,6 +14229,9 @@ func (m *TaskMutation) ClearField(name string) error {
 	switch name {
 	case task.FieldDoneDateTime:
 		m.ClearDoneDateTime()
+		return nil
+	case task.FieldDueDateTime:
+		m.ClearDueDateTime()
 		return nil
 	}
 	return fmt.Errorf("unknown Task nullable field %s", name)
@@ -14185,6 +14255,9 @@ func (m *TaskMutation) ResetField(name string) error {
 		return nil
 	case task.FieldDoneDateTime:
 		m.ResetDoneDateTime()
+		return nil
+	case task.FieldDueDateTime:
+		m.ResetDueDateTime()
 		return nil
 	}
 	return fmt.Errorf("unknown Task field %s", name)

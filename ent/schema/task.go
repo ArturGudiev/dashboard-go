@@ -28,5 +28,8 @@ func (Task) Fields() []ent.Field {
 		field.Time("done_date_time").
 			Optional().
 			Nillable(),
+		field.Time("due_date_time").
+			Optional().
+			Nillable(),
 	}
 }

@@ -74,6 +74,11 @@ func DoneDateTime(v time.Time) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldDoneDateTime, v))
 }
 
+// DueDateTime applies equality check predicate on the "due_date_time" field. It's identical to DueDateTimeEQ.
+func DueDateTime(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDueDateTime, v))
+}
+
 // DescriptionEQ applies the EQ predicate on the "description" field.
 func DescriptionEQ(v string) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldDescription, v))
@@ -262,6 +267,56 @@ func DoneDateTimeIsNil() predicate.Task {
 // DoneDateTimeNotNil applies the NotNil predicate on the "done_date_time" field.
 func DoneDateTimeNotNil() predicate.Task {
 	return predicate.Task(sql.FieldNotNull(FieldDoneDateTime))
+}
+
+// DueDateTimeEQ applies the EQ predicate on the "due_date_time" field.
+func DueDateTimeEQ(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDueDateTime, v))
+}
+
+// DueDateTimeNEQ applies the NEQ predicate on the "due_date_time" field.
+func DueDateTimeNEQ(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldDueDateTime, v))
+}
+
+// DueDateTimeIn applies the In predicate on the "due_date_time" field.
+func DueDateTimeIn(vs ...time.Time) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldDueDateTime, vs...))
+}
+
+// DueDateTimeNotIn applies the NotIn predicate on the "due_date_time" field.
+func DueDateTimeNotIn(vs ...time.Time) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldDueDateTime, vs...))
+}
+
+// DueDateTimeGT applies the GT predicate on the "due_date_time" field.
+func DueDateTimeGT(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldDueDateTime, v))
+}
+
+// DueDateTimeGTE applies the GTE predicate on the "due_date_time" field.
+func DueDateTimeGTE(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldDueDateTime, v))
+}
+
+// DueDateTimeLT applies the LT predicate on the "due_date_time" field.
+func DueDateTimeLT(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldDueDateTime, v))
+}
+
+// DueDateTimeLTE applies the LTE predicate on the "due_date_time" field.
+func DueDateTimeLTE(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldDueDateTime, v))
+}
+
+// DueDateTimeIsNil applies the IsNil predicate on the "due_date_time" field.
+func DueDateTimeIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldDueDateTime))
+}
+
+// DueDateTimeNotNil applies the NotNil predicate on the "due_date_time" field.
+func DueDateTimeNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldDueDateTime))
 }
 
 // And groups predicates with the AND operator between them.

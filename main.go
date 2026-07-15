@@ -190,6 +190,7 @@ func main() {
 	router.PATCH("/task/:id", h.PatchTaskByID)
 	router.GET("/task-report/:id", h.GetTaskReport)
 	router.POST("/get-tasks", h.GetTasksByIDs)
+	router.GET("/tasks/by-due-date", h.GetOpenTasksByDueDate)
 	router.PUT("/add-anonymous-task", h.AddAnonymousTask)
 	router.GET("/done-tasks", h.GetDoneTasks)
 	router.PUT("/finish-task/:id", h.FinishTask)
