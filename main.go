@@ -213,6 +213,7 @@ func main() {
 	router.GET("/long-tasks", h.GetLongTasks)
 	router.GET("/long-tasks/:id", h.GetLongTaskById)
 	router.PATCH("/long-tasks/:id", h.PatchLongTaskByID)
+	router.PUT("/long-tasks/:id/close", h.CloseLongTask)
 	router.POST("/long-tasks/:id/submissions", h.AddLongTaskSubmission)
 	router.GET("/long-tasks/:id/submissions", h.GetLongTaskSubmissions)
 	router.POST("/long-tasks", h.NewLongTask)

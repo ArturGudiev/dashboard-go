@@ -9,11 +9,11 @@ import (
 
 // GetLongTasks handles GET /long-tasks
 // @Summary      Get long tasks
-// @Description  Returns all long tasks; use open=true to return only open (not done) tasks
+// @Description  Returns open long tasks by default (done=false). Use open=false to include completed tasks.
 // @Tags         long-tasks
 // @Accept       json
 // @Produce      json
-// @Param        open  query  boolean  false  "Return only open long tasks"
+// @Param        open  query  boolean  false  "Return only open long tasks (default true)"
 // @Success      200   {array}   []models.LongTaskFull
 // @Failure      400   {object}  map[string]string
 // @Failure      500   {object}  map[string]string
@@ -173,4 +173,37 @@ func (h *Handler) NewLongTask(c *gin.Context) {
 		return
 	}
 	c.JSON(200, newLongTask)
+}
+
+// CloseLongTask handles PUT /long-tasks/:id/close
+// @Summary      Close long task
+// @Description  Marks a long task as done
+// @Tags         long-tasks
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Long task ID"
+// @Success      200  {object}  ent.LongTask
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /long-tasks/{id}/close [put]
+func (h *Handler) CloseLongTask(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid long task ID"})
+		return
+	}
+
+	longTask, err := h.App.LongTasksService.CloseLongTask(c.Request.Context(), id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(404, gin.H{"error": "Long task not found"})
+			return
+		}
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, longTask)
 }

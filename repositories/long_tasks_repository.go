@@ -105,6 +105,14 @@ func (r *LongTasksRepository) UpdateLongTask(ctx context.Context, partial models
 	if partial.Notes != nil {
 		updateBuilder = updateBuilder.SetNotes(*partial.Notes)
 	}
+	if partial.Done != nil {
+		updateBuilder = updateBuilder.SetDone(*partial.Done)
+		if *partial.Done {
+			updateBuilder = updateBuilder.SetDoneDateTime(time.Now())
+		} else {
+			updateBuilder = updateBuilder.ClearDoneDateTime()
+		}
+	}
 
 	_, err := updateBuilder.Save(ctx)
 	return err

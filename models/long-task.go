@@ -13,4 +13,5 @@ type LongTaskPartial struct {
 	ID          int     `json:"id"`
 	Description *string `json:"description"`
 	Notes       *string `json:"notes"`
+	Done        *bool   `json:"done"`
 }

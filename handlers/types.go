@@ -244,6 +244,12 @@ type PatchDirectionByIDRequest struct {
 	Closed      *bool   `json:"closed"`
 }
 
+type PatchLongTaskByIDRequest struct {
+	Description *string `json:"description"`
+	Notes       *string `json:"notes"`
+	Done        *bool   `json:"done"`
+}
+
 // AddContainerVariableRequest adds a variable to a container's variables stack.
 type AddContainerVariableRequest struct {
 	ContainerType schema.ContainerType `json:"containerType" binding:"required"`

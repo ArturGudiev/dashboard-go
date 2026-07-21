@@ -182,12 +182,12 @@ func (h *Handler) PatchEpicByID(c *gin.Context) {
 // @Router       /repetitive-tasks/{id} [patch]
 // PatchLongTaskByID handles PATCH /long-tasks/:id
 // @Summary      Patch long task by ID
-// @Description  Partially updates a long task's description and/or notes
+// @Description  Partially updates a long task's description, notes, and/or done state
 // @Tags         long-tasks
 // @Accept       json
 // @Produce      json
 // @Param        id       path      int                      true  "Long task ID"
-// @Param        request  body      PatchContainerByIDRequest  true  "Fields to update"
+// @Param        request  body      PatchLongTaskByIDRequest  true  "Fields to update"
 // @Success      200      {object}  ent.LongTask
 // @Failure      400      {object}  map[string]string
 // @Failure      404      {object}  map[string]string
@@ -241,8 +241,14 @@ func (h *Handler) PatchLongTaskByID(c *gin.Context) {
 	if !ok {
 		return
 	}
-	req, ok := bindPatchContainerRequest(c)
-	if !ok {
+
+	var req PatchLongTaskByIDRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Description == nil && req.Notes == nil && req.Done == nil {
+		c.JSON(400, gin.H{"error": "At least one of description, notes, or done must be provided"})
 		return
 	}
 
@@ -251,6 +257,7 @@ func (h *Handler) PatchLongTaskByID(c *gin.Context) {
 		ID:          id,
 		Description: req.Description,
 		Notes:       req.Notes,
+		Done:        req.Done,
 	})
 	if err != nil {
 		writePatchError(c, id, "long task", err)

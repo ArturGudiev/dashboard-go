@@ -27,16 +27,24 @@ func NewLongTasksService(
 	}
 }
 
+func filterOpenLongTasks(longTasks []*ent.LongTask) []*ent.LongTask {
+	return slices.DeleteFunc(longTasks, func(task *ent.LongTask) bool {
+		return task.Done
+	})
+}
+
+func shouldReturnOpenLongTasksOnly(open *bool) bool {
+	return open == nil || *open
+}
+
 func (s *LongTasksService) GetLongTasks(ctx context.Context, open *bool) ([]*ent.LongTask, error) {
 	longTasks, err := s.longTasksRepository.GetLongTasks(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if open != nil && *open {
-		longTasks = slices.DeleteFunc(longTasks, func(task *ent.LongTask) bool {
-			return task.Done
-		})
+	if shouldReturnOpenLongTasksOnly(open) {
+		longTasks = filterOpenLongTasks(longTasks)
 	}
 
 	return longTasks, nil
@@ -47,6 +55,11 @@ func (s *LongTasksService) GetLongTasksFull(ctx context.Context, open *bool) ([]
 	if err != nil {
 		return nil, err
 	}
+
+	if shouldReturnOpenLongTasksOnly(open) {
+		longTasks = filterOpenLongTasks(longTasks)
+	}
+
 	longTasksFull := make([]*models.LongTaskFull, len(longTasks))
 	for i, longTask := range longTasks {
 		progresses := make([]models.LongTaskProgress, len(longTask.Edges.Progresses))
@@ -78,6 +91,14 @@ func (s *LongTasksService) UpdateLongTask(ctx context.Context, partial models.Lo
 		return nil, err
 	}
 	return s.longTasksRepository.GetLongTaskById(ctx, partial.ID)
+}
+
+func (s *LongTasksService) CloseLongTask(ctx context.Context, id int) (*ent.LongTask, error) {
+	done := true
+	return s.UpdateLongTask(ctx, models.LongTaskPartial{
+		ID:   id,
+		Done: &done,
+	})
 }
 
 func (s *LongTasksService) AddLongTask(
