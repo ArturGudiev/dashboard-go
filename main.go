@@ -242,6 +242,13 @@ func main() {
 	router.POST("/new-problem", h.NewProblem)
 	router.PUT("/update-problem", h.UpdateProblem)
 
+	// Knowledge node routes
+	router.GET("/knowledge-node/:id", h.GetKnowledgeNodeByID)
+	router.PATCH("/knowledge-node/:id", h.PatchKnowledgeNodeByID)
+	router.POST("/get-knowledge-nodes", h.GetKnowledgeNodesByIDs)
+	router.POST("/new-knowledge-node", h.NewKnowledgeNode)
+	router.PUT("/update-knowledge-node", h.UpdateKnowledgeNode)
+
 	// Question routes
 	router.GET("/question/:id", h.GetQuestionByID)
 	router.PATCH("/question/:id", h.PatchQuestionByID)
@@ -301,6 +308,7 @@ func main() {
 	// Content is under /files/content/* so it does not conflict with /files/config in Gin's router tree.
 	router.GET("/files/config", h.GetFilesConfig)
 	router.GET("/files", h.ListFiles)
+	router.GET("/files/container/:type/:id", h.ListContainerFiles)
 	router.GET("/files/content/*filepath", h.GetFile)
 	router.PUT("/files/content/*filepath", h.PutFile)
 	router.DELETE("/files/content/*filepath", h.DeleteFile)

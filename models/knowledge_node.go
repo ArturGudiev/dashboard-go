@@ -36,6 +36,6 @@ type KnowledgeNodePartial struct {
 }
 
 type NewKnowledgeNodeRequest struct {
-	Epic   EpicShort             `json:"epic"`
-	Parent *ContainerDescription `json:"parent,omitempty"`
+	KnowledgeNode KnowledgeNodeShort    `json:"knowledgeNode"`
+	Parent        *ContainerDescription `json:"parent,omitempty"`
 }

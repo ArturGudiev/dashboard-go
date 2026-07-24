@@ -1130,7 +1130,7 @@ const docTemplate = `{
         },
         "/files": {
             "get": {
-                "description": "Lists all files and directories under the configured files directory (relative paths)",
+                "description": "Lists all files and directories under the configured files directory (logical relative paths; when FILES_ENCRYPTED=true the trailing .bin suffix is stripped)",
                 "produces": [
                     "application/json"
                 ],
@@ -1198,9 +1198,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/files/container/{type}/{id}": {
+            "get": {
+                "description": "Lists immediate files/dirs in the container's related files folder (if present)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "List files for a container",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "knowledge-node",
+                        "description": "Container type",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Container ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/services.FileInfo"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/files/content/{filepath}": {
             "get": {
-                "description": "Returns file contents for the given relative path (e.g. 1.txt or sub/dir/file.txt). When FILES_ENCRYPTED=true the body is opaque ciphertext.",
+                "description": "Returns file contents for the given logical relative path (e.g. 1.txt or sub/dir/file.txt). When FILES_ENCRYPTED=true reads path.bin on disk and returns opaque ciphertext (no server-side decrypt).",
                 "produces": [
                     "application/octet-stream"
                 ],
@@ -1264,7 +1322,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Writes request body to the given relative path. When FILES_ENCRYPTED=true the client should send already-encrypted bytes.",
+                "description": "Writes request body to the given logical relative path. When FILES_ENCRYPTED=true stores as path.bin; client should send already-encrypted bytes.",
                 "consumes": [
                     "application/octet-stream"
                 ],
@@ -1332,7 +1390,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Deletes a file by relative path",
+                "description": "Deletes a file by logical relative path (when FILES_ENCRYPTED=true deletes path.bin)",
                 "produces": [
                     "application/json"
                 ],
@@ -1625,6 +1683,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/get-knowledge-nodes": {
+            "post": {
+                "description": "Returns multiple knowledge nodes by their IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "knowledge-nodes"
+                ],
+                "summary": "Get knowledge nodes by IDs",
+                "parameters": [
+                    {
+                        "description": "List of knowledge node IDs",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.IDsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.KnowledgeNodeFull"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/get-problems": {
             "post": {
                 "description": "Returns multiple problems by their IDs",
@@ -1826,6 +1939,128 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/knowledge-node/{id}": {
+            "get": {
+                "description": "Returns a knowledge node by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "knowledge-nodes"
+                ],
+                "summary": "Get knowledge node by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Knowledge node ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KnowledgeNodeFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Partially updates a knowledge node's name (via description) and/or notes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "knowledge-nodes"
+                ],
+                "summary": "Patch knowledge node by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Knowledge node ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KnowledgeNodeFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -2850,6 +3085,67 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/models.TaskFull"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/new-knowledge-node": {
+            "post": {
+                "description": "Creates a new knowledge node with optional parent relationship",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "knowledge-nodes"
+                ],
+                "summary": "Create new knowledge node",
+                "parameters": [
+                    {
+                        "description": "Knowledge node creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.NewKnowledgeNodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KnowledgeNodeFull"
                         }
                     },
                     "400": {
@@ -4724,6 +5020,58 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/update-knowledge-node": {
+            "put": {
+                "description": "Updates an existing knowledge node by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "knowledge-nodes"
+                ],
+                "summary": "Update knowledge node",
+                "parameters": [
+                    {
+                        "description": "Knowledge node update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.KnowledgeNodePartial"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KnowledgeNodeFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -6795,6 +7143,138 @@ const docTemplate = `{
                 }
             }
         },
+        "models.KnowledgeNodeFull": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "closed": {
+                    "type": "boolean"
+                },
+                "definitions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "epics": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "knowledgeBits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "knowledgeNodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parentContainers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContainerDescription"
+                    }
+                },
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "stories": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.KnowledgeNodePartial": {
+            "type": "object",
+            "properties": {
+                "doneDateTime": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.KnowledgeNodeShort": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Fix login bug"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "User cannot log in"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "bug",
+                        "urgent"
+                    ]
+                }
+            }
+        },
         "models.LoginUserRequest": {
             "type": "object",
             "required": [
@@ -6987,6 +7467,17 @@ const docTemplate = `{
             "properties": {
                 "epic": {
                     "$ref": "#/definitions/models.EpicShort"
+                },
+                "parent": {
+                    "$ref": "#/definitions/models.ContainerDescription"
+                }
+            }
+        },
+        "models.NewKnowledgeNodeRequest": {
+            "type": "object",
+            "properties": {
+                "knowledgeNode": {
+                    "$ref": "#/definitions/models.KnowledgeNodeShort"
                 },
                 "parent": {
                     "$ref": "#/definitions/models.ContainerDescription"

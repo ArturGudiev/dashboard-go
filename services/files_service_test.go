@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"arturgudiev/dashboard/ent/schema"
 )
 
 func TestFilesServicePlaintext(t *testing.T) {
@@ -126,5 +128,43 @@ func TestResolvePathTraversal(t *testing.T) {
 
 	if _, _, err := svc.GetFile("../outside.txt"); err != ErrInvalidFilePath {
 		t.Fatalf("expected ErrInvalidFilePath, got %v", err)
+	}
+}
+
+func TestListFilesInAbsoluteDir(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("FILES_DIR", dir)
+	t.Setenv("FILES_ENCRYPTED", "false")
+
+	containerDir := filepath.Join(dir, "knowledge-nodes", "592_History")
+	if err := os.MkdirAll(containerDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(containerDir, "history.mm"), []byte("<map/>"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	svc := NewFilesService()
+	files, err := svc.ListFilesInAbsoluteDir(containerDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 1 || files[0].Path != "knowledge-nodes/592_History/history.mm" || files[0].IsDir {
+		t.Fatalf("unexpected files: %#v", files)
+	}
+}
+
+func TestGetFilesFolderUsesFILES_DIR(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("FILES_DIR", dir)
+	containerDir := filepath.Join(dir, "knowledge-nodes", "10_InteliJ")
+	if err := os.MkdirAll(containerDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	cs := &ContainerService{}
+	found := cs.GetFilesFolder(t.Context(), schema.ContainerTypeKnowledgeNode, 10)
+	if found == nil || *found != containerDir {
+		t.Fatalf("expected %s, got %v", containerDir, found)
 	}
 }

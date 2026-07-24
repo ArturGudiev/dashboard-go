@@ -28,9 +28,13 @@ func (s *KnowledgeNodesService) GetKnowledgeNodeFull(ctx context.Context, ID int
 	}
 	subtasks, errSubtasks := s.containerService.GetOpenSubtasksIDs(ctx, schema.ContainerTypeKnowledgeNode, ID)
 	subproblems, errSubproblems := s.containerService.GetOpenProblemsIDs(ctx, schema.ContainerTypeKnowledgeNode, ID)
+	questions, errQuestions := s.containerService.GetOpenQuestionsIDs(ctx, schema.ContainerTypeKnowledgeNode, ID)
+	stories, errStories := s.containerService.GetOpenStoriesIDs(ctx, schema.ContainerTypeKnowledgeNode, ID)
+	epics, errEpics := s.containerService.GetOpenEpicsIDs(ctx, schema.ContainerTypeKnowledgeNode, ID)
 	knowledgeNodes, errKnowledgeNodes := s.containerService.GetChildKnowledgeNodesIDs(ctx, schema.ContainerTypeKnowledgeNode, ID)
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeKnowledgeNode, ID)
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errKnowledgeNodes != nil {
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errKnowledgeNodes != nil ||
+		errQuestions != nil || errStories != nil || errEpics != nil {
 		return nil, errors.New("knowledgeNode not found")
 	}
 	KnowledgeNodeFull := &models.KnowledgeNodeFull{
@@ -40,7 +44,9 @@ func (s *KnowledgeNodesService) GetKnowledgeNodeFull(ctx context.Context, ID int
 		Notes:            knowledgeNode.Notes,
 		Tasks:            subtasks,
 		Problems:         subproblems,
-		Questions:        []int{},
+		Questions:        questions,
+		Stories:          stories,
+		Epics:            epics,
 		Actions:          []int{},
 		Definitions:      []int{},
 		KnowledgeBits:    []int{},

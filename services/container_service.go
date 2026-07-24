@@ -1029,30 +1029,39 @@ func (s *ContainerService) GetFilesFolder(ctx context.Context, containerType sch
 	return nil
 }
 
+func filesBaseDir() string {
+	baseDir := os.Getenv("FILES_DIR")
+	if baseDir == "" {
+		baseDir = defaultFilesDir
+	}
+	return filepath.Clean(baseDir)
+}
+
 func (s *ContainerService) GetFilesFolderPrefix(ctx context.Context, containerType schema.ContainerType, ID int) *string {
-	folderPath := "C:\\Programming\\NodeJS\\Dashboard\\files"
-	var result string
+	folderPath := filesBaseDir()
+	var subdir string
 	switch containerType {
 	case schema.ContainerTypeTask:
-		result = fmt.Sprintf("%s\\tasks\\%d_", folderPath, ID)
+		subdir = "tasks"
 	case schema.ContainerTypeProblem:
-		result = fmt.Sprintf("%s\\problems\\%d_", folderPath, ID)
+		subdir = "problems"
 	case schema.ContainerTypeQuestion:
-		result = fmt.Sprintf("%s\\questions\\%d_", folderPath, ID)
+		subdir = "questions"
 	case schema.ContainerTypeAction:
-		result = fmt.Sprintf("%s\\actions\\%d_", folderPath, ID)
+		subdir = "actions"
 	case schema.ContainerTypeDefinition:
-		result = fmt.Sprintf("%s\\definitions\\%d_", folderPath, ID)
+		subdir = "definitions"
 	case schema.ContainerTypeKnowledgeBit:
-		result = fmt.Sprintf("%s\\knowledge-bits\\%d_", folderPath, ID)
+		subdir = "knowledge-bits"
 	case schema.ContainerTypeKnowledgeNode:
-		result = fmt.Sprintf("%s\\knowledge-nodes\\%d_", folderPath, ID)
+		subdir = "knowledge-nodes"
 	case schema.ContainerTypeStory:
-		result = fmt.Sprintf("%s\\stories\\%d_", folderPath, ID)
+		subdir = "stories"
 	case schema.ContainerTypeEpic:
-		result = fmt.Sprintf("%s\\epics\\%d_", folderPath, ID)
+		subdir = "epics"
 	default:
 		return nil
 	}
+	result := filepath.Join(folderPath, subdir, fmt.Sprintf("%d_", ID))
 	return &result
 }

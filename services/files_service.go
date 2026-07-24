@@ -40,11 +40,7 @@ type FilesService struct {
 }
 
 func NewFilesService() *FilesService {
-	baseDir := os.Getenv("FILES_DIR")
-	if baseDir == "" {
-		baseDir = defaultFilesDir
-	}
-	baseDir = filepath.Clean(baseDir)
+	baseDir := filesBaseDir()
 
 	encrypted := strings.EqualFold(os.Getenv("FILES_ENCRYPTED"), "true") ||
 		os.Getenv("FILES_ENCRYPTED") == "1"
@@ -246,4 +242,45 @@ func (s *FilesService) DeleteFile(relPath string) error {
 	}
 
 	return os.Remove(full)
+}
+
+// ListFilesInAbsoluteDir lists immediate children of an absolute directory under baseDir.
+// Paths in the response are relative to FILES_DIR (logical; .bin stripped when encrypted).
+func (s *FilesService) ListFilesInAbsoluteDir(absDir string) ([]FileInfo, error) {
+	absDir = filepath.Clean(absDir)
+	baseWithSep := s.baseDir + string(os.PathSeparator)
+	if absDir != s.baseDir && !strings.HasPrefix(absDir, baseWithSep) {
+		return nil, ErrInvalidFilePath
+	}
+
+	entries, err := os.ReadDir(absDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []FileInfo{}, nil
+		}
+		return nil, err
+	}
+
+	var files []FileInfo
+	for _, entry := range entries {
+		full := filepath.Join(absDir, entry.Name())
+		rel, err := filepath.Rel(s.baseDir, full)
+		if err != nil {
+			return nil, err
+		}
+		rel = filepath.ToSlash(rel)
+		info, err := entry.Info()
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, FileInfo{
+			Path:  logicalRelPath(rel, entry.IsDir(), s.encrypted),
+			Size:  info.Size(),
+			IsDir: entry.IsDir(),
+		})
+	}
+	if files == nil {
+		files = []FileInfo{}
+	}
+	return files, nil
 }
