@@ -297,6 +297,14 @@ func main() {
 	// Aliase routes
 	router.GET("/aliases/:alias", h.GetAliasByString)
 
+	// Files routes (relative path under FILES_DIR; FILES_ENCRYPTED controls client crypto mode)
+	// Content is under /files/content/* so it does not conflict with /files/config in Gin's router tree.
+	router.GET("/files/config", h.GetFilesConfig)
+	router.GET("/files", h.ListFiles)
+	router.GET("/files/content/*filepath", h.GetFile)
+	router.PUT("/files/content/*filepath", h.PutFile)
+	router.DELETE("/files/content/*filepath", h.DeleteFile)
+
 	// User routes
 	router.GET("/users/me", h.GetMe)
 	router.GET("/users/:id", h.GetUser)

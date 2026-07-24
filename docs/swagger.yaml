@@ -464,6 +464,9 @@ definitions:
       done_date_time:
         description: DoneDateTime holds the value of the "done_date_time" field.
         type: string
+      due_date_time:
+        description: DueDateTime holds the value of the "due_date_time" field.
+        type: string
       id:
         description: ID of the ent.
         type: integer
@@ -705,6 +708,15 @@ definitions:
         type: boolean
       description:
         type: string
+      notes:
+        type: string
+    type: object
+  handlers.PatchLongTaskByIDRequest:
+    properties:
+      description:
+        type: string
+      done:
+        type: boolean
       notes:
         type: string
     type: object
@@ -1552,6 +1564,8 @@ definitions:
         type: boolean
       doneDateTime:
         type: string
+      dueDateTime:
+        type: string
       id:
         type: integer
       knowledgeBits:
@@ -1601,6 +1615,8 @@ definitions:
         type: boolean
       doneDateTime:
         type: string
+      dueDateTime:
+        type: string
       id:
         type: integer
       notes:
@@ -1625,6 +1641,8 @@ definitions:
     properties:
       description:
         example: Fix login bug
+        type: string
+      dueDateTime:
         type: string
       notes:
         example: User cannot log in
@@ -1704,6 +1722,22 @@ definitions:
     - ContainerTypeLongTask
     - ContainerTypeDirection
     - ContainerTypeState
+  services.FileInfo:
+    properties:
+      isDir:
+        type: boolean
+      path:
+        type: string
+      size:
+        type: integer
+    type: object
+  services.FilesConfig:
+    properties:
+      baseDir:
+        type: string
+      encrypted:
+        type: boolean
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -2127,7 +2161,7 @@ paths:
       - application/json
       description: |-
         Partially updates a repetitive task's description and/or notes
-        Partially updates a long task's description and/or notes
+        Partially updates a long task's description, notes, and/or done state
         Partially updates a direction's description, notes, and/or closed state
       parameters:
       - description: Repetitive task ID
@@ -2151,7 +2185,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+          $ref: '#/definitions/handlers.PatchLongTaskByIDRequest'
       - description: Direction ID
         in: path
         name: id
@@ -2458,6 +2492,191 @@ paths:
       summary: Get epics
       tags:
       - epics
+  /files:
+    get:
+      description: Lists all files and directories under the configured files directory
+        (relative paths)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/services.FileInfo'
+            type: array
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List files
+      tags:
+      - files
+  /files/config:
+    get:
+      description: Returns whether files are stored encrypted and the configured base
+        directory
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.FilesConfig'
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get files storage config
+      tags:
+      - files
+  /files/content/{filepath}:
+    delete:
+      description: Deletes a file by relative path
+      parameters:
+      - description: Relative file path
+        example: 1.txt
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a file
+      tags:
+      - files
+    get:
+      description: Returns file contents for the given relative path (e.g. 1.txt or
+        sub/dir/file.txt). When FILES_ENCRYPTED=true the body is opaque ciphertext.
+      parameters:
+      - description: Relative file path
+        example: 1.txt
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get file by relative path
+      tags:
+      - files
+    put:
+      consumes:
+      - application/octet-stream
+      description: Writes request body to the given relative path. When FILES_ENCRYPTED=true
+        the client should send already-encrypted bytes.
+      parameters:
+      - description: Relative file path
+        example: 1.txt
+        in: path
+        name: filepath
+        required: true
+        type: string
+      - description: Raw file bytes
+        in: body
+        name: body
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload or replace a file
+      tags:
+      - files
   /finish-task/{id}:
     put:
       consumes:
@@ -2987,10 +3206,10 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns all long tasks; use open=true to return only open (not
-        done) tasks
+      description: Returns open long tasks by default (done=false). Use open=false
+        to include completed tasks.
       parameters:
-      - description: Return only open long tasks
+      - description: Return only open long tasks (default true)
         in: query
         name: open
         type: boolean
@@ -3099,7 +3318,7 @@ paths:
       - application/json
       description: |-
         Partially updates a repetitive task's description and/or notes
-        Partially updates a long task's description and/or notes
+        Partially updates a long task's description, notes, and/or done state
         Partially updates a direction's description, notes, and/or closed state
       parameters:
       - description: Repetitive task ID
@@ -3123,7 +3342,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+          $ref: '#/definitions/handlers.PatchLongTaskByIDRequest'
       - description: Direction ID
         in: path
         name: id
@@ -3167,6 +3386,45 @@ paths:
       - repetitive-tasks
       - long-tasks
       - directions
+  /long-tasks/{id}/close:
+    put:
+      consumes:
+      - application/json
+      description: Marks a long task as done
+      parameters:
+      - description: Long task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.LongTask'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Close long task
+      tags:
+      - long-tasks
   /long-tasks/{id}/progresses:
     get:
       consumes:
@@ -3862,7 +4120,7 @@ paths:
       - application/json
       description: |-
         Partially updates a repetitive task's description and/or notes
-        Partially updates a long task's description and/or notes
+        Partially updates a long task's description, notes, and/or done state
         Partially updates a direction's description, notes, and/or closed state
       parameters:
       - description: Repetitive task ID
@@ -3886,7 +4144,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+          $ref: '#/definitions/handlers.PatchLongTaskByIDRequest'
       - description: Direction ID
         in: path
         name: id
@@ -4539,6 +4797,45 @@ paths:
               type: string
             type: object
       summary: Patch task by ID
+      tags:
+      - tasks
+  /tasks/by-due-date:
+    get:
+      consumes:
+      - application/json
+      description: Returns open (not done) tasks whose due date falls on the specified
+        calendar day (UTC)
+      parameters:
+      - description: Due date (YYYY-MM-DD, UTC)
+        example: "2026-07-15"
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TaskFull'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AccessTokenCookie: []
+      summary: Get open tasks by due date
       tags:
       - tasks
   /tests:

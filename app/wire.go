@@ -215,6 +215,7 @@ func provideApp(
 		LongTasksProgressesRepository: longTasksProgressesRepository,
 		UsersRepository:                usersRepository,
 		RefreshTokensRepository:        refreshTokensRepository,
+		FilesService:                   services.NewFilesService(),
 		ctx:                       context.Background(), // Default context for CLI
 	}
 }

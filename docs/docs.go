@@ -629,7 +629,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes\nPartially updates a direction's description, notes, and/or closed state",
+                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description, notes, and/or done state\nPartially updates a direction's description, notes, and/or closed state",
                 "consumes": [
                     "application/json",
                     "application/json",
@@ -676,7 +676,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                            "$ref": "#/definitions/handlers.PatchLongTaskByIDRequest"
                         }
                     },
                     {
@@ -1109,6 +1109,277 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/files": {
+            "get": {
+                "description": "Lists all files and directories under the configured files directory (relative paths)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "List files",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/services.FileInfo"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/files/config": {
+            "get": {
+                "description": "Returns whether files are stored encrypted and the configured base directory",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get files storage config",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/services.FilesConfig"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/files/content/{filepath}": {
+            "get": {
+                "description": "Returns file contents for the given relative path (e.g. 1.txt or sub/dir/file.txt). When FILES_ENCRYPTED=true the body is opaque ciphertext.",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file by relative path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "1.txt",
+                        "description": "Relative file path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Writes request body to the given relative path. When FILES_ENCRYPTED=true the client should send already-encrypted bytes.",
+                "consumes": [
+                    "application/octet-stream"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Upload or replace a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "1.txt",
+                        "description": "Relative file path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Raw file bytes",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a file by relative path",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "1.txt",
+                        "description": "Relative file path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1927,7 +2198,7 @@ const docTemplate = `{
         },
         "/long-tasks": {
             "get": {
-                "description": "Returns all long tasks; use open=true to return only open (not done) tasks",
+                "description": "Returns open long tasks by default (done=false). Use open=false to include completed tasks.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1941,7 +2212,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "boolean",
-                        "description": "Return only open long tasks",
+                        "description": "Return only open long tasks (default true)",
                         "name": "open",
                         "in": "query"
                     }
@@ -2089,7 +2360,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes\nPartially updates a direction's description, notes, and/or closed state",
+                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description, notes, and/or done state\nPartially updates a direction's description, notes, and/or closed state",
                 "consumes": [
                     "application/json",
                     "application/json",
@@ -2136,7 +2407,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                            "$ref": "#/definitions/handlers.PatchLongTaskByIDRequest"
                         }
                     },
                     {
@@ -2161,6 +2432,65 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.DirectionFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/long-tasks/{id}/close": {
+            "put": {
+                "description": "Marks a long task as done",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "long-tasks"
+                ],
+                "summary": "Close long task",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Long task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.LongTask"
                         }
                     },
                     "400": {
@@ -3237,7 +3567,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description and/or notes\nPartially updates a direction's description, notes, and/or closed state",
+                "description": "Partially updates a repetitive task's description and/or notes\nPartially updates a long task's description, notes, and/or done state\nPartially updates a direction's description, notes, and/or closed state",
                 "consumes": [
                     "application/json",
                     "application/json",
@@ -3284,7 +3614,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                            "$ref": "#/definitions/handlers.PatchLongTaskByIDRequest"
                         }
                     },
                     {
@@ -4239,6 +4569,65 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/by-due-date": {
+            "get": {
+                "security": [
+                    {
+                        "AccessTokenCookie": []
+                    }
+                ],
+                "description": "Returns open (not done) tasks whose due date falls on the specified calendar day (UTC)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Get open tasks by due date",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "2026-07-15",
+                        "description": "Due date (YYYY-MM-DD, UTC)",
+                        "name": "date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TaskFull"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -5595,6 +5984,10 @@ const docTemplate = `{
                     "description": "DoneDateTime holds the value of the \"done_date_time\" field.",
                     "type": "string"
                 },
+                "due_date_time": {
+                    "description": "DueDateTime holds the value of the \"due_date_time\" field.",
+                    "type": "string"
+                },
                 "id": {
                     "description": "ID of the ent.",
                     "type": "integer"
@@ -5958,6 +6351,20 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.PatchLongTaskByIDRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "done": {
+                    "type": "boolean"
                 },
                 "notes": {
                     "type": "string"
@@ -7221,6 +7628,9 @@ const docTemplate = `{
                 "doneDateTime": {
                     "type": "string"
                 },
+                "dueDateTime": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -7295,6 +7705,9 @@ const docTemplate = `{
                 "doneDateTime": {
                     "type": "string"
                 },
+                "dueDateTime": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -7332,6 +7745,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string",
                     "example": "Fix login bug"
+                },
+                "dueDateTime": {
+                    "type": "string"
                 },
                 "notes": {
                     "type": "string",
@@ -7426,6 +7842,31 @@ const docTemplate = `{
                 "ContainerTypeDirection",
                 "ContainerTypeState"
             ]
+        },
+        "services.FileInfo": {
+            "type": "object",
+            "properties": {
+                "isDir": {
+                    "type": "boolean"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "services.FilesConfig": {
+            "type": "object",
+            "properties": {
+                "baseDir": {
+                    "type": "string"
+                },
+                "encrypted": {
+                    "type": "boolean"
+                }
+            }
         }
     },
     "securityDefinitions": {

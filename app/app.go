@@ -51,6 +51,7 @@ type App struct {
 	LongTasksProgressesRepository *repositories.LongTasksProgressesRepository
 	UsersRepository                *repositories.UsersRepository
 	RefreshTokensRepository        *repositories.RefreshTokensRepository
+	FilesService                   *services.FilesService
 	ctx                      context.Context // Default context for CLI operations
 }
 
