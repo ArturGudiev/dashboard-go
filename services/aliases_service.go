@@ -60,6 +60,8 @@ func (s *AliasesService) ToAliasType(ctx context.Context, containerType schema.C
 		return schema.AliasTypeAction, nil
 	case schema.ContainerTypeState:
 		return schema.AliasTypeState, nil
+	case schema.ContainerTypeRepetitiveTask:
+		return schema.AliasTypeRepetitiveTask, nil
 	default:
 		return "", errors.New("invalid container type")
 	}
@@ -164,4 +166,48 @@ func (s *AliasesService) RemoveContainerAlias(ctx context.Context, containerType
 		return nil, err
 	}
 	return aliasEntity, nil
+}
+
+// UpdateContainerAliases syncs the container's aliases with the provided list:
+// missing aliases are removed, new aliases are added.
+func (s *AliasesService) UpdateContainerAliases(ctx context.Context, containerType schema.ContainerType, id int, desiredAliases []string) ([]*models.AliasModel, error) {
+	desiredSet := make(map[string]struct{}, len(desiredAliases))
+	normalizedDesired := make([]string, 0, len(desiredAliases))
+	for _, alias := range desiredAliases {
+		trimmed := strings.TrimSpace(alias)
+		if trimmed == "" {
+			continue
+		}
+		if _, exists := desiredSet[trimmed]; exists {
+			continue
+		}
+		desiredSet[trimmed] = struct{}{}
+		normalizedDesired = append(normalizedDesired, trimmed)
+	}
+
+	currentAliases, err := s.GetAliasesByTaskContainer(ctx, containerType, id)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSet := make(map[string]struct{}, len(currentAliases))
+	for _, aliasModel := range currentAliases {
+		currentSet[aliasModel.Alias] = struct{}{}
+		if _, keep := desiredSet[aliasModel.Alias]; !keep {
+			if _, removeErr := s.RemoveContainerAlias(ctx, containerType, id, aliasModel.Alias); removeErr != nil {
+				return nil, removeErr
+			}
+		}
+	}
+
+	for _, alias := range normalizedDesired {
+		if _, exists := currentSet[alias]; exists {
+			continue
+		}
+		if _, addErr := s.AddContainerAlias(ctx, containerType, id, alias); addErr != nil {
+			return nil, addErr
+		}
+	}
+
+	return s.GetAliasesByTaskContainer(ctx, containerType, id)
 }

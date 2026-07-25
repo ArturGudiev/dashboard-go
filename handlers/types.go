@@ -263,3 +263,10 @@ type PatchContainerVariableRequest struct {
 	VariableName  *string `json:"variableName"`
 	VariableValue *string `json:"variableValue"`
 }
+
+// UpdateContainerAliasesRequest replaces the set of aliases for a container.
+type UpdateContainerAliasesRequest struct {
+	ContainerType schema.ContainerType `json:"containerType" binding:"required"`
+	ContainerID   int                  `json:"containerID" binding:"required,gt=0"`
+	Aliases       []string             `json:"aliases"`
+}

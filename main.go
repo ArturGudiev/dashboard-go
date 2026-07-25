@@ -301,7 +301,9 @@ func main() {
 	// router.PUT("/states/:id", h.UpdateState)
 	// router.DELETE("/states/:id", h.DeleteState)
 
-	// Aliase routes
+	// Alias routes (static /container paths before /:alias)
+	router.GET("/aliases/container/:type/:id", h.GetAliasesByContainer)
+	router.PUT("/aliases/container", h.UpdateContainerAliases)
 	router.GET("/aliases/:alias", h.GetAliasByString)
 
 	// Files routes (relative path under FILES_DIR; FILES_ENCRYPTED controls client crypto mode)
