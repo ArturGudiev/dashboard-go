@@ -189,7 +189,7 @@ func (s *CLIService) ViewTaskInteractive(ctx context.Context, id int) {
 
 		lineLower := strings.ToLower(line)
 		switch lineLower {
-		case "q", "quit", "exit":
+		case "q", "quit", "exit", "x":
 			os.Exit(0)
 			return
 		case "r", "refresh":
@@ -401,20 +401,31 @@ func (s *CLIService) checkSelectEpicCommand(ctx context.Context, line string, ep
 }
 
 func (s *CLIService) checkSelectKnowledgeNodeCommand(ctx context.Context, line string, knowledgeNodes []*ent.KnowledgeNode) bool {
-	if strings.HasPrefix(line, "kn ") {
-		indexPart := strings.TrimSpace(line[3:])
-		if index, err := strconv.Atoi(indexPart); err == nil {
-			// Validate index
-			if index < 1 || index > len(knowledgeNodes) {
-				utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(knowledgeNodes)))
-				return false
-			}
-			selectedKnowledgeNode := knowledgeNodes[index-1]
-			s.ViewKnowledgeNodeInteractive(ctx, selectedKnowledgeNode.ID)
-			return true
+	var indexPart string
+	switch {
+	case strings.HasPrefix(line, "kn "):
+		indexPart = strings.TrimSpace(line[3:])
+	case strings.HasPrefix(line, "n "):
+		indexPart = strings.TrimSpace(line[2:])
+	default:
+		// Bare number selects nth child knowledge node (only used in knowledge-node view).
+		if _, err := strconv.Atoi(line); err != nil {
+			return false
 		}
+		indexPart = line
 	}
-	return false
+
+	index, err := strconv.Atoi(indexPart)
+	if err != nil {
+		return false
+	}
+	if index < 1 || index > len(knowledgeNodes) {
+		utils.PrintAndWait(fmt.Sprintf("Invalid index. Please enter a number between 1 and %d.\n", len(knowledgeNodes)))
+		return true
+	}
+	selectedKnowledgeNode := knowledgeNodes[index-1]
+	s.ViewKnowledgeNodeInteractive(ctx, selectedKnowledgeNode.ID)
+	return true
 }
 
 func (s *CLIService) checkAddKnowledgeNodeCommand(ctx context.Context, line string, containerType schema.ContainerType, id int) bool {
@@ -930,7 +941,7 @@ func (s *CLIService) ViewProblemInteractive(ctx context.Context, id int) {
 
 		lineLower := strings.ToLower(line)
 		switch lineLower {
-		case "q", "quit", "exit":
+		case "q", "quit", "exit", "x":
 			os.Exit(0)
 			return
 		case "r", "refresh":
@@ -1049,7 +1060,7 @@ func (s *CLIService) ViewQuestionInteractive(ctx context.Context, id int) {
 
 		lineLower := strings.ToLower(line)
 		switch lineLower {
-		case "q", "quit", "exit":
+		case "q", "quit", "exit", "x":
 			os.Exit(0)
 			return
 		case "r", "refresh":
@@ -1173,7 +1184,7 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 
 		lineLower := strings.ToLower(line)
 		switch lineLower {
-		case "q", "quit", "exit":
+		case "q", "quit", "exit", "x":
 			os.Exit(0)
 			return
 		case "r", "refresh":
@@ -1213,7 +1224,7 @@ func (s *CLIService) ViewEpicsInteractive(ctx context.Context) {
 
 		lineLower := strings.ToLower(line)
 		switch lineLower {
-		case "q", "quit", "exit":
+		case "q", "quit", "exit", "x":
 			os.Exit(0)
 			return
 		case "r", "refresh":
@@ -1346,7 +1357,7 @@ func (s *CLIService) ViewEpicInteractive(ctx context.Context, id int) {
 
 		lineLower := strings.ToLower(line)
 		switch lineLower {
-		case "q", "quit", "exit":
+		case "q", "quit", "exit", "x":
 			os.Exit(0)
 			return
 		case "r", "refresh":
@@ -1469,6 +1480,10 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 		if goToNextIteration := s.checkAddKnowledgeNodeCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); goToNextIteration {
 			continue
 		}
+		// Prefer child knowledge-node selection (kn / n / bare number) over task index.
+		if wasIt := s.checkSelectKnowledgeNodeCommand(ctx, line, knowledgeNodes); wasIt {
+			continue
+		}
 		if wasIt := s.checkSelectTaskCommand(ctx, line, subtasks); wasIt {
 			continue
 		}
@@ -1483,9 +1498,6 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 			continue
 		}
 		if wasIt := s.checkSelectEpicCommand(ctx, line, epics); wasIt {
-			continue
-		}
-		if wasIt := s.checkSelectKnowledgeNodeCommand(ctx, line, knowledgeNodes); wasIt {
 			continue
 		}
 
@@ -1537,7 +1549,7 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 
 		lineLower := strings.ToLower(line)
 		switch lineLower {
-		case "q", "quit", "exit":
+		case "q", "quit", "exit", "x":
 			os.Exit(0)
 			return
 		case "r", "refresh":
@@ -1587,7 +1599,7 @@ func (s *CLIService) ViewFileInteractive(ctx context.Context, filePath string) {
 
 		lineLower := strings.ToLower(line)
 		switch lineLower {
-		case "q", "quit", "exit":
+		case "q", "quit", "exit", "x":
 			os.Exit(0)
 			return
 		case "r", "refresh":

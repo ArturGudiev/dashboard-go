@@ -80,6 +80,9 @@ func (s *EpicsService) GetEpicsFull(ctx context.Context, IDs []int) ([]*models.E
 				firstErrOnce.Do(func() { firstErr = err })
 				return
 			}
+			if epicFull.Closed {
+				return
+			}
 
 			byIndex[idx] = epicFull
 		}(i, id)

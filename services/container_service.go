@@ -430,7 +430,7 @@ func (s *ContainerService) GetOpenEpicsIDs(ctx context.Context, containerType sc
 
 	if err == nil && len(childRelations) > 0 {
 		for _, relation := range childRelations {
-			childEpic, err := s.client.Story.Get(ctx, relation.ChildID)
+			childEpic, err := s.client.Epic.Get(ctx, relation.ChildID)
 			if err != nil {
 				continue
 			}

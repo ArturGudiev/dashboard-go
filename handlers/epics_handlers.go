@@ -44,7 +44,7 @@ func (h *Handler) GetEpicByID(c *gin.Context) {
 
 // GetEpicsByIDs handles POST /get-epics
 // @Summary      Get epics by IDs
-// @Description  Returns multiple epics by their IDs
+// @Description  Returns multiple open epics by their IDs (closed epics are omitted)
 // @Tags         epics
 // @Accept       json
 // @Produce      json
@@ -144,7 +144,7 @@ func (h *Handler) UpdateEpic(c *gin.Context) {
 
 // GetAllOpenEpics handles GET /epics
 // @Summary      Get epics
-// @Description  Returns all epics
+// @Description  Returns all open epics (closed=false)
 // @Tags         epics
 // @Accept       json
 // @Produce      json
