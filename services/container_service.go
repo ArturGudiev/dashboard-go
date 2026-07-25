@@ -1030,6 +1030,83 @@ func (s *ContainerService) GetFilesFolder(ctx context.Context, containerType sch
 	return nil
 }
 
+// GetOrCreateFilesFolder returns the existing files folder for a container, or creates
+// FILES_DIR/<type>/<id>_<sanitizedDescription> when none exists yet.
+func (s *ContainerService) GetOrCreateFilesFolder(ctx context.Context, containerType schema.ContainerType, ID int) (*string, error) {
+	if existing := s.GetFilesFolder(ctx, containerType, ID); existing != nil {
+		return existing, nil
+	}
+
+	prefix := s.GetFilesFolderPrefix(ctx, containerType, ID)
+	if prefix == nil {
+		return nil, fmt.Errorf("unsupported container type for files: %s", containerType)
+	}
+
+	parentDir := filepath.Dir(*prefix)
+	folderName := filepath.Base(*prefix) + sanitizeFilesFolderSuffix(s.filesFolderDescription(ctx, containerType, ID))
+	fullPath := filepath.Join(parentDir, folderName)
+
+	if err := os.MkdirAll(fullPath, 0o755); err != nil {
+		return nil, err
+	}
+	return &fullPath, nil
+}
+
+func (s *ContainerService) filesFolderDescription(ctx context.Context, containerType schema.ContainerType, ID int) string {
+	switch containerType {
+	case schema.ContainerTypeTask:
+		if task, err := s.client.Task.Get(ctx, ID); err == nil {
+			return task.Description
+		}
+	case schema.ContainerTypeProblem:
+		if problem, err := s.client.Problem.Get(ctx, ID); err == nil {
+			return problem.Description
+		}
+	case schema.ContainerTypeQuestion:
+		if question, err := s.client.Question.Get(ctx, ID); err == nil {
+			return question.Description
+		}
+	case schema.ContainerTypeStory:
+		if story, err := s.client.Story.Get(ctx, ID); err == nil {
+			return story.Description
+		}
+	case schema.ContainerTypeEpic:
+		if epic, err := s.client.Epic.Get(ctx, ID); err == nil {
+			return epic.Description
+		}
+	case schema.ContainerTypeKnowledgeNode:
+		if knowledgeNode, err := s.client.KnowledgeNode.Get(ctx, ID); err == nil {
+			return knowledgeNode.Name
+		}
+	case schema.ContainerTypeLongTask:
+		if longTask, err := s.client.LongTask.Get(ctx, ID); err == nil {
+			return longTask.Description
+		}
+	case schema.ContainerTypeDirection:
+		if direction, err := s.client.Direction.Get(ctx, ID); err == nil {
+			return direction.Description
+		}
+	}
+	return ""
+}
+
+func sanitizeFilesFolderSuffix(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return ""
+	}
+	replacer := strings.NewReplacer(
+		"/", "-", "\\", "-", ":", "-", "*", "-", "?", "-",
+		"\"", "", "<", "", ">", "", "|", "-",
+	)
+	name = replacer.Replace(name)
+	name = strings.Join(strings.Fields(name), " ")
+	if len(name) > 80 {
+		name = strings.TrimSpace(name[:80])
+	}
+	return name
+}
+
 func filesBaseDir() string {
 	baseDir := os.Getenv("FILES_DIR")
 	if baseDir == "" {

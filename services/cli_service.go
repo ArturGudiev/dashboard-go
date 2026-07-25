@@ -1,6 +1,7 @@
 package services
 
 import (
+	"arturgudiev/dashboard/assets"
 	"arturgudiev/dashboard/ent"
 	"arturgudiev/dashboard/ent/schema"
 	"arturgudiev/dashboard/repositories"
@@ -150,6 +151,10 @@ func (s *CLIService) ViewTaskInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeTask, id); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkAddMindMapTemplateCommand(ctx, line, schema.ContainerTypeTask, id); wasIt {
 			continue
 		}
 
@@ -433,14 +438,14 @@ func (s *CLIService) checkAddKnowledgeNodeCommand(ctx context.Context, line stri
 
 func (s *CLIService) checkOpenDirCommand(ctx context.Context, line string, containerType schema.ContainerType, ID int) bool {
 	if line == "o" || line == "open" || line == "dir" {
-		filesDir := s.containerService.GetFilesFolder(ctx, containerType, ID)
-		if filesDir == nil {
-			fmt.Println("No files directory found for this item.")
+		filesDir, err := s.containerService.GetOrCreateFilesFolder(ctx, containerType, ID)
+		if err != nil {
+			fmt.Printf("Error resolving files directory: %v\n", err)
 			utils.WaitForUserInput()
 			return true
 		}
 
-		err := utils.OpenDirectory(*filesDir)
+		err = utils.OpenDirectory(*filesDir)
 		if err != nil {
 			fmt.Printf("Error opening directory: %v\n", err)
 			utils.WaitForUserInput()
@@ -450,6 +455,72 @@ func (s *CLIService) checkOpenDirCommand(ctx context.Context, line string, conta
 		return true
 	}
 	return false
+}
+
+// checkAddMindMapTemplateCommand handles "mm+" and "mm+ <name>".
+// Copies assets/template.mm into the container files folder as template.mm,
+// or as <name>.mm when a name argument is provided.
+func (s *CLIService) checkAddMindMapTemplateCommand(ctx context.Context, line string, containerType schema.ContainerType, ID int) bool {
+	fileName := assets.TemplateMindMapFileName
+	switch {
+	case line == "mm+":
+		// default name
+	case strings.HasPrefix(line, "mm+ "):
+		name := strings.TrimSpace(line[4:])
+		if name == "" {
+			fmt.Println("Error: name required. Usage: mm+ [name]")
+			utils.WaitForUserInput()
+			return true
+		}
+		name = sanitizeMindMapFileName(name)
+		if name == "" {
+			fmt.Println("Error: invalid name after sanitizing")
+			utils.WaitForUserInput()
+			return true
+		}
+		if !strings.HasSuffix(strings.ToLower(name), ".mm") {
+			name += ".mm"
+		}
+		fileName = name
+	default:
+		return false
+	}
+
+	filesDir, err := s.containerService.GetOrCreateFilesFolder(ctx, containerType, ID)
+	if err != nil {
+		fmt.Printf("Error resolving files directory: %v\n", err)
+		utils.WaitForUserInput()
+		return true
+	}
+
+	dest := filepath.Join(*filesDir, fileName)
+	if _, err := os.Stat(dest); err == nil {
+		fmt.Printf("File already exists: %s\n", dest)
+		utils.WaitForUserInput()
+		return true
+	} else if err != nil && !os.IsNotExist(err) {
+		fmt.Printf("Error checking destination: %v\n", err)
+		utils.WaitForUserInput()
+		return true
+	}
+
+	if err := os.WriteFile(dest, assets.TemplateMindMap, 0o644); err != nil {
+		fmt.Printf("Error copying mind map template: %v\n", err)
+		utils.WaitForUserInput()
+		return true
+	}
+
+	fmt.Printf("Created: %s\n", dest)
+	return true
+}
+
+func sanitizeMindMapFileName(name string) string {
+	name = strings.TrimSpace(name)
+	replacer := strings.NewReplacer(
+		"/", "-", "\\", "-", ":", "-", "*", "-", "?", "-",
+		"\"", "", "<", "", ">", "", "|", "-",
+	)
+	return strings.TrimSpace(replacer.Replace(name))
 }
 
 func (s *CLIService) checkAppendAliasToFileCommand(ctx context.Context, line string, filePath string) bool {
@@ -812,6 +883,10 @@ func (s *CLIService) ViewProblemInteractive(ctx context.Context, id int) {
 			continue
 		}
 
+		if wasIt := s.checkAddMindMapTemplateCommand(ctx, line, schema.ContainerTypeProblem, id); wasIt {
+			continue
+		}
+
 		if line == "res" {
 			fmt.Print("Enter solution> ")
 			solution := utils.GetUserInput(scanner)
@@ -924,6 +999,10 @@ func (s *CLIService) ViewQuestionInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeQuestion, id); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkAddMindMapTemplateCommand(ctx, line, schema.ContainerTypeQuestion, id); wasIt {
 			continue
 		}
 
@@ -1049,6 +1128,10 @@ func (s *CLIService) ViewStoryInteractive(ctx context.Context, id int) {
 			continue
 		}
 		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeStory, id); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkAddMindMapTemplateCommand(ctx, line, schema.ContainerTypeStory, id); wasIt {
 			continue
 		}
 
@@ -1217,6 +1300,10 @@ func (s *CLIService) ViewEpicInteractive(ctx context.Context, id int) {
 		}
 
 		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeEpic, id); wasIt {
+			continue
+		}
+
+		if wasIt := s.checkAddMindMapTemplateCommand(ctx, line, schema.ContainerTypeEpic, id); wasIt {
 			continue
 		}
 
@@ -1405,6 +1492,11 @@ func (s *CLIService) ViewKnowledgeNodeInteractive(ctx context.Context, id int) {
 		if wasIt := s.checkOpenDirCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); wasIt {
 			continue
 		}
+
+		if wasIt := s.checkAddMindMapTemplateCommand(ctx, line, schema.ContainerTypeKnowledgeNode, id); wasIt {
+			continue
+		}
+
 		if wasIt := s.checkSelectFileCommand(ctx, line, filesDir, files); wasIt {
 			continue
 		}
