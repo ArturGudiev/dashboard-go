@@ -288,6 +288,15 @@ func main() {
 	router.PATCH("/container-checks/:id", h.PatchContainerCheck)
 	router.DELETE("/container-checks/:id", h.RemoveContainerCheck)
 
+	// Scripts routes (static /validate before /:id)
+	router.GET("/scripts", h.ListScripts)
+	router.POST("/scripts", h.CreateScript)
+	router.POST("/scripts/validate", h.ValidateScript)
+	router.GET("/scripts/:id", h.GetScript)
+	router.PATCH("/scripts/:id", h.PatchScript)
+	router.DELETE("/scripts/:id", h.DeleteScript)
+	router.POST("/scripts/:id/run", h.RunScript)
+
 	// State routes
 	router.GET("/states/:id", h.GetStateByID)
 	router.GET("/states", h.GetAllStates)

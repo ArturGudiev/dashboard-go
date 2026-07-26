@@ -23,6 +23,7 @@ import (
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/ent/script"
 	"arturgudiev/dashboard/ent/state"
 	"arturgudiev/dashboard/ent/staterequirement"
 	"arturgudiev/dashboard/ent/staterequirementcheck"
@@ -68,6 +69,7 @@ const (
 	TypeRefreshToken               = "RefreshToken"
 	TypeRepetitiveTask             = "RepetitiveTask"
 	TypeRepetitiveTaskExecution    = "RepetitiveTaskExecution"
+	TypeScript                     = "Script"
 	TypeState                      = "State"
 	TypeStateRequirement           = "StateRequirement"
 	TypeStateRequirementCheck      = "StateRequirementCheck"
@@ -11804,6 +11806,830 @@ func (m *RepetitiveTaskExecutionMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown RepetitiveTaskExecution edge %s", name)
+}
+
+// ScriptMutation represents an operation that mutates the Script nodes in the graph.
+type ScriptMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	name            *string
+	code            *string
+	description     *string
+	params          *[]schema.ScriptParam
+	appendparams    []schema.ScriptParam
+	container_type  *schema.ContainerType
+	container_id    *int
+	addcontainer_id *int
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*Script, error)
+	predicates      []predicate.Script
+}
+
+var _ ent.Mutation = (*ScriptMutation)(nil)
+
+// scriptOption allows management of the mutation configuration using functional options.
+type scriptOption func(*ScriptMutation)
+
+// newScriptMutation creates new mutation for the Script entity.
+func newScriptMutation(c config, op Op, opts ...scriptOption) *ScriptMutation {
+	m := &ScriptMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeScript,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withScriptID sets the ID field of the mutation.
+func withScriptID(id int) scriptOption {
+	return func(m *ScriptMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Script
+		)
+		m.oldValue = func(ctx context.Context) (*Script, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Script.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withScript sets the old Script of the mutation.
+func withScript(node *Script) scriptOption {
+	return func(m *ScriptMutation) {
+		m.oldValue = func(context.Context) (*Script, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ScriptMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ScriptMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Script entities.
+func (m *ScriptMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ScriptMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ScriptMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Script.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *ScriptMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ScriptMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ScriptMutation) ResetName() {
+	m.name = nil
+}
+
+// SetCode sets the "code" field.
+func (m *ScriptMutation) SetCode(s string) {
+	m.code = &s
+}
+
+// Code returns the value of the "code" field in the mutation.
+func (m *ScriptMutation) Code() (r string, exists bool) {
+	v := m.code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCode returns the old "code" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+	}
+	return oldValue.Code, nil
+}
+
+// ResetCode resets all changes to the "code" field.
+func (m *ScriptMutation) ResetCode() {
+	m.code = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *ScriptMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *ScriptMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *ScriptMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetParams sets the "params" field.
+func (m *ScriptMutation) SetParams(sp []schema.ScriptParam) {
+	m.params = &sp
+	m.appendparams = nil
+}
+
+// Params returns the value of the "params" field in the mutation.
+func (m *ScriptMutation) Params() (r []schema.ScriptParam, exists bool) {
+	v := m.params
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParams returns the old "params" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldParams(ctx context.Context) (v []schema.ScriptParam, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParams is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParams requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParams: %w", err)
+	}
+	return oldValue.Params, nil
+}
+
+// AppendParams adds sp to the "params" field.
+func (m *ScriptMutation) AppendParams(sp []schema.ScriptParam) {
+	m.appendparams = append(m.appendparams, sp...)
+}
+
+// AppendedParams returns the list of values that were appended to the "params" field in this mutation.
+func (m *ScriptMutation) AppendedParams() ([]schema.ScriptParam, bool) {
+	if len(m.appendparams) == 0 {
+		return nil, false
+	}
+	return m.appendparams, true
+}
+
+// ClearParams clears the value of the "params" field.
+func (m *ScriptMutation) ClearParams() {
+	m.params = nil
+	m.appendparams = nil
+	m.clearedFields[script.FieldParams] = struct{}{}
+}
+
+// ParamsCleared returns if the "params" field was cleared in this mutation.
+func (m *ScriptMutation) ParamsCleared() bool {
+	_, ok := m.clearedFields[script.FieldParams]
+	return ok
+}
+
+// ResetParams resets all changes to the "params" field.
+func (m *ScriptMutation) ResetParams() {
+	m.params = nil
+	m.appendparams = nil
+	delete(m.clearedFields, script.FieldParams)
+}
+
+// SetContainerType sets the "container_type" field.
+func (m *ScriptMutation) SetContainerType(st schema.ContainerType) {
+	m.container_type = &st
+}
+
+// ContainerType returns the value of the "container_type" field in the mutation.
+func (m *ScriptMutation) ContainerType() (r schema.ContainerType, exists bool) {
+	v := m.container_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerType returns the old "container_type" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldContainerType(ctx context.Context) (v *schema.ContainerType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerType: %w", err)
+	}
+	return oldValue.ContainerType, nil
+}
+
+// ClearContainerType clears the value of the "container_type" field.
+func (m *ScriptMutation) ClearContainerType() {
+	m.container_type = nil
+	m.clearedFields[script.FieldContainerType] = struct{}{}
+}
+
+// ContainerTypeCleared returns if the "container_type" field was cleared in this mutation.
+func (m *ScriptMutation) ContainerTypeCleared() bool {
+	_, ok := m.clearedFields[script.FieldContainerType]
+	return ok
+}
+
+// ResetContainerType resets all changes to the "container_type" field.
+func (m *ScriptMutation) ResetContainerType() {
+	m.container_type = nil
+	delete(m.clearedFields, script.FieldContainerType)
+}
+
+// SetContainerID sets the "container_id" field.
+func (m *ScriptMutation) SetContainerID(i int) {
+	m.container_id = &i
+	m.addcontainer_id = nil
+}
+
+// ContainerID returns the value of the "container_id" field in the mutation.
+func (m *ScriptMutation) ContainerID() (r int, exists bool) {
+	v := m.container_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerID returns the old "container_id" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldContainerID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerID: %w", err)
+	}
+	return oldValue.ContainerID, nil
+}
+
+// AddContainerID adds i to the "container_id" field.
+func (m *ScriptMutation) AddContainerID(i int) {
+	if m.addcontainer_id != nil {
+		*m.addcontainer_id += i
+	} else {
+		m.addcontainer_id = &i
+	}
+}
+
+// AddedContainerID returns the value that was added to the "container_id" field in this mutation.
+func (m *ScriptMutation) AddedContainerID() (r int, exists bool) {
+	v := m.addcontainer_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearContainerID clears the value of the "container_id" field.
+func (m *ScriptMutation) ClearContainerID() {
+	m.container_id = nil
+	m.addcontainer_id = nil
+	m.clearedFields[script.FieldContainerID] = struct{}{}
+}
+
+// ContainerIDCleared returns if the "container_id" field was cleared in this mutation.
+func (m *ScriptMutation) ContainerIDCleared() bool {
+	_, ok := m.clearedFields[script.FieldContainerID]
+	return ok
+}
+
+// ResetContainerID resets all changes to the "container_id" field.
+func (m *ScriptMutation) ResetContainerID() {
+	m.container_id = nil
+	m.addcontainer_id = nil
+	delete(m.clearedFields, script.FieldContainerID)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ScriptMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ScriptMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ScriptMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ScriptMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ScriptMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Script entity.
+// If the Script object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScriptMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ScriptMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the ScriptMutation builder.
+func (m *ScriptMutation) Where(ps ...predicate.Script) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ScriptMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ScriptMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Script, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ScriptMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ScriptMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Script).
+func (m *ScriptMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ScriptMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.name != nil {
+		fields = append(fields, script.FieldName)
+	}
+	if m.code != nil {
+		fields = append(fields, script.FieldCode)
+	}
+	if m.description != nil {
+		fields = append(fields, script.FieldDescription)
+	}
+	if m.params != nil {
+		fields = append(fields, script.FieldParams)
+	}
+	if m.container_type != nil {
+		fields = append(fields, script.FieldContainerType)
+	}
+	if m.container_id != nil {
+		fields = append(fields, script.FieldContainerID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, script.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, script.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ScriptMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case script.FieldName:
+		return m.Name()
+	case script.FieldCode:
+		return m.Code()
+	case script.FieldDescription:
+		return m.Description()
+	case script.FieldParams:
+		return m.Params()
+	case script.FieldContainerType:
+		return m.ContainerType()
+	case script.FieldContainerID:
+		return m.ContainerID()
+	case script.FieldCreatedAt:
+		return m.CreatedAt()
+	case script.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ScriptMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case script.FieldName:
+		return m.OldName(ctx)
+	case script.FieldCode:
+		return m.OldCode(ctx)
+	case script.FieldDescription:
+		return m.OldDescription(ctx)
+	case script.FieldParams:
+		return m.OldParams(ctx)
+	case script.FieldContainerType:
+		return m.OldContainerType(ctx)
+	case script.FieldContainerID:
+		return m.OldContainerID(ctx)
+	case script.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case script.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Script field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ScriptMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case script.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case script.FieldCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCode(v)
+		return nil
+	case script.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case script.FieldParams:
+		v, ok := value.([]schema.ScriptParam)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParams(v)
+		return nil
+	case script.FieldContainerType:
+		v, ok := value.(schema.ContainerType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerType(v)
+		return nil
+	case script.FieldContainerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerID(v)
+		return nil
+	case script.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case script.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Script field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ScriptMutation) AddedFields() []string {
+	var fields []string
+	if m.addcontainer_id != nil {
+		fields = append(fields, script.FieldContainerID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ScriptMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case script.FieldContainerID:
+		return m.AddedContainerID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ScriptMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case script.FieldContainerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddContainerID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Script numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ScriptMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(script.FieldParams) {
+		fields = append(fields, script.FieldParams)
+	}
+	if m.FieldCleared(script.FieldContainerType) {
+		fields = append(fields, script.FieldContainerType)
+	}
+	if m.FieldCleared(script.FieldContainerID) {
+		fields = append(fields, script.FieldContainerID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ScriptMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ScriptMutation) ClearField(name string) error {
+	switch name {
+	case script.FieldParams:
+		m.ClearParams()
+		return nil
+	case script.FieldContainerType:
+		m.ClearContainerType()
+		return nil
+	case script.FieldContainerID:
+		m.ClearContainerID()
+		return nil
+	}
+	return fmt.Errorf("unknown Script nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ScriptMutation) ResetField(name string) error {
+	switch name {
+	case script.FieldName:
+		m.ResetName()
+		return nil
+	case script.FieldCode:
+		m.ResetCode()
+		return nil
+	case script.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case script.FieldParams:
+		m.ResetParams()
+		return nil
+	case script.FieldContainerType:
+		m.ResetContainerType()
+		return nil
+	case script.FieldContainerID:
+		m.ResetContainerID()
+		return nil
+	case script.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case script.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Script field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ScriptMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ScriptMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ScriptMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ScriptMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ScriptMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ScriptMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ScriptMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Script unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ScriptMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Script edge %s", name)
 }
 
 // StateMutation represents an operation that mutates the State nodes in the graph.

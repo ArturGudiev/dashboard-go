@@ -376,6 +376,31 @@ var (
 			},
 		},
 	}
+	// ScriptsColumns holds the columns for the "scripts" table.
+	ScriptsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString, Size: 2147483647},
+		{Name: "description", Type: field.TypeString, Default: ""},
+		{Name: "params", Type: field.TypeJSON, Nullable: true},
+		{Name: "container_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "direction", "state"}},
+		{Name: "container_id", Type: field.TypeInt, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// ScriptsTable holds the schema information for the "scripts" table.
+	ScriptsTable = &schema.Table{
+		Name:       "scripts",
+		Columns:    ScriptsColumns,
+		PrimaryKey: []*schema.Column{ScriptsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "script_container_type_container_id",
+				Unique:  false,
+				Columns: []*schema.Column{ScriptsColumns[5], ScriptsColumns[6]},
+			},
+		},
+	}
 	// StatesColumns holds the columns for the "states" table.
 	StatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -527,6 +552,7 @@ var (
 		RefreshTokensTable,
 		RepetitiveTasksTable,
 		RepetitiveTaskExecutionsTable,
+		ScriptsTable,
 		StatesTable,
 		StateRequirementsTable,
 		StateRequirementChecksTable,
@@ -558,6 +584,9 @@ func init() {
 	LongTaskSubmissionsTable.ForeignKeys[0].RefTable = LongTasksTable
 	RefreshTokensTable.ForeignKeys[0].RefTable = UsersTable
 	RepetitiveTaskExecutionsTable.ForeignKeys[0].RefTable = RepetitiveTasksTable
+	ScriptsTable.Annotation = &entsql.Annotation{
+		Table: "scripts",
+	}
 	StateRequirementsTable.ForeignKeys[0].RefTable = StatesTable
 	StateRequirementChecksTable.ForeignKeys[0].RefTable = StateRequirementsTable
 	VariablesStacksTable.Annotation = &entsql.Annotation{

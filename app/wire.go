@@ -59,6 +59,8 @@ func InitializeApp() (*App, error) {
 		repositories.NewContainerVariablesRepository,
 		repositories.NewContainerChecksRepository,
 		services.NewContainerChecksService,
+		repositories.NewScriptsRepository,
+		services.NewScriptsService,
 		repositories.NewRepetitiveTasksRepository,
 		repositories.NewRepetitiveTaskExecutionsRepository,
 		repositories.NewLongTasksRepository,
@@ -112,7 +114,7 @@ func provideEntClient() (*ent.Client, error) {
 
 	// Run the auto migration tool with DropColumn option
 	ctx := context.Background()
-	if err := client.Schema.Create(ctx, migrate.WithDropColumn(true)); err != nil {
+	if err := client.Schema.Create(ctx, migrate.WithDropColumn(true), migrate.WithDropIndex(true)); err != nil {
 		// Check if the error is because table already exists, permission issue, or schema mismatch
 		errMsg := strings.ToLower(err.Error())
 		if strings.Contains(errMsg, "already exists") ||
@@ -164,6 +166,8 @@ func provideApp(
 	containerVariablesRepository *repositories.ContainerVariablesRepository,
 	containerChecksRepository *repositories.ContainerChecksRepository,
 	containerChecksService *services.ContainerChecksService,
+	scriptsRepository *repositories.ScriptsRepository,
+	scriptsService *services.ScriptsService,
 	repetitiveTasksRepository *repositories.RepetitiveTasksRepository,
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
 	longTasksRepository *repositories.LongTasksRepository,
@@ -215,6 +219,8 @@ func provideApp(
 		ContainerVariablesRepository:       containerVariablesRepository,
 		ContainerChecksRepository:          containerChecksRepository,
 		ContainerChecksService:             containerChecksService,
+		ScriptsRepository:                  scriptsRepository,
+		ScriptsService:                     scriptsService,
 		RepetitiveTasksRepository:          repetitiveTasksRepository,
 		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
 		LongTasksRepository:                longTasksRepository,

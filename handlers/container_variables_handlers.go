@@ -13,7 +13,8 @@ func validateContainerType(containerType schema.ContainerType) bool {
 	case schema.ContainerTypeEpic, schema.ContainerTypeStory, schema.ContainerTypeTask,
 		schema.ContainerTypeQuestion, schema.ContainerTypeProblem, schema.ContainerTypeKnowledgeNode,
 		schema.ContainerTypeKnowledgeBit, schema.ContainerTypeDefinition, schema.ContainerTypeAction,
-		schema.ContainerTypeRepetitiveTask, schema.ContainerTypeState:
+		schema.ContainerTypeRepetitiveTask, schema.ContainerTypeState,
+		schema.ContainerTypeLongTask, schema.ContainerTypeDirection:
 		return true
 	default:
 		return false

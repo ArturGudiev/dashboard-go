@@ -45,6 +45,8 @@ type App struct {
 	ContainerVariablesRepository       *repositories.ContainerVariablesRepository
 	ContainerChecksRepository          *repositories.ContainerChecksRepository
 	ContainerChecksService             *services.ContainerChecksService
+	ScriptsRepository                  *repositories.ScriptsRepository
+	ScriptsService                     *services.ScriptsService
 	RepetitiveTasksRepository          *repositories.RepetitiveTasksRepository
 	RepetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository
 	LongTasksRepository                *repositories.LongTasksRepository

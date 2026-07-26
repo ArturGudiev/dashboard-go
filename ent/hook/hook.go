@@ -224,6 +224,18 @@ func (f RepetitiveTaskExecutionFunc) Mutate(ctx context.Context, m ent.Mutation)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RepetitiveTaskExecutionMutation", m)
 }
 
+// The ScriptFunc type is an adapter to allow the use of ordinary
+// function as Script mutator.
+type ScriptFunc func(context.Context, *ent.ScriptMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ScriptFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ScriptMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ScriptMutation", m)
+}
+
 // The StateFunc type is an adapter to allow the use of ordinary
 // function as State mutator.
 type StateFunc func(context.Context, *ent.StateMutation) (ent.Value, error)

@@ -22,6 +22,7 @@ import (
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
 	"arturgudiev/dashboard/ent/schema"
+	"arturgudiev/dashboard/ent/script"
 	"arturgudiev/dashboard/ent/state"
 	"arturgudiev/dashboard/ent/staterequirement"
 	"arturgudiev/dashboard/ent/staterequirementcheck"
@@ -349,6 +350,38 @@ func init() {
 	repetitivetaskexecutionDescID := repetitivetaskexecutionFields[0].Descriptor()
 	// repetitivetaskexecution.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	repetitivetaskexecution.IDValidator = repetitivetaskexecutionDescID.Validators[0].(func(int) error)
+	scriptFields := schema.Script{}.Fields()
+	_ = scriptFields
+	// scriptDescName is the schema descriptor for name field.
+	scriptDescName := scriptFields[1].Descriptor()
+	// script.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	script.NameValidator = scriptDescName.Validators[0].(func(string) error)
+	// scriptDescCode is the schema descriptor for code field.
+	scriptDescCode := scriptFields[2].Descriptor()
+	// script.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	script.CodeValidator = scriptDescCode.Validators[0].(func(string) error)
+	// scriptDescDescription is the schema descriptor for description field.
+	scriptDescDescription := scriptFields[3].Descriptor()
+	// script.DefaultDescription holds the default value on creation for the description field.
+	script.DefaultDescription = scriptDescDescription.Default.(string)
+	// scriptDescContainerID is the schema descriptor for container_id field.
+	scriptDescContainerID := scriptFields[6].Descriptor()
+	// script.ContainerIDValidator is a validator for the "container_id" field. It is called by the builders before save.
+	script.ContainerIDValidator = scriptDescContainerID.Validators[0].(func(int) error)
+	// scriptDescCreatedAt is the schema descriptor for created_at field.
+	scriptDescCreatedAt := scriptFields[7].Descriptor()
+	// script.DefaultCreatedAt holds the default value on creation for the created_at field.
+	script.DefaultCreatedAt = scriptDescCreatedAt.Default.(func() time.Time)
+	// scriptDescUpdatedAt is the schema descriptor for updated_at field.
+	scriptDescUpdatedAt := scriptFields[8].Descriptor()
+	// script.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	script.DefaultUpdatedAt = scriptDescUpdatedAt.Default.(func() time.Time)
+	// script.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	script.UpdateDefaultUpdatedAt = scriptDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// scriptDescID is the schema descriptor for id field.
+	scriptDescID := scriptFields[0].Descriptor()
+	// script.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	script.IDValidator = scriptDescID.Validators[0].(func(int) error)
 	stateFields := schema.State{}.Fields()
 	_ = stateFields
 	// stateDescDescription is the schema descriptor for description field.

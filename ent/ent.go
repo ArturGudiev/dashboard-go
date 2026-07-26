@@ -21,6 +21,7 @@ import (
 	"arturgudiev/dashboard/ent/refreshtoken"
 	"arturgudiev/dashboard/ent/repetitivetask"
 	"arturgudiev/dashboard/ent/repetitivetaskexecution"
+	"arturgudiev/dashboard/ent/script"
 	"arturgudiev/dashboard/ent/state"
 	"arturgudiev/dashboard/ent/staterequirement"
 	"arturgudiev/dashboard/ent/staterequirementcheck"
@@ -116,6 +117,7 @@ func checkColumn(t, c string) error {
 			refreshtoken.Table:               refreshtoken.ValidColumn,
 			repetitivetask.Table:             repetitivetask.ValidColumn,
 			repetitivetaskexecution.Table:    repetitivetaskexecution.ValidColumn,
+			script.Table:                     script.ValidColumn,
 			state.Table:                      state.ValidColumn,
 			staterequirement.Table:           staterequirement.ValidColumn,
 			staterequirementcheck.Table:      staterequirementcheck.ValidColumn,

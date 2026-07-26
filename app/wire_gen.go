@@ -72,9 +72,11 @@ func InitializeApp() (*App, error) {
 	knowledgeNodesRepository := repositories.NewKnowledgeNodesRepository(client)
 	knowledgeNodesService := services.NewKnowledgeNodesService(client, containerService, knowledgeNodesRepository, childContainerRepository)
 	logMessagesRepository := repositories.NewLogMessagesRepository(client)
+	scriptsRepository := repositories.NewScriptsRepository(client)
+	scriptsService := services.NewScriptsService(scriptsRepository, taskService, problemService, containerVariablesRepository)
 	usersRepository := repositories.NewUsersRepository(client)
 	refreshTokensRepository := repositories.NewRefreshTokensRepository(client)
-	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, longTaskProgressesService, directionsService, problemService, containerService, cliService, statesService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, containerChecksRepository, containerChecksService, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository, longTasksProgressesSubmissionsRepository, longTasksProgressesRepository, statesRepository, stateRequirementsRepository, stateRequirementChecksRepository, usersRepository, refreshTokensRepository)
+	app := provideApp(client, taskService, repetitiveTaskService, repetitiveTaskExecutionService, longTasksService, longTaskSubmissionsService, longTaskProgressesService, directionsService, problemService, containerService, cliService, statesService, tasksRepository, problemsRepository, questionsRepository, questionService, storiesRepository, storiesService, epicsRepository, epicsService, aliasesRepository, aliasesService, knowledgeNodesRepository, knowledgeNodesService, childContainerRepository, logMessagesRepository, variablesStackRepository, containerVariablesRepository, containerChecksRepository, containerChecksService, scriptsRepository, scriptsService, repetitiveTasksRepository, repetitiveTaskExecutionsRepository, longTasksRepository, longTaskSubmissionsRepository, directionsRepository, directionSubmissionsRepository, longTasksProgressesSubmissionsRepository, longTasksProgressesRepository, statesRepository, stateRequirementsRepository, stateRequirementChecksRepository, usersRepository, refreshTokensRepository)
 	return app, nil
 }
 
@@ -166,6 +168,8 @@ func provideApp(
 	containerVariablesRepository *repositories.ContainerVariablesRepository,
 	containerChecksRepository *repositories.ContainerChecksRepository,
 	containerChecksService *services.ContainerChecksService,
+	scriptsRepository *repositories.ScriptsRepository,
+	scriptsService *services.ScriptsService,
 	repetitiveTasksRepository *repositories.RepetitiveTasksRepository,
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
 	longTasksRepository *repositories.LongTasksRepository,
@@ -217,6 +221,8 @@ func provideApp(
 		ContainerVariablesRepository:             containerVariablesRepository,
 		ContainerChecksRepository:                containerChecksRepository,
 		ContainerChecksService:                   containerChecksService,
+		ScriptsRepository:                        scriptsRepository,
+		ScriptsService:                           scriptsService,
 		RepetitiveTasksRepository:                repetitiveTasksRepository,
 		RepetitiveTaskExecutionsRepository:       repetitiveTaskExecutionsRepository,
 		LongTasksRepository:                      longTasksRepository,
