@@ -8,6 +8,7 @@ import (
 	"arturgudiev/dashboard/ent/migrate"
 	"arturgudiev/dashboard/repositories"
 	"arturgudiev/dashboard/services"
+	"arturgudiev/dashboard/ws"
 	"context"
 	"log"
 	"net/url"
@@ -56,6 +57,8 @@ func InitializeApp() (*App, error) {
 		repositories.NewLogMessagesRepository,
 		repositories.NewVariablesStackRepository,
 		repositories.NewContainerVariablesRepository,
+		repositories.NewContainerChecksRepository,
+		services.NewContainerChecksService,
 		repositories.NewRepetitiveTasksRepository,
 		repositories.NewRepetitiveTaskExecutionsRepository,
 		repositories.NewLongTasksRepository,
@@ -159,6 +162,8 @@ func provideApp(
 	logMessagesRepository *repositories.LogMessagesRepository,
 	variablesStackRepository *repositories.VariablesStackRepository,
 	containerVariablesRepository *repositories.ContainerVariablesRepository,
+	containerChecksRepository *repositories.ContainerChecksRepository,
+	containerChecksService *services.ContainerChecksService,
 	repetitiveTasksRepository *repositories.RepetitiveTasksRepository,
 	repetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository,
 	longTasksRepository *repositories.LongTasksRepository,
@@ -173,6 +178,9 @@ func provideApp(
 	usersRepository *repositories.UsersRepository,
 	refreshTokensRepository *repositories.RefreshTokensRepository,
 ) *App {
+	hub := ws.NewHub()
+	go hub.Run()
+
 	return &App{
 		Client:                    client,
 		TaskService:               taskService,
@@ -205,6 +213,8 @@ func provideApp(
 		LogMessagesRepository:              logMessagesRepository,
 		VariablesStackRepository:           variablesStackRepository,
 		ContainerVariablesRepository:       containerVariablesRepository,
+		ContainerChecksRepository:          containerChecksRepository,
+		ContainerChecksService:             containerChecksService,
 		RepetitiveTasksRepository:          repetitiveTasksRepository,
 		RepetitiveTaskExecutionsRepository: repetitiveTaskExecutionsRepository,
 		LongTasksRepository:                longTasksRepository,
@@ -216,6 +226,7 @@ func provideApp(
 		UsersRepository:                usersRepository,
 		RefreshTokensRepository:        refreshTokensRepository,
 		FilesService:                   services.NewFilesService(),
+		Hub:                            hub,
 		ctx:                       context.Background(), // Default context for CLI
 	}
 }

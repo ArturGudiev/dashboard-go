@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/alias"
+	"arturgudiev/dashboard/ent/containercheck"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/containervariables"
 	"arturgudiev/dashboard/ent/direction"
@@ -98,6 +99,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			alias.Table:                      alias.ValidColumn,
+			containercheck.Table:             containercheck.ValidColumn,
 			containerchild.Table:             containerchild.ValidColumn,
 			containervariables.Table:         containervariables.ValidColumn,
 			direction.Table:                  direction.ValidColumn,

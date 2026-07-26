@@ -23,6 +23,26 @@ var (
 		Columns:    AliasesColumns,
 		PrimaryKey: []*schema.Column{AliasesColumns[0]},
 	}
+	// ContainerChecksColumns holds the columns for the "container_checks" table.
+	ContainerChecksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "description", Type: field.TypeString},
+		{Name: "container_type", Type: field.TypeEnum, Enums: []string{"epic", "story", "task", "question", "problem", "knowledge-node", "knowledge-bit", "definition", "action", "repetitive-task", "long-task", "direction", "state"}},
+		{Name: "container_id", Type: field.TypeInt},
+	}
+	// ContainerChecksTable holds the schema information for the "container_checks" table.
+	ContainerChecksTable = &schema.Table{
+		Name:       "container_checks",
+		Columns:    ContainerChecksColumns,
+		PrimaryKey: []*schema.Column{ContainerChecksColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "containercheck_container_type_container_id",
+				Unique:  false,
+				Columns: []*schema.Column{ContainerChecksColumns[2], ContainerChecksColumns[3]},
+			},
+		},
+	}
 	// ContainerChildrenColumns holds the columns for the "container_children" table.
 	ContainerChildrenColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -490,6 +510,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AliasesTable,
+		ContainerChecksTable,
 		ContainerChildrenTable,
 		ContainerVariablesTable,
 		DirectionsTable,
@@ -520,6 +541,9 @@ var (
 func init() {
 	AliasesTable.Annotation = &entsql.Annotation{
 		Table: "aliases",
+	}
+	ContainerChecksTable.Annotation = &entsql.Annotation{
+		Table: "container_checks",
 	}
 	ContainerChildrenTable.Annotation = &entsql.Annotation{
 		Table: "container_children",

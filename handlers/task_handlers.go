@@ -120,6 +120,7 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 		return
 	}
 
+	h.notifyDoneTasksChanged()
 	c.JSON(200, newTask)
 }
 
@@ -229,6 +230,8 @@ func (h *Handler) FinishTask(c *gin.Context) {
 		return
 	}
 
+	h.notifyDoneTasksChanged()
+
 	// Convert to custom response type to ensure all fields are included
 	response := TaskResponse{
 		ID:           updatedTask.ID,
@@ -280,6 +283,7 @@ func (h *Handler) FinishTasks(c *gin.Context) { // TODO after Go: modify
 		}
 	}
 
+	h.notifyDoneTasksChanged()
 	c.JSON(200, gin.H{})
 }
 
@@ -317,6 +321,7 @@ func (h *Handler) FinishTasksByIDs(c *gin.Context) {
 		}
 	}
 
+	h.notifyDoneTasksChanged()
 	c.JSON(200, gin.H{})
 }
 

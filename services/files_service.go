@@ -68,6 +68,12 @@ func (s *FilesService) BaseDir() string {
 
 const encryptedSuffix = ".bin"
 
+// AbsolutePath maps a logical relative path to an absolute path under baseDir.
+// Same rules as internal resolvePath (including .bin when encrypted).
+func (s *FilesService) AbsolutePath(relPath string) (string, error) {
+	return s.resolvePath(relPath)
+}
+
 // resolvePath maps a logical relative path to an absolute path under baseDir.
 // When Encrypted is true, disk paths use a trailing .bin (rclone crypt suffix);
 // the logical API path never includes .bin.

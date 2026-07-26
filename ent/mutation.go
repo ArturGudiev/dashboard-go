@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/alias"
+	"arturgudiev/dashboard/ent/containercheck"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/containervariables"
 	"arturgudiev/dashboard/ent/direction"
@@ -50,6 +51,7 @@ const (
 
 	// Node types.
 	TypeAlias                      = "Alias"
+	TypeContainerCheck             = "ContainerCheck"
 	TypeContainerChild             = "ContainerChild"
 	TypeContainerVariables         = "ContainerVariables"
 	TypeDirection                  = "Direction"
@@ -646,6 +648,482 @@ func (m *AliasMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AliasMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Alias edge %s", name)
+}
+
+// ContainerCheckMutation represents an operation that mutates the ContainerCheck nodes in the graph.
+type ContainerCheckMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	description     *string
+	container_type  *schema.ContainerType
+	container_id    *int
+	addcontainer_id *int
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*ContainerCheck, error)
+	predicates      []predicate.ContainerCheck
+}
+
+var _ ent.Mutation = (*ContainerCheckMutation)(nil)
+
+// containercheckOption allows management of the mutation configuration using functional options.
+type containercheckOption func(*ContainerCheckMutation)
+
+// newContainerCheckMutation creates new mutation for the ContainerCheck entity.
+func newContainerCheckMutation(c config, op Op, opts ...containercheckOption) *ContainerCheckMutation {
+	m := &ContainerCheckMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeContainerCheck,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withContainerCheckID sets the ID field of the mutation.
+func withContainerCheckID(id int) containercheckOption {
+	return func(m *ContainerCheckMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ContainerCheck
+		)
+		m.oldValue = func(ctx context.Context) (*ContainerCheck, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ContainerCheck.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withContainerCheck sets the old ContainerCheck of the mutation.
+func withContainerCheck(node *ContainerCheck) containercheckOption {
+	return func(m *ContainerCheckMutation) {
+		m.oldValue = func(context.Context) (*ContainerCheck, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ContainerCheckMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ContainerCheckMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ContainerCheck entities.
+func (m *ContainerCheckMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ContainerCheckMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ContainerCheckMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ContainerCheck.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDescription sets the "description" field.
+func (m *ContainerCheckMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *ContainerCheckMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the ContainerCheck entity.
+// If the ContainerCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContainerCheckMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *ContainerCheckMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetContainerType sets the "container_type" field.
+func (m *ContainerCheckMutation) SetContainerType(st schema.ContainerType) {
+	m.container_type = &st
+}
+
+// ContainerType returns the value of the "container_type" field in the mutation.
+func (m *ContainerCheckMutation) ContainerType() (r schema.ContainerType, exists bool) {
+	v := m.container_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerType returns the old "container_type" field's value of the ContainerCheck entity.
+// If the ContainerCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContainerCheckMutation) OldContainerType(ctx context.Context) (v schema.ContainerType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerType: %w", err)
+	}
+	return oldValue.ContainerType, nil
+}
+
+// ResetContainerType resets all changes to the "container_type" field.
+func (m *ContainerCheckMutation) ResetContainerType() {
+	m.container_type = nil
+}
+
+// SetContainerID sets the "container_id" field.
+func (m *ContainerCheckMutation) SetContainerID(i int) {
+	m.container_id = &i
+	m.addcontainer_id = nil
+}
+
+// ContainerID returns the value of the "container_id" field in the mutation.
+func (m *ContainerCheckMutation) ContainerID() (r int, exists bool) {
+	v := m.container_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerID returns the old "container_id" field's value of the ContainerCheck entity.
+// If the ContainerCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContainerCheckMutation) OldContainerID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerID: %w", err)
+	}
+	return oldValue.ContainerID, nil
+}
+
+// AddContainerID adds i to the "container_id" field.
+func (m *ContainerCheckMutation) AddContainerID(i int) {
+	if m.addcontainer_id != nil {
+		*m.addcontainer_id += i
+	} else {
+		m.addcontainer_id = &i
+	}
+}
+
+// AddedContainerID returns the value that was added to the "container_id" field in this mutation.
+func (m *ContainerCheckMutation) AddedContainerID() (r int, exists bool) {
+	v := m.addcontainer_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetContainerID resets all changes to the "container_id" field.
+func (m *ContainerCheckMutation) ResetContainerID() {
+	m.container_id = nil
+	m.addcontainer_id = nil
+}
+
+// Where appends a list predicates to the ContainerCheckMutation builder.
+func (m *ContainerCheckMutation) Where(ps ...predicate.ContainerCheck) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ContainerCheckMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ContainerCheckMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ContainerCheck, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ContainerCheckMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ContainerCheckMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ContainerCheck).
+func (m *ContainerCheckMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ContainerCheckMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.description != nil {
+		fields = append(fields, containercheck.FieldDescription)
+	}
+	if m.container_type != nil {
+		fields = append(fields, containercheck.FieldContainerType)
+	}
+	if m.container_id != nil {
+		fields = append(fields, containercheck.FieldContainerID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ContainerCheckMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case containercheck.FieldDescription:
+		return m.Description()
+	case containercheck.FieldContainerType:
+		return m.ContainerType()
+	case containercheck.FieldContainerID:
+		return m.ContainerID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ContainerCheckMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case containercheck.FieldDescription:
+		return m.OldDescription(ctx)
+	case containercheck.FieldContainerType:
+		return m.OldContainerType(ctx)
+	case containercheck.FieldContainerID:
+		return m.OldContainerID(ctx)
+	}
+	return nil, fmt.Errorf("unknown ContainerCheck field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ContainerCheckMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case containercheck.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case containercheck.FieldContainerType:
+		v, ok := value.(schema.ContainerType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerType(v)
+		return nil
+	case containercheck.FieldContainerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ContainerCheck field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ContainerCheckMutation) AddedFields() []string {
+	var fields []string
+	if m.addcontainer_id != nil {
+		fields = append(fields, containercheck.FieldContainerID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ContainerCheckMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case containercheck.FieldContainerID:
+		return m.AddedContainerID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ContainerCheckMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case containercheck.FieldContainerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddContainerID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ContainerCheck numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ContainerCheckMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ContainerCheckMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ContainerCheckMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ContainerCheck nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ContainerCheckMutation) ResetField(name string) error {
+	switch name {
+	case containercheck.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case containercheck.FieldContainerType:
+		m.ResetContainerType()
+		return nil
+	case containercheck.FieldContainerID:
+		m.ResetContainerID()
+		return nil
+	}
+	return fmt.Errorf("unknown ContainerCheck field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ContainerCheckMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ContainerCheckMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ContainerCheckMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ContainerCheckMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ContainerCheckMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ContainerCheckMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ContainerCheckMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown ContainerCheck unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ContainerCheckMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown ContainerCheck edge %s", name)
 }
 
 // ContainerChildMutation represents an operation that mutates the ContainerChild nodes in the graph.

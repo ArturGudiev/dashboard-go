@@ -14,13 +14,14 @@ import (
 
 // TaskService handles task-related business logic
 type TaskService struct {
-	client                   *ent.Client
-	containerService         *ContainerService
-	problemService           *ProblemService
-	tasksRepository          *TasksRepository
-	childContainerRepository       *ChildContainerRepository
+	client                       *ent.Client
+	containerService             *ContainerService
+	problemService               *ProblemService
+	tasksRepository              *TasksRepository
+	childContainerRepository     *ChildContainerRepository
 	containerVariablesRepository *repositories.ContainerVariablesRepository
-	reportService                  *ReportService
+	containerChecksService       *ContainerChecksService
+	reportService                *ReportService
 }
 
 // NewTaskService creates a new TaskService
@@ -31,16 +32,18 @@ func NewTaskService(
 	tasksRepository *TasksRepository,
 	childContainerRepository *ChildContainerRepository,
 	containerVariablesRepository *repositories.ContainerVariablesRepository,
+	containerChecksService *ContainerChecksService,
 	reportService *ReportService,
 ) *TaskService {
 	return &TaskService{
-		client:                         client,
-		containerService:               containerService,
-		problemService:                 problemService,
-		tasksRepository:                tasksRepository,
-		childContainerRepository:       childContainerRepository,
-		containerVariablesRepository:   containerVariablesRepository,
-		reportService:                  reportService,
+		client:                       client,
+		containerService:             containerService,
+		problemService:               problemService,
+		tasksRepository:              tasksRepository,
+		childContainerRepository:     childContainerRepository,
+		containerVariablesRepository: containerVariablesRepository,
+		containerChecksService:       containerChecksService,
+		reportService:                reportService,
 	}
 }
 
@@ -117,8 +120,9 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 
 	parentContainers, errParentContainers := s.childContainerRepository.GetParentContainers(ctx, schema.ContainerTypeTask, ID)
 	variables, errVariables := s.containerVariablesRepository.GetVariablesByContainer(ctx, schema.ContainerTypeTask, ID)
+	checks, errChecks := s.containerChecksService.GetChecksByContainer(ctx, schema.ContainerTypeTask, ID)
 
-	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errQuestions != nil || errLongTasks != nil || errVariables != nil {
+	if errSubtasks != nil || errParentContainers != nil || errSubproblems != nil || errQuestions != nil || errLongTasks != nil || errVariables != nil || errChecks != nil {
 		return nil, errors.New("problem not found")
 	}
 
@@ -138,6 +142,7 @@ func (s *TaskService) GetTaskFull(ctx context.Context, ID int) (*models.TaskFull
 		ParentContainers: parentContainers,
 		KnowledgeNodes:   []int{},
 		Variables:        toContainerVariables(variables),
+		Checks:           checks,
 		DoneDateTime:     task.DoneDateTime,
 		DueDateTime:      task.DueDateTime,
 	}

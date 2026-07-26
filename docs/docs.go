@@ -81,6 +81,247 @@ const docTemplate = `{
                 }
             }
         },
+        "/aliases/container": {
+            "put": {
+                "description": "Replaces container aliases: removes absent ones and adds new ones",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aliases"
+                ],
+                "summary": "Sync aliases for container",
+                "parameters": [
+                    {
+                        "description": "Aliases sync request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UpdateContainerAliasesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AliasModel"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/aliases/container/{type}/{id}": {
+            "get": {
+                "description": "Returns all aliases linked to the given container type and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aliases"
+                ],
+                "summary": "List aliases for container",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Container type",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Container ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AliasModel"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/aliases/file": {
+            "put": {
+                "description": "Replaces file aliases: removes absent ones and adds new ones. filePath is the logical relative path under FILES_DIR.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aliases"
+                ],
+                "summary": "Sync aliases for file",
+                "parameters": [
+                    {
+                        "description": "Aliases sync request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UpdateFileAliasesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AliasModel"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/aliases/file/{filepath}": {
+            "get": {
+                "description": "Returns all aliases linked to the given logical relative file path under FILES_DIR",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aliases"
+                ],
+                "summary": "List aliases for file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Relative file path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AliasModel"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/aliases/{alias}": {
             "get": {
                 "description": "Returns an alias by its string",
@@ -238,6 +479,186 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/container-checks": {
+            "post": {
+                "description": "Creates a check entry for the given container",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "container checks"
+                ],
+                "summary": "Add check to container",
+                "parameters": [
+                    {
+                        "description": "Check creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AddContainerCheckRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ContainerCheck"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/container-checks/{id}": {
+            "delete": {
+                "description": "Deletes a container check by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "container checks"
+                ],
+                "summary": "Remove container check",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Container check ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates a container check's description",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "container checks"
+                ],
+                "summary": "Update container check",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Container check ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PatchContainerCheckRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ContainerCheck"
                         }
                     },
                     "400": {
@@ -1447,6 +1868,48 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/files/parents-path/{filepath}": {
+            "get": {
+                "description": "Resolves the owning container from a logical relative file path and returns its parent container descriptions (leaf→root), same shape as POST /parents-path",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get parents path for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "tasks/12_foo/note.md",
+                        "description": "Relative file path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -6394,6 +6857,25 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.AddContainerCheckRequest": {
+            "type": "object",
+            "required": [
+                "containerID",
+                "containerType",
+                "description"
+            ],
+            "properties": {
+                "containerID": {
+                    "type": "integer"
+                },
+                "containerType": {
+                    "$ref": "#/definitions/schema.ContainerType"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.AddContainerVariableRequest": {
             "type": "object",
             "required": [
@@ -6680,6 +7162,17 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.PatchContainerCheckRequest": {
+            "type": "object",
+            "required": [
+                "description"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.PatchContainerVariableRequest": {
             "type": "object",
             "properties": {
@@ -6835,6 +7328,44 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.UpdateContainerAliasesRequest": {
+            "type": "object",
+            "required": [
+                "containerID",
+                "containerType"
+            ],
+            "properties": {
+                "aliases": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "containerID": {
+                    "type": "integer"
+                },
+                "containerType": {
+                    "$ref": "#/definitions/schema.ContainerType"
+                }
+            }
+        },
+        "handlers.UpdateFileAliasesRequest": {
+            "type": "object",
+            "required": [
+                "filePath"
+            ],
+            "properties": {
+                "aliases": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "filePath": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AliasModel": {
             "type": "object",
             "required": [
@@ -6857,6 +7388,23 @@ const docTemplate = `{
                 },
                 "type": {
                     "$ref": "#/definitions/schema.AliasType"
+                }
+            }
+        },
+        "models.ContainerCheck": {
+            "type": "object",
+            "properties": {
+                "containerID": {
+                    "type": "integer"
+                },
+                "containerType": {
+                    "$ref": "#/definitions/schema.ContainerType"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 }
             }
         },
@@ -8102,6 +8650,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "type": "integer"
+                    }
+                },
+                "checks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContainerCheck"
                     }
                 },
                 "definitions": {

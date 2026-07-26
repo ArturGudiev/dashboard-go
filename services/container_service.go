@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/ddddddO/gtree"
@@ -1039,29 +1040,87 @@ func filesBaseDir() string {
 
 func (s *ContainerService) GetFilesFolderPrefix(ctx context.Context, containerType schema.ContainerType, ID int) *string {
 	folderPath := filesBaseDir()
-	var subdir string
-	switch containerType {
-	case schema.ContainerTypeTask:
-		subdir = "tasks"
-	case schema.ContainerTypeProblem:
-		subdir = "problems"
-	case schema.ContainerTypeQuestion:
-		subdir = "questions"
-	case schema.ContainerTypeAction:
-		subdir = "actions"
-	case schema.ContainerTypeDefinition:
-		subdir = "definitions"
-	case schema.ContainerTypeKnowledgeBit:
-		subdir = "knowledge-bits"
-	case schema.ContainerTypeKnowledgeNode:
-		subdir = "knowledge-nodes"
-	case schema.ContainerTypeStory:
-		subdir = "stories"
-	case schema.ContainerTypeEpic:
-		subdir = "epics"
-	default:
+	subdir := filesSubdirForContainerType(containerType)
+	if subdir == "" {
 		return nil
 	}
 	result := filepath.Join(folderPath, subdir, fmt.Sprintf("%d_", ID))
 	return &result
+}
+
+func filesSubdirForContainerType(containerType schema.ContainerType) string {
+	switch containerType {
+	case schema.ContainerTypeTask:
+		return "tasks"
+	case schema.ContainerTypeProblem:
+		return "problems"
+	case schema.ContainerTypeQuestion:
+		return "questions"
+	case schema.ContainerTypeAction:
+		return "actions"
+	case schema.ContainerTypeDefinition:
+		return "definitions"
+	case schema.ContainerTypeKnowledgeBit:
+		return "knowledge-bits"
+	case schema.ContainerTypeKnowledgeNode:
+		return "knowledge-nodes"
+	case schema.ContainerTypeStory:
+		return "stories"
+	case schema.ContainerTypeEpic:
+		return "epics"
+	default:
+		return ""
+	}
+}
+
+func containerTypeForFilesSubdir(subdir string) (schema.ContainerType, bool) {
+	switch subdir {
+	case "tasks":
+		return schema.ContainerTypeTask, true
+	case "problems":
+		return schema.ContainerTypeProblem, true
+	case "questions":
+		return schema.ContainerTypeQuestion, true
+	case "actions":
+		return schema.ContainerTypeAction, true
+	case "definitions":
+		return schema.ContainerTypeDefinition, true
+	case "knowledge-bits":
+		return schema.ContainerTypeKnowledgeBit, true
+	case "knowledge-nodes":
+		return schema.ContainerTypeKnowledgeNode, true
+	case "stories":
+		return schema.ContainerTypeStory, true
+	case "epics":
+		return schema.ContainerTypeEpic, true
+	default:
+		return "", false
+	}
+}
+
+// OwningContainerFromFilesRelPath parses a logical relative path under FILES_DIR
+// (e.g. "tasks/12_foo/note.md") into the owning container type and ID.
+func OwningContainerFromFilesRelPath(relPath string) (schema.ContainerType, int, bool) {
+	rel := filepath.ToSlash(strings.TrimPrefix(strings.TrimSpace(relPath), "/"))
+	if rel == "" {
+		return "", 0, false
+	}
+	parts := strings.Split(rel, "/")
+	if len(parts) < 2 {
+		return "", 0, false
+	}
+	containerType, ok := containerTypeForFilesSubdir(parts[0])
+	if !ok {
+		return "", 0, false
+	}
+	folder := parts[1]
+	underscore := strings.IndexByte(folder, '_')
+	if underscore <= 0 {
+		return "", 0, false
+	}
+	id, err := strconv.Atoi(folder[:underscore])
+	if err != nil || id <= 0 {
+		return "", 0, false
+	}
+	return containerType, id, true
 }

@@ -184,6 +184,7 @@ func main() {
 	router.GET("/", h.Root)
 	router.GET("/tests", h.GetTests)
 	router.POST("/parents-path", h.GetParentsPath)
+	router.GET("/ws", h.ServeWS)
 
 	// Task routes
 	router.GET("/task/:id", h.GetTaskByID)
@@ -282,6 +283,11 @@ func main() {
 	router.PATCH("/container-variables/:id", h.PatchContainerVariable)
 	router.DELETE("/container-variables/:id", h.RemoveContainerVariable)
 
+	// Container checks routes
+	router.POST("/container-checks", h.AddContainerCheck)
+	router.PATCH("/container-checks/:id", h.PatchContainerCheck)
+	router.DELETE("/container-checks/:id", h.RemoveContainerCheck)
+
 	// State routes
 	router.GET("/states/:id", h.GetStateByID)
 	router.GET("/states", h.GetAllStates)
@@ -301,9 +307,11 @@ func main() {
 	// router.PUT("/states/:id", h.UpdateState)
 	// router.DELETE("/states/:id", h.DeleteState)
 
-	// Alias routes (static /container paths before /:alias)
+	// Alias routes (static /container and /file paths before /:alias)
 	router.GET("/aliases/container/:type/:id", h.GetAliasesByContainer)
 	router.PUT("/aliases/container", h.UpdateContainerAliases)
+	router.GET("/aliases/file/*filepath", h.GetAliasesByFile)
+	router.PUT("/aliases/file", h.UpdateFileAliases)
 	router.GET("/aliases/:alias", h.GetAliasByString)
 
 	// Files routes (relative path under FILES_DIR; FILES_ENCRYPTED controls client crypto mode)
@@ -311,6 +319,7 @@ func main() {
 	router.GET("/files/config", h.GetFilesConfig)
 	router.GET("/files", h.ListFiles)
 	router.GET("/files/container/:type/:id", h.ListContainerFiles)
+	router.GET("/files/parents-path/*filepath", h.GetFileParentsPath)
 	router.GET("/files/content/*filepath", h.GetFile)
 	router.PUT("/files/content/*filepath", h.PutFile)
 	router.DELETE("/files/content/*filepath", h.DeleteFile)

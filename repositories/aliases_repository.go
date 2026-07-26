@@ -51,11 +51,13 @@ func (r *AliasesRepository) GetAliasesByFilePath(
 	}
 	forward := strings.ReplaceAll(clean, `\`, `/`)
 	back := strings.ReplaceAll(clean, `/`, `\`)
+	forwardNoBin := strings.TrimSuffix(forward, ".bin")
+	backNoBin := strings.TrimSuffix(back, ".bin")
 
 	seen := make(map[string]struct{})
-	paths := make([]string, 0, 3)
-	for _, p := range []string{clean, forward, back} {
-		if p == "" {
+	paths := make([]string, 0, 8)
+	for _, p := range []string{clean, forward, back, forwardNoBin, backNoBin, forwardNoBin + ".bin", backNoBin + ".bin"} {
+		if p == "" || p == ".bin" {
 			continue
 		}
 		if _, ok := seen[p]; ok {
@@ -72,6 +74,17 @@ func (r *AliasesRepository) GetAliasesByFilePath(
 		preds[i] = alias.FilePathEqualFold(p)
 	}
 
+	// Also pull likely candidates by relative suffix (Windows abs vs local FILES_DIR abs).
+	rel := logicalFileRelPath(clean)
+	if rel != "" {
+		relForward := strings.ReplaceAll(rel, `\`, `/`)
+		relBack := strings.ReplaceAll(rel, `/`, `\`)
+		for _, suffix := range []string{relForward, relBack, relForward + ".bin", relBack + ".bin"} {
+			preds = append(preds, alias.FilePathHasSuffix(suffix))
+			preds = append(preds, alias.FilePathContainsFold(suffix))
+		}
+	}
+
 	var match predicate.Alias
 	switch len(preds) {
 	case 0:
@@ -82,14 +95,32 @@ func (r *AliasesRepository) GetAliasesByFilePath(
 		match = alias.Or(preds...)
 	}
 
-	aliases, err := r.client.Alias.Query().Where(
+	candidates, err := r.client.Alias.Query().Where(
+		alias.TypeEQ(schema.AliasTypeFile),
 		alias.FilePathNotNil(),
 		match,
 	).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return aliases, nil
+
+	// Exact EqualFold hits are kept; Contains/HasSuffix hits are filtered with logical matching
+	// so different absolute roots (e.g. Windows vs macOS FILES_DIR) still resolve.
+	out := make([]*ent.Alias, 0, len(candidates))
+	seenIDs := make(map[int]struct{}, len(candidates))
+	for _, a := range candidates {
+		if a.FilePath == nil {
+			continue
+		}
+		if _, dup := seenIDs[a.ID]; dup {
+			continue
+		}
+		if fileAliasPathMatches(*a.FilePath, clean) || (rel != "" && fileAliasPathMatches(*a.FilePath, rel)) {
+			seenIDs[a.ID] = struct{}{}
+			out = append(out, a)
+		}
+	}
+	return out, nil
 }
 
 func (r *AliasesRepository) CreateFileAlias(ctx context.Context, alias string, filePath string) (*ent.Alias, error) {

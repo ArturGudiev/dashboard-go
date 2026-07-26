@@ -168,3 +168,27 @@ func TestGetFilesFolderUsesFILES_DIR(t *testing.T) {
 		t.Fatalf("expected %s, got %v", containerDir, found)
 	}
 }
+
+func TestOwningContainerFromFilesRelPath(t *testing.T) {
+	tests := []struct {
+		path string
+		typ  schema.ContainerType
+		id   int
+		ok   bool
+	}{
+		{"tasks/12_foo/note.md", schema.ContainerTypeTask, 12, true},
+		{"knowledge-nodes/592_History/history.mm", schema.ContainerTypeKnowledgeNode, 592, true},
+		{"/epics/5_name/a/b.txt", schema.ContainerTypeEpic, 5, true},
+		{"readme.md", "", 0, false},
+		{"tasks/note.md", "", 0, false},
+		{"tasks/_12/note.md", "", 0, false},
+		{"other/12_foo/note.md", "", 0, false},
+	}
+	for _, tt := range tests {
+		gotType, gotID, ok := OwningContainerFromFilesRelPath(tt.path)
+		if ok != tt.ok || gotType != tt.typ || gotID != tt.id {
+			t.Fatalf("%q: got (%q, %d, %v), want (%q, %d, %v)",
+				tt.path, gotType, gotID, ok, tt.typ, tt.id, tt.ok)
+		}
+	}
+}

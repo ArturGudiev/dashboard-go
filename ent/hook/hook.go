@@ -20,6 +20,18 @@ func (f AliasFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AliasMutation", m)
 }
 
+// The ContainerCheckFunc type is an adapter to allow the use of ordinary
+// function as ContainerCheck mutator.
+type ContainerCheckFunc func(context.Context, *ent.ContainerCheckMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ContainerCheckFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ContainerCheckMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ContainerCheckMutation", m)
+}
+
 // The ContainerChildFunc type is an adapter to allow the use of ordinary
 // function as ContainerChild mutator.
 type ContainerChildFunc func(context.Context, *ent.ContainerChildMutation) (ent.Value, error)

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"arturgudiev/dashboard/ent/alias"
+	"arturgudiev/dashboard/ent/containercheck"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/containervariables"
 	"arturgudiev/dashboard/ent/direction"
@@ -50,6 +51,20 @@ func init() {
 	aliasDescID := aliasFields[0].Descriptor()
 	// alias.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	alias.IDValidator = aliasDescID.Validators[0].(func(int) error)
+	containercheckFields := schema.ContainerCheck{}.Fields()
+	_ = containercheckFields
+	// containercheckDescDescription is the schema descriptor for description field.
+	containercheckDescDescription := containercheckFields[1].Descriptor()
+	// containercheck.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	containercheck.DescriptionValidator = containercheckDescDescription.Validators[0].(func(string) error)
+	// containercheckDescContainerID is the schema descriptor for container_id field.
+	containercheckDescContainerID := containercheckFields[3].Descriptor()
+	// containercheck.ContainerIDValidator is a validator for the "container_id" field. It is called by the builders before save.
+	containercheck.ContainerIDValidator = containercheckDescContainerID.Validators[0].(func(int) error)
+	// containercheckDescID is the schema descriptor for id field.
+	containercheckDescID := containercheckFields[0].Descriptor()
+	// containercheck.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	containercheck.IDValidator = containercheckDescID.Validators[0].(func(int) error)
 	containerchildFields := schema.ContainerChild{}.Fields()
 	_ = containerchildFields
 	// containerchildDescParentID is the schema descriptor for parent_id field.

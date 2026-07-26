@@ -9,6 +9,9 @@ import (
 // Alias is the predicate function for alias builders.
 type Alias func(*sql.Selector)
 
+// ContainerCheck is the predicate function for containercheck builders.
+type ContainerCheck func(*sql.Selector)
+
 // ContainerChild is the predicate function for containerchild builders.
 type ContainerChild func(*sql.Selector)
 

@@ -124,7 +124,6 @@ func (s *AliasesService) PrintAliases(aliases []*models.AliasModel) {
 
 }
 
-
 func (s *AliasesService) AddFileAlias(ctx context.Context, filePath string, alias string) (*ent.Alias, error) {
 
 	aliasEntity, err := s.aliasesRepository.CreateFileAlias(ctx, alias, filePath)
@@ -141,7 +140,6 @@ func (s *AliasesService) RemoveFileAlias(ctx context.Context, filePath string, a
 	}
 	return aliasEntity, nil
 }
-
 
 func (s *AliasesService) AddContainerAlias(ctx context.Context, containerType schema.ContainerType, id int, alias string) (*ent.Alias, error) {
 
@@ -168,9 +166,7 @@ func (s *AliasesService) RemoveContainerAlias(ctx context.Context, containerType
 	return aliasEntity, nil
 }
 
-// UpdateContainerAliases syncs the container's aliases with the provided list:
-// missing aliases are removed, new aliases are added.
-func (s *AliasesService) UpdateContainerAliases(ctx context.Context, containerType schema.ContainerType, id int, desiredAliases []string) ([]*models.AliasModel, error) {
+func normalizeDesiredAliases(desiredAliases []string) (map[string]struct{}, []string) {
 	desiredSet := make(map[string]struct{}, len(desiredAliases))
 	normalizedDesired := make([]string, 0, len(desiredAliases))
 	for _, alias := range desiredAliases {
@@ -184,6 +180,13 @@ func (s *AliasesService) UpdateContainerAliases(ctx context.Context, containerTy
 		desiredSet[trimmed] = struct{}{}
 		normalizedDesired = append(normalizedDesired, trimmed)
 	}
+	return desiredSet, normalizedDesired
+}
+
+// UpdateContainerAliases syncs the container's aliases with the provided list:
+// missing aliases are removed, new aliases are added.
+func (s *AliasesService) UpdateContainerAliases(ctx context.Context, containerType schema.ContainerType, id int, desiredAliases []string) ([]*models.AliasModel, error) {
+	desiredSet, normalizedDesired := normalizeDesiredAliases(desiredAliases)
 
 	currentAliases, err := s.GetAliasesByTaskContainer(ctx, containerType, id)
 	if err != nil {
@@ -210,4 +213,45 @@ func (s *AliasesService) UpdateContainerAliases(ctx context.Context, containerTy
 	}
 
 	return s.GetAliasesByTaskContainer(ctx, containerType, id)
+}
+
+// UpdateFileAliases syncs the file's aliases with the provided list:
+// missing aliases are removed, new aliases are added.
+// lookupPath is used to find existing aliases (logical relative or absolute).
+// storePath is written for newly added aliases (prefer local absolute under FILES_DIR).
+func (s *AliasesService) UpdateFileAliases(ctx context.Context, lookupPath string, storePath string, desiredAliases []string) ([]*models.AliasModel, error) {
+	if storePath == "" {
+		storePath = lookupPath
+	}
+	desiredSet, normalizedDesired := normalizeDesiredAliases(desiredAliases)
+
+	currentAliases, err := s.GetAliasesByFilePath(ctx, lookupPath)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSet := make(map[string]struct{}, len(currentAliases))
+	for _, aliasModel := range currentAliases {
+		currentSet[aliasModel.Alias] = struct{}{}
+		if _, keep := desiredSet[aliasModel.Alias]; !keep {
+			pathToRemove := storePath
+			if aliasModel.FilePath != nil && *aliasModel.FilePath != "" {
+				pathToRemove = *aliasModel.FilePath
+			}
+			if _, removeErr := s.RemoveFileAlias(ctx, pathToRemove, aliasModel.Alias); removeErr != nil {
+				return nil, removeErr
+			}
+		}
+	}
+
+	for _, alias := range normalizedDesired {
+		if _, exists := currentSet[alias]; exists {
+			continue
+		}
+		if _, addErr := s.AddFileAlias(ctx, storePath, alias); addErr != nil {
+			return nil, addErr
+		}
+	}
+
+	return s.GetAliasesByFilePath(ctx, lookupPath)
 }

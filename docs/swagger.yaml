@@ -507,6 +507,19 @@ definitions:
           $ref: '#/definitions/ent.ContainerVariables'
         type: array
     type: object
+  handlers.AddContainerCheckRequest:
+    properties:
+      containerID:
+        type: integer
+      containerType:
+        $ref: '#/definitions/schema.ContainerType'
+      description:
+        type: string
+    required:
+    - containerID
+    - containerType
+    - description
+    type: object
   handlers.AddContainerVariableRequest:
     properties:
       containerID:
@@ -695,6 +708,13 @@ definitions:
       notes:
         type: string
     type: object
+  handlers.PatchContainerCheckRequest:
+    properties:
+      description:
+        type: string
+    required:
+    - description
+    type: object
   handlers.PatchContainerVariableRequest:
     properties:
       variableName:
@@ -796,6 +816,31 @@ definitions:
           type: string
         type: array
     type: object
+  handlers.UpdateContainerAliasesRequest:
+    properties:
+      aliases:
+        items:
+          type: string
+        type: array
+      containerID:
+        type: integer
+      containerType:
+        $ref: '#/definitions/schema.ContainerType'
+    required:
+    - containerID
+    - containerType
+    type: object
+  handlers.UpdateFileAliasesRequest:
+    properties:
+      aliases:
+        items:
+          type: string
+        type: array
+      filePath:
+        type: string
+    required:
+    - filePath
+    type: object
   models.AliasModel:
     properties:
       alias:
@@ -812,6 +857,17 @@ definitions:
     - alias
     - id
     - type
+    type: object
+  models.ContainerCheck:
+    properties:
+      containerID:
+        type: integer
+      containerType:
+        $ref: '#/definitions/schema.ContainerType'
+      description:
+        type: string
+      id:
+        type: integer
     type: object
   models.ContainerDescription:
     description: Container description with ID and type
@@ -1649,6 +1705,10 @@ definitions:
         items:
           type: integer
         type: array
+      checks:
+        items:
+          $ref: '#/definitions/models.ContainerCheck'
+        type: array
       definitions:
         items:
           type: integer
@@ -1925,6 +1985,167 @@ paths:
       summary: Get alias by string
       tags:
       - aliases
+  /aliases/container:
+    put:
+      consumes:
+      - application/json
+      description: 'Replaces container aliases: removes absent ones and adds new ones'
+      parameters:
+      - description: Aliases sync request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateContainerAliasesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AliasModel'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sync aliases for container
+      tags:
+      - aliases
+  /aliases/container/{type}/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns all aliases linked to the given container type and id
+      parameters:
+      - description: Container type
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: Container ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AliasModel'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List aliases for container
+      tags:
+      - aliases
+  /aliases/file:
+    put:
+      consumes:
+      - application/json
+      description: 'Replaces file aliases: removes absent ones and adds new ones.
+        filePath is the logical relative path under FILES_DIR.'
+      parameters:
+      - description: Aliases sync request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateFileAliasesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AliasModel'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sync aliases for file
+      tags:
+      - aliases
+  /aliases/file/{filepath}:
+    get:
+      consumes:
+      - application/json
+      description: Returns all aliases linked to the given logical relative file path
+        under FILES_DIR
+      parameters:
+      - description: Relative file path
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AliasModel'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List aliases for file
+      tags:
+      - aliases
   /answer-question/{id}:
     post:
       consumes:
@@ -2011,6 +2232,125 @@ paths:
       summary: Change tasks order
       tags:
       - tasks
+  /container-checks:
+    post:
+      consumes:
+      - application/json
+      description: Creates a check entry for the given container
+      parameters:
+      - description: Check creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AddContainerCheckRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ContainerCheck'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add check to container
+      tags:
+      - container checks
+  /container-checks/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a container check by ID
+      parameters:
+      - description: Container check ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Remove container check
+      tags:
+      - container checks
+    patch:
+      consumes:
+      - application/json
+      description: Updates a container check's description
+      parameters:
+      - description: Container check ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PatchContainerCheckRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ContainerCheck'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update container check
+      tags:
+      - container checks
   /container-variables:
     post:
       consumes:
@@ -2813,6 +3153,36 @@ paths:
               type: string
             type: object
       summary: Upload or replace a file
+      tags:
+      - files
+  /files/parents-path/{filepath}:
+    get:
+      description: Resolves the owning container from a logical relative file path
+        and returns its parent container descriptions (leaf→root), same shape as POST
+        /parents-path
+      parameters:
+      - description: Relative file path
+        example: tasks/12_foo/note.md
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get parents path for a file
       tags:
       - files
   /finish-task/{id}:

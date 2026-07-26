@@ -264,9 +264,28 @@ type PatchContainerVariableRequest struct {
 	VariableValue *string `json:"variableValue"`
 }
 
+// AddContainerCheckRequest adds a check to a container.
+type AddContainerCheckRequest struct {
+	ContainerType schema.ContainerType `json:"containerType" binding:"required"`
+	ContainerID   int                  `json:"containerID" binding:"required,gt=0"`
+	Description   string               `json:"description" binding:"required"`
+}
+
+// PatchContainerCheckRequest represents fields for PATCH /container-checks/:id
+type PatchContainerCheckRequest struct {
+	Description string `json:"description" binding:"required"`
+}
+
 // UpdateContainerAliasesRequest replaces the set of aliases for a container.
 type UpdateContainerAliasesRequest struct {
 	ContainerType schema.ContainerType `json:"containerType" binding:"required"`
 	ContainerID   int                  `json:"containerID" binding:"required,gt=0"`
 	Aliases       []string             `json:"aliases"`
+}
+
+// UpdateFileAliasesRequest replaces the set of aliases for a file.
+// FilePath is the logical relative path under FILES_DIR (same as the files API).
+type UpdateFileAliasesRequest struct {
+	FilePath string   `json:"filePath" binding:"required"`
+	Aliases  []string `json:"aliases"`
 }

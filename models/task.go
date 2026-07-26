@@ -21,6 +21,7 @@ type TaskFull struct {
 	ParentContainers []ContainerDescription `json:"parentContainers"`
 	KnowledgeNodes   []int                  `json:"knowledgeNodes"`
 	Variables        []ContainerVariable    `json:"variables"`
+	Checks           []ContainerCheck       `json:"checks"`
 	DoneDateTime     *time.Time             `json:"doneDateTime"`
 	DueDateTime      *time.Time             `json:"dueDateTime"`
 }

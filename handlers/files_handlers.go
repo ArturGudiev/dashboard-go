@@ -112,6 +112,30 @@ func (h *Handler) DeleteFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"path": relPath, "deleted": true})
 }
 
+// GetFileParentsPath handles GET /files/parents-path/*filepath
+// @Summary      Get parents path for a file
+// @Description  Resolves the owning container from a logical relative file path and returns its parent container descriptions (leaf→root), same shape as POST /parents-path
+// @Tags         files
+// @Produce      json
+// @Param        filepath  path  string  true  "Relative file path"  example(tasks/12_foo/note.md)
+// @Success      200  {array}   string
+// @Failure      403  {object}  map[string]string
+// @Router       /files/parents-path/{filepath} [get]
+func (h *Handler) GetFileParentsPath(c *gin.Context) {
+	relPath := strings.TrimPrefix(c.Param("filepath"), "/")
+	containerType, id, ok := services.OwningContainerFromFilesRelPath(relPath)
+	if !ok {
+		c.JSON(http.StatusOK, []string{})
+		return
+	}
+
+	parentsPath := h.App.ContainerService.GetParentsPathDescriptions(c.Request.Context(), containerType, id)
+	if parentsPath == nil {
+		parentsPath = []string{}
+	}
+	c.JSON(http.StatusOK, parentsPath)
+}
+
 func writeFilesError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, services.ErrInvalidFilePath):

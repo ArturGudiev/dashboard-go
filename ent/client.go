@@ -12,6 +12,7 @@ import (
 	"arturgudiev/dashboard/ent/migrate"
 
 	"arturgudiev/dashboard/ent/alias"
+	"arturgudiev/dashboard/ent/containercheck"
 	"arturgudiev/dashboard/ent/containerchild"
 	"arturgudiev/dashboard/ent/containervariables"
 	"arturgudiev/dashboard/ent/direction"
@@ -50,6 +51,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Alias is the client for interacting with the Alias builders.
 	Alias *AliasClient
+	// ContainerCheck is the client for interacting with the ContainerCheck builders.
+	ContainerCheck *ContainerCheckClient
 	// ContainerChild is the client for interacting with the ContainerChild builders.
 	ContainerChild *ContainerChildClient
 	// ContainerVariables is the client for interacting with the ContainerVariables builders.
@@ -110,6 +113,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alias = NewAliasClient(c.config)
+	c.ContainerCheck = NewContainerCheckClient(c.config)
 	c.ContainerChild = NewContainerChildClient(c.config)
 	c.ContainerVariables = NewContainerVariablesClient(c.config)
 	c.Direction = NewDirectionClient(c.config)
@@ -227,6 +231,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                        ctx,
 		config:                     cfg,
 		Alias:                      NewAliasClient(cfg),
+		ContainerCheck:             NewContainerCheckClient(cfg),
 		ContainerChild:             NewContainerChildClient(cfg),
 		ContainerVariables:         NewContainerVariablesClient(cfg),
 		Direction:                  NewDirectionClient(cfg),
@@ -271,6 +276,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                        ctx,
 		config:                     cfg,
 		Alias:                      NewAliasClient(cfg),
+		ContainerCheck:             NewContainerCheckClient(cfg),
 		ContainerChild:             NewContainerChildClient(cfg),
 		ContainerVariables:         NewContainerVariablesClient(cfg),
 		Direction:                  NewDirectionClient(cfg),
@@ -324,7 +330,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alias, c.ContainerChild, c.ContainerVariables, c.Direction,
+		c.Alias, c.ContainerCheck, c.ContainerChild, c.ContainerVariables, c.Direction,
 		c.DirectionSubmission, c.Epic, c.KnowledgeNode, c.LogMessage, c.LongTask,
 		c.LongTaskProgress, c.LongTaskProgressSubmission, c.LongTaskSubmission,
 		c.Problem, c.Question, c.RefreshToken, c.RepetitiveTask,
@@ -339,7 +345,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alias, c.ContainerChild, c.ContainerVariables, c.Direction,
+		c.Alias, c.ContainerCheck, c.ContainerChild, c.ContainerVariables, c.Direction,
 		c.DirectionSubmission, c.Epic, c.KnowledgeNode, c.LogMessage, c.LongTask,
 		c.LongTaskProgress, c.LongTaskProgressSubmission, c.LongTaskSubmission,
 		c.Problem, c.Question, c.RefreshToken, c.RepetitiveTask,
@@ -355,6 +361,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AliasMutation:
 		return c.Alias.mutate(ctx, m)
+	case *ContainerCheckMutation:
+		return c.ContainerCheck.mutate(ctx, m)
 	case *ContainerChildMutation:
 		return c.ContainerChild.mutate(ctx, m)
 	case *ContainerVariablesMutation:
@@ -538,6 +546,139 @@ func (c *AliasClient) mutate(ctx context.Context, m *AliasMutation) (Value, erro
 		return (&AliasDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Alias mutation op: %q", m.Op())
+	}
+}
+
+// ContainerCheckClient is a client for the ContainerCheck schema.
+type ContainerCheckClient struct {
+	config
+}
+
+// NewContainerCheckClient returns a client for the ContainerCheck from the given config.
+func NewContainerCheckClient(c config) *ContainerCheckClient {
+	return &ContainerCheckClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `containercheck.Hooks(f(g(h())))`.
+func (c *ContainerCheckClient) Use(hooks ...Hook) {
+	c.hooks.ContainerCheck = append(c.hooks.ContainerCheck, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `containercheck.Intercept(f(g(h())))`.
+func (c *ContainerCheckClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ContainerCheck = append(c.inters.ContainerCheck, interceptors...)
+}
+
+// Create returns a builder for creating a ContainerCheck entity.
+func (c *ContainerCheckClient) Create() *ContainerCheckCreate {
+	mutation := newContainerCheckMutation(c.config, OpCreate)
+	return &ContainerCheckCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ContainerCheck entities.
+func (c *ContainerCheckClient) CreateBulk(builders ...*ContainerCheckCreate) *ContainerCheckCreateBulk {
+	return &ContainerCheckCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ContainerCheckClient) MapCreateBulk(slice any, setFunc func(*ContainerCheckCreate, int)) *ContainerCheckCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ContainerCheckCreateBulk{err: fmt.Errorf("calling to ContainerCheckClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ContainerCheckCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ContainerCheckCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ContainerCheck.
+func (c *ContainerCheckClient) Update() *ContainerCheckUpdate {
+	mutation := newContainerCheckMutation(c.config, OpUpdate)
+	return &ContainerCheckUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ContainerCheckClient) UpdateOne(_m *ContainerCheck) *ContainerCheckUpdateOne {
+	mutation := newContainerCheckMutation(c.config, OpUpdateOne, withContainerCheck(_m))
+	return &ContainerCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ContainerCheckClient) UpdateOneID(id int) *ContainerCheckUpdateOne {
+	mutation := newContainerCheckMutation(c.config, OpUpdateOne, withContainerCheckID(id))
+	return &ContainerCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ContainerCheck.
+func (c *ContainerCheckClient) Delete() *ContainerCheckDelete {
+	mutation := newContainerCheckMutation(c.config, OpDelete)
+	return &ContainerCheckDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ContainerCheckClient) DeleteOne(_m *ContainerCheck) *ContainerCheckDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ContainerCheckClient) DeleteOneID(id int) *ContainerCheckDeleteOne {
+	builder := c.Delete().Where(containercheck.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ContainerCheckDeleteOne{builder}
+}
+
+// Query returns a query builder for ContainerCheck.
+func (c *ContainerCheckClient) Query() *ContainerCheckQuery {
+	return &ContainerCheckQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeContainerCheck},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ContainerCheck entity by its id.
+func (c *ContainerCheckClient) Get(ctx context.Context, id int) (*ContainerCheck, error) {
+	return c.Query().Where(containercheck.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ContainerCheckClient) GetX(ctx context.Context, id int) *ContainerCheck {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ContainerCheckClient) Hooks() []Hook {
+	return c.hooks.ContainerCheck
+}
+
+// Interceptors returns the client interceptors.
+func (c *ContainerCheckClient) Interceptors() []Interceptor {
+	return c.inters.ContainerCheck
+}
+
+func (c *ContainerCheckClient) mutate(ctx context.Context, m *ContainerCheckMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ContainerCheckCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ContainerCheckUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ContainerCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ContainerCheckDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ContainerCheck mutation op: %q", m.Op())
 	}
 }
 
@@ -4024,18 +4165,19 @@ func (c *VariablesStackClient) mutate(ctx context.Context, m *VariablesStackMuta
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alias, ContainerChild, ContainerVariables, Direction, DirectionSubmission, Epic,
-		KnowledgeNode, LogMessage, LongTask, LongTaskProgress,
-		LongTaskProgressSubmission, LongTaskSubmission, Problem, Question,
-		RefreshToken, RepetitiveTask, RepetitiveTaskExecution, State, StateRequirement,
-		StateRequirementCheck, Story, Task, Test, User, VariablesStack []ent.Hook
+		Alias, ContainerCheck, ContainerChild, ContainerVariables, Direction,
+		DirectionSubmission, Epic, KnowledgeNode, LogMessage, LongTask,
+		LongTaskProgress, LongTaskProgressSubmission, LongTaskSubmission, Problem,
+		Question, RefreshToken, RepetitiveTask, RepetitiveTaskExecution, State,
+		StateRequirement, StateRequirementCheck, Story, Task, Test, User,
+		VariablesStack []ent.Hook
 	}
 	inters struct {
-		Alias, ContainerChild, ContainerVariables, Direction, DirectionSubmission, Epic,
-		KnowledgeNode, LogMessage, LongTask, LongTaskProgress,
-		LongTaskProgressSubmission, LongTaskSubmission, Problem, Question,
-		RefreshToken, RepetitiveTask, RepetitiveTaskExecution, State, StateRequirement,
-		StateRequirementCheck, Story, Task, Test, User,
+		Alias, ContainerCheck, ContainerChild, ContainerVariables, Direction,
+		DirectionSubmission, Epic, KnowledgeNode, LogMessage, LongTask,
+		LongTaskProgress, LongTaskProgressSubmission, LongTaskSubmission, Problem,
+		Question, RefreshToken, RepetitiveTask, RepetitiveTaskExecution, State,
+		StateRequirement, StateRequirementCheck, Story, Task, Test, User,
 		VariablesStack []ent.Interceptor
 	}
 )

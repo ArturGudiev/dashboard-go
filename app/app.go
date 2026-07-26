@@ -2,6 +2,7 @@ package app
 
 import (
 	"arturgudiev/dashboard/repositories"
+	"arturgudiev/dashboard/ws"
 	"context"
 
 	"arturgudiev/dashboard/ent"
@@ -42,6 +43,8 @@ type App struct {
 	LogMessagesRepository              *repositories.LogMessagesRepository
 	VariablesStackRepository           *repositories.VariablesStackRepository
 	ContainerVariablesRepository       *repositories.ContainerVariablesRepository
+	ContainerChecksRepository          *repositories.ContainerChecksRepository
+	ContainerChecksService             *services.ContainerChecksService
 	RepetitiveTasksRepository          *repositories.RepetitiveTasksRepository
 	RepetitiveTaskExecutionsRepository *repositories.RepetitiveTaskExecutionsRepository
 	LongTasksRepository                *repositories.LongTasksRepository
@@ -52,6 +55,7 @@ type App struct {
 	UsersRepository                *repositories.UsersRepository
 	RefreshTokensRepository        *repositories.RefreshTokensRepository
 	FilesService                   *services.FilesService
+	Hub                            *ws.Hub
 	ctx                      context.Context // Default context for CLI operations
 }
 
@@ -69,5 +73,17 @@ func (a *App) Close() error {
 
 // FinishTaskRecursively finishes all open descendant tasks using default context
 func (a *App) FinishTaskRecursively(task *ent.Task) error {
-	return a.TaskService.FinishTaskRecursively(a.ctx, task)
+	if err := a.TaskService.FinishTaskRecursively(a.ctx, task); err != nil {
+		return err
+	}
+	a.NotifyDoneTasksChanged()
+	return nil
+}
+
+// NotifyDoneTasksChanged broadcasts a live event so clients can refresh done-task counts.
+func (a *App) NotifyDoneTasksChanged() {
+	if a.Hub == nil {
+		return
+	}
+	a.Hub.BroadcastDoneTasksChanged()
 }

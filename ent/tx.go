@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Alias is the client for interacting with the Alias builders.
 	Alias *AliasClient
+	// ContainerCheck is the client for interacting with the ContainerCheck builders.
+	ContainerCheck *ContainerCheckClient
 	// ContainerChild is the client for interacting with the ContainerChild builders.
 	ContainerChild *ContainerChildClient
 	// ContainerVariables is the client for interacting with the ContainerVariables builders.
@@ -194,6 +196,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Alias = NewAliasClient(tx.config)
+	tx.ContainerCheck = NewContainerCheckClient(tx.config)
 	tx.ContainerChild = NewContainerChildClient(tx.config)
 	tx.ContainerVariables = NewContainerVariablesClient(tx.config)
 	tx.Direction = NewDirectionClient(tx.config)
