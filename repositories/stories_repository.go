@@ -46,6 +46,10 @@ func (r *StoriesRepository) UpdateStory(ctx context.Context, story models.StoryP
 		updateBuilder = updateBuilder.SetTags(*story.Tags)
 	}
 
+	if story.Closed != nil {
+		updateBuilder = updateBuilder.SetClosed(*story.Closed)
+	}
+
 	if story.DoneDateTime != nil {
 		updateBuilder = updateBuilder.SetDoneDateTime(*story.DoneDateTime)
 	}

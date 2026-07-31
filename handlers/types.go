@@ -244,6 +244,20 @@ type PatchDirectionByIDRequest struct {
 	Closed      *bool   `json:"closed"`
 }
 
+// PatchStoryByIDRequest represents optional fields for PATCH /story/:id
+type PatchStoryByIDRequest struct {
+	Description *string `json:"description"`
+	Notes       *string `json:"notes"`
+	Closed      *bool   `json:"closed"`
+}
+
+// PatchEpicByIDRequest represents optional fields for PATCH /epic/:id
+type PatchEpicByIDRequest struct {
+	Description *string `json:"description"`
+	Notes       *string `json:"notes"`
+	Closed      *bool   `json:"closed"`
+}
+
 type PatchLongTaskByIDRequest struct {
 	Description *string `json:"description"`
 	Notes       *string `json:"notes"`

@@ -97,12 +97,12 @@ func (h *Handler) PatchProblemByID(c *gin.Context) {
 
 // PatchStoryByID handles PATCH /story/:id
 // @Summary      Patch story by ID
-// @Description  Partially updates a story's description and/or notes
+// @Description  Partially updates a story's description, notes, and/or closed state
 // @Tags         stories
 // @Accept       json
 // @Produce      json
-// @Param        id       path      int                      true  "Story ID"
-// @Param        request  body      PatchContainerByIDRequest  true  "Fields to update"
+// @Param        id       path      int                     true  "Story ID"
+// @Param        request  body      PatchStoryByIDRequest  true  "Fields to update"
 // @Success      200      {object}  models.StoryFull
 // @Failure      400      {object}  map[string]string
 // @Failure      404      {object}  map[string]string
@@ -113,8 +113,14 @@ func (h *Handler) PatchStoryByID(c *gin.Context) {
 	if !ok {
 		return
 	}
-	req, ok := bindPatchContainerRequest(c)
-	if !ok {
+
+	var req PatchStoryByIDRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Description == nil && req.Notes == nil && req.Closed == nil {
+		c.JSON(400, gin.H{"error": "At least one of description, notes, or closed must be provided"})
 		return
 	}
 
@@ -123,6 +129,7 @@ func (h *Handler) PatchStoryByID(c *gin.Context) {
 		ID:          id,
 		Description: req.Description,
 		Notes:       req.Notes,
+		Closed:      req.Closed,
 	})
 	if err != nil {
 		writePatchError(c, id, "story", err)
@@ -133,12 +140,12 @@ func (h *Handler) PatchStoryByID(c *gin.Context) {
 
 // PatchEpicByID handles PATCH /epic/:id
 // @Summary      Patch epic by ID
-// @Description  Partially updates an epic's description and/or notes
+// @Description  Partially updates an epic's description, notes, and/or closed state
 // @Tags         epics
 // @Accept       json
 // @Produce      json
-// @Param        id       path      int                      true  "Epic ID"
-// @Param        request  body      PatchContainerByIDRequest  true  "Fields to update"
+// @Param        id       path      int                    true  "Epic ID"
+// @Param        request  body      PatchEpicByIDRequest  true  "Fields to update"
 // @Success      200      {object}  models.EpicFull
 // @Failure      400      {object}  map[string]string
 // @Failure      404      {object}  map[string]string
@@ -149,8 +156,14 @@ func (h *Handler) PatchEpicByID(c *gin.Context) {
 	if !ok {
 		return
 	}
-	req, ok := bindPatchContainerRequest(c)
-	if !ok {
+
+	var req PatchEpicByIDRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Description == nil && req.Notes == nil && req.Closed == nil {
+		c.JSON(400, gin.H{"error": "At least one of description, notes, or closed must be provided"})
 		return
 	}
 
@@ -159,6 +172,7 @@ func (h *Handler) PatchEpicByID(c *gin.Context) {
 		ID:          id,
 		Description: req.Description,
 		Notes:       req.Notes,
+		Closed:      req.Closed,
 	})
 	if err != nil {
 		writePatchError(c, id, "epic", err)

@@ -31,6 +31,7 @@ type StoryPartial struct {
 	Description  *string    `json:"description"`
 	Tags         *[]string  `json:"tags"`
 	Notes        *string    `json:"notes"`
+	Closed       *bool      `json:"closed"`
 	DoneDateTime *time.Time `json:"doneDateTime"`
 }
 

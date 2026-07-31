@@ -67,6 +67,10 @@ func (r *EpicsRepository) UpdateEpic(ctx context.Context, epic models.EpicPartia
 		updateBuilder = updateBuilder.SetTags(*epic.Tags)
 	}
 
+	if epic.Closed != nil {
+		updateBuilder = updateBuilder.SetClosed(*epic.Closed)
+	}
+
 	if epic.DoneDateTime != nil {
 		updateBuilder = updateBuilder.SetDoneDateTime(*epic.DoneDateTime)
 	}
