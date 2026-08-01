@@ -731,12 +731,30 @@ definitions:
       notes:
         type: string
     type: object
+  handlers.PatchEpicByIDRequest:
+    properties:
+      closed:
+        type: boolean
+      description:
+        type: string
+      notes:
+        type: string
+    type: object
   handlers.PatchLongTaskByIDRequest:
     properties:
       description:
         type: string
       done:
         type: boolean
+      notes:
+        type: string
+    type: object
+  handlers.PatchStoryByIDRequest:
+    properties:
+      closed:
+        type: boolean
+      description:
+        type: string
       notes:
         type: string
     type: object
@@ -1018,6 +1036,8 @@ definitions:
     type: object
   models.EpicPartial:
     properties:
+      closed:
+        type: boolean
       description:
         type: string
       doneDateTime:
@@ -1546,6 +1566,123 @@ definitions:
           type: string
         type: array
     type: object
+  models.ScriptFull:
+    properties:
+      code:
+        type: string
+      containerID:
+        type: integer
+      containerType:
+        $ref: '#/definitions/schema.ContainerType'
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      isGlobal:
+        type: boolean
+      name:
+        type: string
+      params:
+        items:
+          $ref: '#/definitions/models.ScriptParam'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  models.ScriptListItem:
+    properties:
+      containerID:
+        type: integer
+      containerType:
+        $ref: '#/definitions/schema.ContainerType'
+      description:
+        type: string
+      id:
+        type: integer
+      isGlobal:
+        type: boolean
+      name:
+        type: string
+    type: object
+  models.ScriptParam:
+    properties:
+      default: {}
+      name:
+        type: string
+      type:
+        description: string | boolean | number
+        type: string
+    type: object
+  models.ScriptPartial:
+    properties:
+      code:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      params:
+        items:
+          $ref: '#/definitions/models.ScriptParam'
+        type: array
+    type: object
+  models.ScriptRunCreated:
+    properties:
+      problems:
+        items:
+          type: integer
+        type: array
+      tasks:
+        items:
+          type: integer
+        type: array
+    type: object
+  models.ScriptRunRequest:
+    properties:
+      container:
+        $ref: '#/definitions/models.ContainerDescription'
+      params:
+        additionalProperties: {}
+        type: object
+    type: object
+  models.ScriptRunResponse:
+    properties:
+      created:
+        $ref: '#/definitions/models.ScriptRunCreated'
+      error:
+        type: string
+      ok:
+        type: boolean
+    type: object
+  models.ScriptShort:
+    properties:
+      code:
+        type: string
+      container:
+        $ref: '#/definitions/models.ContainerDescription'
+      description:
+        type: string
+      name:
+        type: string
+      params:
+        items:
+          $ref: '#/definitions/models.ScriptParam'
+        type: array
+    type: object
+  models.ScriptValidateRequest:
+    properties:
+      code:
+        type: string
+    type: object
+  models.ScriptValidateResponse:
+    properties:
+      error:
+        type: string
+      ok:
+        type: boolean
+    type: object
   models.StateFull:
     properties:
       closed:
@@ -1670,6 +1807,8 @@ definitions:
     type: object
   models.StoryPartial:
     properties:
+      closed:
+        type: boolean
       description:
         type: string
       doneDateTime:
@@ -1925,25 +2064,40 @@ paths:
       summary: Root endpoint
       tags:
       - general
-  /add-anonymous-task:
+  /add-anonymous-task/{count}:
     put:
       consumes:
       - application/json
-      description: Creates a simple anonymous task with default values
+      description: Creates the given number of simple anonymous tasks with default
+        values
+      parameters:
+      - description: Number of anonymous tasks to create
+        in: path
+        name: count
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ent.Task'
+            items:
+              $ref: '#/definitions/ent.Task'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Create anonymous task
+      summary: Create anonymous tasks
       tags:
       - tasks
   /aliases/{alias}:
@@ -2857,7 +3011,7 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Partially updates an epic's description and/or notes
+      description: Partially updates an epic's description, notes, and/or closed state
       parameters:
       - description: Epic ID
         in: path
@@ -2869,7 +3023,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+          $ref: '#/definitions/handlers.PatchEpicByIDRequest'
       produces:
       - application/json
       responses:
@@ -2902,7 +3056,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns all epics
+      description: Returns all open epics (closed=false)
       produces:
       - application/json
       responses:
@@ -3302,7 +3456,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Returns multiple epics by their IDs
+      description: Returns multiple open epics by their IDs (closed epics are omitted)
       parameters:
       - description: List of epic IDs
         in: body
@@ -4923,6 +5077,288 @@ paths:
       summary: Record repetitive task execution
       tags:
       - repetitive-tasks
+  /scripts:
+    get:
+      description: Lists scripts filtered by name, scope (all|global|local), and optional
+        container
+      parameters:
+      - description: Name filter
+        in: query
+        name: q
+        type: string
+      - description: all, global, or local
+        in: query
+        name: scope
+        type: string
+      - description: Container type for local/all scope
+        in: query
+        name: containerType
+        type: string
+      - description: Container ID for local/all scope
+        in: query
+        name: containerId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ScriptListItem'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List scripts
+      tags:
+      - scripts
+    post:
+      consumes:
+      - application/json
+      description: Creates a global script, or a local script when container is provided
+      parameters:
+      - description: Script
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ScriptShort'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ScriptFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create script
+      tags:
+      - scripts
+  /scripts/{id}:
+    delete:
+      description: Deletes a script by ID
+      parameters:
+      - description: Script ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete script
+      tags:
+      - scripts
+    get:
+      description: Returns a full script by ID
+      parameters:
+      - description: Script ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ScriptFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get script
+      tags:
+      - scripts
+    patch:
+      consumes:
+      - application/json
+      description: Partially updates a script
+      parameters:
+      - description: Script ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ScriptPartial'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ScriptFull'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update script
+      tags:
+      - scripts
+  /scripts/{id}/run:
+    post:
+      consumes:
+      - application/json
+      description: Executes a script against a container with optional params
+      parameters:
+      - description: Script ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Run request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ScriptRunRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ScriptRunResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Run script
+      tags:
+      - scripts
+  /scripts/validate:
+    post:
+      consumes:
+      - application/json
+      description: Parses script code for syntax errors without executing host APIs
+      parameters:
+      - description: Code to validate
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ScriptValidateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ScriptValidateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Validate script code
+      tags:
+      - scripts
   /solve-problem/{id}:
     put:
       consumes:
@@ -5301,7 +5737,7 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Partially updates a story's description and/or notes
+      description: Partially updates a story's description, notes, and/or closed state
       parameters:
       - description: Story ID
         in: path
@@ -5313,7 +5749,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.PatchContainerByIDRequest'
+          $ref: '#/definitions/handlers.PatchStoryByIDRequest'
       produces:
       - application/json
       responses:
@@ -5970,6 +6406,25 @@ paths:
       summary: Refresh access token
       tags:
       - users
+  /ws:
+    get:
+      description: Subscribes to live dashboard events (e.g. doneTasksChanged)
+      responses:
+        "101":
+          description: Switching Protocols
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AccessTokenCookie: []
+      summary: WebSocket events
+      tags:
+      - realtime
 schemes:
 - http
 - https

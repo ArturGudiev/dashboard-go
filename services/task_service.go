@@ -211,7 +211,7 @@ func (s *TaskService) GetTasksFull(ctx context.Context, IDs []int) ([]*models.Ta
 	return results, firstErr
 }
 
-func (s *TaskService) AddAnonymousTask(ctx context.Context) (*ent.Task, error) {
+func (s *TaskService) AddAnonymousTask(ctx context.Context, count int) ([]*ent.Task, error) {
 	description := "Anonymous task"
 	tags := []string{}
 	notes := ""
@@ -226,8 +226,15 @@ func (s *TaskService) AddAnonymousTask(ctx context.Context) (*ent.Task, error) {
 		Done:         &done,
 	}
 
-	newTask, err := s.tasksRepository.AddTaskByFields(ctx, fields)
-	return newTask, err
+	tasks := make([]*ent.Task, 0, count)
+	for i := 0; i < count; i++ {
+		newTask, err := s.tasksRepository.AddTaskByFields(ctx, fields)
+		if err != nil {
+			return tasks, err
+		}
+		tasks = append(tasks, newTask)
+	}
+	return tasks, nil
 }
 
 func (s *TaskService) AddTask(ctx context.Context, task models.TaskShort, parent *models.ContainerDescription) (*models.TaskFull, error) {

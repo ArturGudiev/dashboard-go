@@ -49,9 +49,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/add-anonymous-task": {
+        "/add-anonymous-task/{count}": {
             "put": {
-                "description": "Creates a simple anonymous task with default values",
+                "description": "Creates the given number of simple anonymous tasks with default values",
                 "consumes": [
                     "application/json"
                 ],
@@ -61,12 +61,33 @@ const docTemplate = `{
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Create anonymous task",
+                "summary": "Create anonymous tasks",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of anonymous tasks to create",
+                        "name": "count",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.Task"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.Task"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
@@ -1439,7 +1460,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Partially updates an epic's description and/or notes",
+                "description": "Partially updates an epic's description, notes, and/or closed state",
                 "consumes": [
                     "application/json"
                 ],
@@ -1464,7 +1485,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                            "$ref": "#/definitions/handlers.PatchEpicByIDRequest"
                         }
                     }
                 ],
@@ -1507,7 +1528,7 @@ const docTemplate = `{
         },
         "/epics": {
             "get": {
-                "description": "Returns all epics",
+                "description": "Returns all open epics (closed=false)",
                 "consumes": [
                     "application/json"
                 ],
@@ -2093,7 +2114,7 @@ const docTemplate = `{
         },
         "/get-epics": {
             "post": {
-                "description": "Returns multiple epics by their IDs",
+                "description": "Returns multiple open epics by their IDs (closed epics are omitted)",
                 "consumes": [
                     "application/json"
                 ],
@@ -4531,6 +4552,431 @@ const docTemplate = `{
                 }
             }
         },
+        "/scripts": {
+            "get": {
+                "description": "Lists scripts filtered by name, scope (all|global|local), and optional container",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scripts"
+                ],
+                "summary": "List scripts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name filter",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "all, global, or local",
+                        "name": "scope",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Container type for local/all scope",
+                        "name": "containerType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Container ID for local/all scope",
+                        "name": "containerId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ScriptListItem"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a global script, or a local script when container is provided",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scripts"
+                ],
+                "summary": "Create script",
+                "parameters": [
+                    {
+                        "description": "Script",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptShort"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/validate": {
+            "post": {
+                "description": "Parses script code for syntax errors without executing host APIs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scripts"
+                ],
+                "summary": "Validate script code",
+                "parameters": [
+                    {
+                        "description": "Code to validate",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptValidateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptValidateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}": {
+            "get": {
+                "description": "Returns a full script by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scripts"
+                ],
+                "summary": "Get script",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Script ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a script by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scripts"
+                ],
+                "summary": "Delete script",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Script ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Partially updates a script",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scripts"
+                ],
+                "summary": "Update script",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Script ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptPartial"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptFull"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/run": {
+            "post": {
+                "description": "Executes a script against a container with optional params",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scripts"
+                ],
+                "summary": "Run script",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Script ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Run request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptRunRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ScriptRunResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/solve-problem/{id}": {
             "put": {
                 "description": "Sets the solution for a problem",
@@ -5097,7 +5543,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Partially updates a story's description and/or notes",
+                "description": "Partially updates a story's description, notes, and/or closed state",
                 "consumes": [
                     "application/json"
                 ],
@@ -5122,7 +5568,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.PatchContainerByIDRequest"
+                            "$ref": "#/definitions/handlers.PatchStoryByIDRequest"
                         }
                     }
                 ],
@@ -6119,6 +6565,37 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ws": {
+            "get": {
+                "security": [
+                    {
+                        "AccessTokenCookie": []
+                    }
+                ],
+                "description": "Subscribes to live dashboard events (e.g. doneTasksChanged)",
+                "tags": [
+                    "realtime"
+                ],
+                "summary": "WebSocket events",
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -7198,6 +7675,20 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.PatchEpicByIDRequest": {
+            "type": "object",
+            "properties": {
+                "closed": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.PatchLongTaskByIDRequest": {
             "type": "object",
             "properties": {
@@ -7206,6 +7697,20 @@ const docTemplate = `{
                 },
                 "done": {
                     "type": "boolean"
+                },
+                "notes": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.PatchStoryByIDRequest": {
+            "type": "object",
+            "properties": {
+                "closed": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
                 },
                 "notes": {
                     "type": "string"
@@ -7634,6 +8139,9 @@ const docTemplate = `{
         "models.EpicPartial": {
             "type": "object",
             "properties": {
+                "closed": {
+                    "type": "boolean"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -8414,6 +8922,185 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ScriptFull": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "containerID": {
+                    "type": "integer"
+                },
+                "containerType": {
+                    "$ref": "#/definitions/schema.ContainerType"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isGlobal": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ScriptParam"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ScriptListItem": {
+            "type": "object",
+            "properties": {
+                "containerID": {
+                    "type": "integer"
+                },
+                "containerType": {
+                    "$ref": "#/definitions/schema.ContainerType"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isGlobal": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ScriptParam": {
+            "type": "object",
+            "properties": {
+                "default": {},
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "string | boolean | number",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ScriptPartial": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ScriptParam"
+                    }
+                }
+            }
+        },
+        "models.ScriptRunCreated": {
+            "type": "object",
+            "properties": {
+                "problems": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.ScriptRunRequest": {
+            "type": "object",
+            "properties": {
+                "container": {
+                    "$ref": "#/definitions/models.ContainerDescription"
+                },
+                "params": {
+                    "type": "object",
+                    "additionalProperties": {}
+                }
+            }
+        },
+        "models.ScriptRunResponse": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "$ref": "#/definitions/models.ScriptRunCreated"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.ScriptShort": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "container": {
+                    "$ref": "#/definitions/models.ContainerDescription"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ScriptParam"
+                    }
+                }
+            }
+        },
+        "models.ScriptValidateRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ScriptValidateResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.StateFull": {
             "type": "object",
             "properties": {
@@ -8600,6 +9287,9 @@ const docTemplate = `{
         "models.StoryPartial": {
             "type": "object",
             "properties": {
+                "closed": {
+                    "type": "boolean"
+                },
                 "description": {
                     "type": "string"
                 },

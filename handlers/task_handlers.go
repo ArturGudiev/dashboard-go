@@ -102,17 +102,25 @@ func (h *Handler) GetTasksByIDs(c *gin.Context) {
 	c.JSON(200, tasks)
 }
 
-// AddAnonymousTask handles PUT /add-anonymous-task
-// @Summary      Create anonymous task
-// @Description  Creates a simple anonymous task with default values
+// AddAnonymousTask handles PUT /add-anonymous-task/:count
+// @Summary      Create anonymous tasks
+// @Description  Creates the given number of simple anonymous tasks with default values
 // @Tags         tasks
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  ent.Task
+// @Param        count  path  int  true  "Number of anonymous tasks to create"
+// @Success      200  {array}   ent.Task
+// @Failure      400  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
-// @Router       /add-anonymous-task [put]
+// @Router       /add-anonymous-task/{count} [put]
 func (h *Handler) AddAnonymousTask(c *gin.Context) {
-	newTask, err := h.App.TaskService.AddAnonymousTask(c.Request.Context())
+	count, err := strconv.Atoi(c.Param("count"))
+	if err != nil || count < 1 {
+		c.JSON(400, gin.H{"error": "count must be a positive integer"})
+		return
+	}
+
+	newTasks, err := h.App.TaskService.AddAnonymousTask(c.Request.Context(), count)
 
 	if err != nil {
 		log.Printf("Error creating task: %v", err)
@@ -121,7 +129,7 @@ func (h *Handler) AddAnonymousTask(c *gin.Context) {
 	}
 
 	h.notifyDoneTasksChanged()
-	c.JSON(200, newTask)
+	c.JSON(200, newTasks)
 }
 
 // GetDoneTasks handles GET /done-tasks
